@@ -4,7 +4,7 @@ from simulation.lib.utilities.generic_class import Generic
 
 settings = Generic()
 
-settings.lmax = 2500
+settings.lmax = 3000
 
 settings.nside = 1024
 

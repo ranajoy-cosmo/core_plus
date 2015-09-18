@@ -2,6 +2,7 @@
 
 import numpy as np
 import healpy as hp
+import matplotlib.pyplot as plt
 from settings import settings
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix
@@ -11,44 +12,55 @@ from pysimulators.interfaces.healpy import HealpixConvolutionGaussianOperator
 import sys
 import qubic
 import simulation.pointing.generate_pointing as gen_p
+from beam_kernel import beam_kernel
 
-class Scanning:
+def simulate_tod():
+    #Generating the pointing
+    if settings.generate_pointing:
+        gen_p.generate_pointing()
+    v = np.load(settings.data_folder + "pointing_0.npy") 
+    hit_pix = hp.vec2pix(settings.nside, v[...,0], v[...,1], v[...,2])
     
-    def __init__(self):
-        pass
-
-    def get_hit_pixels(self):
-        v = gen_p.generate_pointing().T
-        self.hit_pix = hp.vec2pix(settings.nside, v[0], v[1], v[2])
-
-    def get_proj_op(self):
-        try:
-            self.hit_pix
-        except AttributeError:
-            self.get_hit_pixels()
-        nsamples = self.hit_pix.size
-        npix = hp.nside2npix(settings.nside)
-        matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32,
+    #Building the projection matrix P
+    nsamples = hit_pix.size
+    npix = hp.nside2npix(settings.nside)
+    matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32,
                            dtype_index = np.int32)
-        matrix.data.index = self.hit_pix[..., None]
-        matrix.data.value = 1
-        self.P = ProjectionOperator(matrix, shapein = npix, shapeout = nsamples)
+    matrix.data.index = hit_pix[..., None]
+    matrix.data.value = 1
+    P = ProjectionOperator(matrix, shapein = npix, shapeout = nsamples)        
+    
+    sky_map = hp.read_map(settings.input_map_path)
 
-    def get_hitmap(self):
-        try:
-            self.P
-        except AttributeError:
-            self.get_proj_op()
-        nsamples = self.hit_pix.size
-        self.hitmap = (self.P).T(np.ones(nsamples, dtype = np.float32))
+    #Generating the time ordered signal
+    signal = P(sky_map)
+    signal = np.convolve(signal, beam_kernel, mode = 'same')
 
-    def load_map(self):
-        self.sky_map = hp.read_map(settings.map_file, field = (0,1,2))
+    #Generating the hitmap
+    hitmap = P.T(np.ones(nsamples, dtype=np.float32))
+   
+    #Generating the scan patch
+    mask = np.full(hitmap.size, False, dtype = bool)
+    mask[hitmap > 0] = True
+    scanned_map = np.full(hitmap.size, np.nan)
+    scanned_map[mask] = sky_map[mask]
 
-    def simulate_tod(self):
-        self.tod = P(sky)
+    if settings.display_scanned_map:
+        hp.mollzoom(hitmap)
+        plt.show()
+        hp.mollzoom(scanned_map)
+        plt.show()
+    
+    if settings.write_scanned_map:
+        hp.write_map(settings.data_folder + "hitmap.fits", hitmap)
+        hp.write_map(settings.data_folder + "scanned_map.fits", scanned_map)
 
+    if settings.write_signal:
+        np.save(settings.data_folder + "signal", signal)
+    elif settings.pipe_with_map_maker:
+        return signal, P
 
+    
 
 """
 
@@ -78,23 +90,6 @@ def get_beam_weight():
     beam = BeamGaussian(np.radians(beam_fwhm*20/60.0))
     beam_healpix = beam.healpix(NSIDE)
     return np.sum(beam_healpix)
-
-beam_weight = get_beam_weight()
-
-beam_weight = 1
-#Making the time ordered data---------------------------------------------------
-y = beam_weight*P(sky)#(sky_power) + sigma_noise*np.random.standard_normal(nsamples)
-#-------------------------------------------------------------------------------
-
-def get_map():
-    #Making the map-------------------------------------------------------------
-    x = (P.T * P).I * P.T * y
-    #x[np.isnan(x)]=0
-    #return x/beam_weight
-    return x
-    #---------------------------------------------------------------------------
-
-map = get_map()
 
 """
 
