@@ -3,7 +3,7 @@ from simulation.lib.utilities.generic_class import Generic
 
 settings = Generic()
 
-settings.nside = 1024
+settings.nside = 2048 
 
 settings.input_map_path = "/Users/banerji/CORE+/simulation/maps_and_spectra/maps/test_map.fits"
 
