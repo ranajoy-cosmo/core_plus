@@ -4,6 +4,8 @@ from simulation.lib.utilities.generic_class import Generic
 settings = Generic()
 
 settings.nside = 2048 
+settings.beam_cutoff = 3
+settings.beam_normalise = True
 
 settings.input_map_path = "/Users/banerji/CORE+/simulation/maps_and_spectra/maps/test_map.fits"
 
