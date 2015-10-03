@@ -20,17 +20,20 @@ settings.normalise_beam = True
 settings.beam_fwhm = (8.0, 8.0)
 
 settings.do_beam_kernel = True 
-settings.plot_beam = True 
+settings.plot_beam = False 
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# I/O Params 
+# Read/Write Settings 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
+tag = "test"
 base_folder = "/Users/banerji/CORE+/simulation/"
-settings.input_map_path = base_folder + "maps_and_spectra/maps/test_map.fits"
-settings.data_folder = base_folder + "flight_data/segment_0001/"
+input_map_folder = base_folder + "maps_and_spectra/maps/"
+settings.input_map = input_map_folder + "test_map.fits"
+
+settings.output_folder = base_folder + "output/" + tag + "/"
 
 settings.write_signal = False 
-settings.display_scanned_map = False
+settings.display_scanned_map = True 
 settings.write_scanned_map = True
 settings.pipe_with_map_maker = True 

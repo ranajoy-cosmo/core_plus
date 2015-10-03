@@ -7,14 +7,14 @@ import pyoperators as po
 import sys
 
 def calculate_params(settings = None):
-    if settings ==None:
+    if settings is None:
         from settings import settings
     
-    if settings.mode == 1:
+    if settings.mode is 1:
         settings.t_spin = 360.0*60.0*np.sin(settings.beta_0)*settings.t_sampling/1000.0/settings.theta_co
         settings.t_prec = 360.0*60.0*np.sin(settings.alpha)*settings.t_spin/settings.theta_cross
 
-    if settings.mode == 2:
+    if settings.mode is 2:
         settings.theta_cross = 360.0*60.0*np.sin(settings.alpha)*settings.t_spin/settings.t_prec
         settings.theta_co = 360*60*np.sin(settings.beta_0)*settings.t_sampling/1000.0/settings.t_spin
 
@@ -34,7 +34,7 @@ def display_params(settings):
     print "Max pix radius : ", np.degrees(hp.max_pixrad(settings.nside))*60.0, "arcmin"
 
 def generate_pointing(settings = None, beta = None):
-    if settings == None:
+    if settings is None:
         from settings import settings
     settings = calculate_params(settings)
     if settings.display_params:
@@ -56,15 +56,10 @@ def generate_pointing(settings = None, beta = None):
     w_spin = 2*np.pi/settings.t_spin
     R = po.Rotation3dOperator("XY'X''", w_prec*t_steps, -1.0*np.full(n_steps, settings.alpha), w_spin*t_steps)
     v = R*u_init
-    if settings.write_pointing and settings.return_pointing:
-        np.save(settings.write_folder + "pointing_0", v)
+    if settings.write_pointing:
+        np.save(settings.output_folder + "pointing_0", v)
+    if settings.return_pointing:
         return v
-    elif settings.write_pointing:
-        np.save(settings.write_folder + "pointing_0", v)
-    elif settings.return_pointing:
-        return v
-    else:
-        print "Not printing or returning generated pointing"
 
 if __name__ == "__main__":
     from settings import settings

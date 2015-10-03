@@ -20,21 +20,25 @@ settings.beta_0 = np.deg2rad(beta_deg_0)            #radians
 #Settings for time periods of scans
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 settings.t_flight = 1*60*60.0                       #seconds
+settings.t_sampling = 4.0                           #milli-seconds
 #settings.t_prec = 4*24*60*60.0                     #seconds
 #settings.t_spin = 60.0                             #seconds
-settings.t_sampling = 4.0                           #milli-seconds
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 #Scan resolutions
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-settings.nside = 2048
+settings.nside = 1024
 settings.theta_cross = hp.nside2resol(settings.nside, arcmin = True)                         #arcminutes
 settings.theta_co = hp.nside2resol(settings.nside, arcmin = True)                            #arcminutes
 
 settings.do_beam_profile_pointing = False
 
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+#Scan resolutions
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+tag = "test"
 base_folder = "/Users/banerji/CORE+/simulation/"
-settings.write_folder = base_folder + "flight_data/segment_0001/"
+settings.output_folder = base_folder + tag + '/'
 settings.write_pointing = True
 settings.return_pointing = False
 settings.display_params = True

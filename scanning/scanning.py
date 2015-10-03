@@ -13,8 +13,16 @@ import sys, copy
 import qubic
 import simulation.pointing.generate_pointing as gen_p
 
-def simulate_tod():
-    #Generating the pointing
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+# Simulating the time-ordered data for a pencil beam
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+
+def simulate_tod(settings=None):
+    if settings is None:
+        from settings import settings
+
+    #*#*#* Generating the time-ordered pointing #*#*#*
+    
     if settings.generate_pointing:
         import pointing_settings
         v = gen_p.generate_pointing(pointing_settings.settings)
@@ -23,30 +31,42 @@ def simulate_tod():
     else:
         print "Not loaded any pointing. Exiting"
         sys.exit()
+    
+    #*#*#* Generating the time-ordered set of hit pixels from the pointing #*#*#*
+
     hit_pix = hp.vec2pix(settings.nside, v[...,0], v[...,1], v[...,2])
     
-    #Building the projection matrix P
+    #*#*#* Building the projection matrix P #*#*#*
+
     nsamples = hit_pix.size
     npix = hp.nside2npix(settings.nside)
-    matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32,
-                           dtype_index = np.int32)
-    matrix.data.index = hit_pix[..., None]
-    matrix.data.value = 1
-    P = ProjectionOperator(matrix, shapein = npix, shapeout = nsamples)        
+    if settings.do_pol:
+        matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index=np.int32)
+        matrix.data.index[:, 0] = pix
+        matrix.data.value[:, 0, 0, 0] = 0.5
+        matrix.data.value[:, 0, 0, 1] = 0.5 * np.cos(2*pol_dir)
+        matrix.data.value[:, 0, 0, 2] = 0.5 * np.sin(2*pol_dir)
+    else:
+        matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32,
+                               dtype_index = np.int32)
+        matrix.data.index = hit_pix[..., None]
+        matrix.data.value = 1
+    P = ProjectionOperator(matrix)#, shapein = npix, shapeout = nsamples)        
     
-    sky_map = hp.read_map(settings.input_map_path)
+    #*#*#* Loading the input sky map #*#*#*
+    sky_map = load_input_map(settings) 
 
     #Generating the time ordered signal
     signal = P(sky_map)
-    if settings.do_beam_kernel:
-        signal = np.convolve(signal, beam_kernel, mode = 'same')
 
     #Generating the hitmap
     hitmap = P.T(np.ones(nsamples, dtype=np.float32))
+    if settings.do_pol:
+        hitmap = hitmap[:, 0]*2
    
     #Generating the scan patch
-    mask = np.full(hitmap.size, False, dtype = bool)
-    mask[hitmap > 0] = True
+    mask = hitmap > 0#np.full(hitmap.size, False, dtype = bool)
+    #mask[hitmap > 0] = True
     scanned_map = np.full(hitmap.size, np.nan)
     scanned_map[mask] = sky_map[mask]
 
@@ -65,8 +85,13 @@ def simulate_tod():
     elif settings.pipe_with_map_maker:
         return signal, P
 
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+# Simulating the time-ordered data for a pencil beam
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-def simulate_beam_tod():
+def simulate_beam_tod(settings=None):
+    if settings is None:
+        from settings import settings
     #Generating the pointing
     from simulation.scanning.beam_kernel import beam_kernel, del_beta
     import pointing_settings
@@ -110,6 +135,12 @@ def simulate_beam_tod():
     scanned_map = np.full(hitmap.size, np.nan)
     scanned_map[mask] = sky_map[mask]
 
+    plt.figure()
+    plt.plot(signal)
+    plt.show()
+
+    np.save("signal_test", signal)
+
     if settings.display_scanned_map:
         hp.mollzoom(hitmap)
         plt.show()
@@ -125,7 +156,17 @@ def simulate_beam_tod():
     elif settings.pipe_with_map_maker:
         return signal, P
 
- 
+def load_input_map(settings):
+    if settings.do_pol:
+        sky_map = hp.read_map(settings.input_map, field = (0,1,2))
+    else:
+        sky_map = hp.read_map(settings.input_map)
+    nside = hp.get_nside(sky_map)
+
+    if nside is not settings.nside:
+        print "NSIDE of loaded map and settings do not match"
+        sys.exit()
+    return sky_map
 
 """
 
@@ -159,7 +200,8 @@ def get_beam_weight():
 """
 
 if __name__=="__main__":
+    from settings import settings
     if settings.do_beam_kernel:
-        simulate_beam_tod()
+        simulate_beam_tod(settings)
     else:
-        simulate_tod()
+        simulate_tod(settings)
