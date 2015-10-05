@@ -27,7 +27,7 @@ settings.t_sampling = 4.0                           #milli-seconds
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 #Scan resolutions
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-settings.nside = 1024
+settings.nside = 2048
 settings.theta_cross = hp.nside2resol(settings.nside, arcmin = True)                         #arcminutes
 settings.theta_co = hp.nside2resol(settings.nside, arcmin = True)                            #arcminutes
 

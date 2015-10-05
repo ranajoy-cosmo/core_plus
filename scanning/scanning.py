@@ -93,7 +93,7 @@ def simulate_beam_tod(settings=None):
     if settings is None:
         from settings import settings
     #Generating the pointing
-    from simulation.scanning.beam_kernel import beam_kernel, del_beta
+    from simulation.beam.beam_kernel import beam_kernel, del_beta
     import pointing_settings
     beta_0 = pointing_settings.settings.beta_0
     beta = beta_0 + del_beta

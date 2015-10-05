@@ -20,7 +20,7 @@ def make_map_from_signal():
         plt.show()
 
     if settings.write_map:
-        hp.write_map(settings.data_folder + "reconstructed_map.fits", sky_map)
+        hp.write_map(settings.output_folder + "reconstructed_map.fits", sky_map)
 
 
 if __name__=="__main__":

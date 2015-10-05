@@ -85,11 +85,10 @@ def simulate_beam_tod(settings=None):
     if settings is None:
         from settings import settings
     #Generating the pointing
-    from simulation.scanning.beam_kernel import beam_kernel, del_beta
+    from simulation.beam.beam_kernel import beam_kernel, del_beta
     import pointing_settings
     beta_0 = pointing_settings.settings.beta_0
     beta = beta_0 + del_beta
-    
     sky_map = hp.read_map(settings.input_map)
     
     #Building the projection matrix P
@@ -127,11 +126,8 @@ def simulate_beam_tod(settings=None):
     scanned_map = np.full(hitmap.size, np.nan)
     scanned_map[mask] = sky_map[mask]
 
-    plt.figure()
-    plt.plot(signal)
-    plt.show()
-
-    np.save("signal_test", signal)
+    if settings.write_signal:
+        np.save(settings.output_folder + "signal", signal)
 
     if settings.display_scanned_map:
         hp.mollzoom(hitmap)
@@ -140,12 +136,13 @@ def simulate_beam_tod(settings=None):
         plt.show()
     
     if settings.write_scanned_map:
-        hp.write_map(settings.data_folder + "hitmap.fits", hitmap)
-        hp.write_map(settings.data_folder + "scanned_map.fits", scanned_map)
+        hp.write_map(settings.output_folder + "hitmap.fits", hitmap)
+        hp.write_map(settings.output_folder + "scanned_map.fits", scanned_map)
 
     if settings.write_signal:
-        np.save(settings.data_folder + "signal", signal)
-    elif settings.pipe_with_map_maker:
+        np.save(settings.output_folder + "signal", signal)
+    
+    if settings.pipe_with_map_maker:
         return signal, P
 
 
