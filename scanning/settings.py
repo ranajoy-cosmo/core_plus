@@ -11,16 +11,7 @@ settings.nside = 2048
 settings.load_pointing = False
 settings.generate_pointing = True
 
-#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Beam Parameters
-#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-
-settings.beam_cutoff = 4 
-settings.normalise_beam = True 
-settings.beam_fwhm = (8.0, 8.0)
-
 settings.do_beam_kernel = True 
-settings.plot_beam = False 
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read/Write Settings 
