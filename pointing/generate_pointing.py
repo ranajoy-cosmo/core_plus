@@ -31,7 +31,6 @@ def display_params(settings):
     print "Theta co : ", settings.theta_co, " arcmin"
     print "Theta cross : ", settings.theta_cross, " arcmin"
     print "Map resolution : ", hp.nside2resol(settings.nside, arcmin = True), " arcmin"
-    print "Max pix radius : ", np.degrees(hp.max_pixrad(settings.nside))*60.0, "arcmin"
 
 def generate_pointing(settings = None, beta = None):
     if settings is None:
