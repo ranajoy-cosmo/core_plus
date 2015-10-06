@@ -67,3 +67,10 @@ if __name__=="__main__":
         beam.display_beam_settings()
     if settings.plot_beam:
         beam.plot_beam()
+else:
+    from default_settings import settings
+    beam = Beam(settings)
+    beam.get_mesh()
+    beam.gaussian_2d()
+    beam_kernel = beam.kernel
+    del_beta = beam.del_beta

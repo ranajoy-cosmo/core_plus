@@ -86,7 +86,7 @@ def simulate_tod(settings=None):
         return signal, P
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Simulating the time-ordered data for a pencil beam
+# Simulating the time-ordered data for a beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 def simulate_beam_tod(settings=None):

@@ -61,6 +61,8 @@ def generate_pointing(settings = None, beta = None):
         return v
 
 if __name__ == "__main__":
-    from settings import settings
-    generate_pointing(settings)
+    from default_settings import settings
+    settings = calculate_params(settings)
+    display_params(settings)
+    #generate_pointing(settings)
 
