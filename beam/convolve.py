@@ -1,6 +1,7 @@
 #! /usr/bin/env python 
 
 import numpy as np
+from scipy.interpolate import interp1d
 import sys
 
 def pad_array(a, pad_length, pad_value=0):
