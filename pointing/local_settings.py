@@ -1,6 +1,7 @@
 import numpy as np
 import healpy as hp
 from simulation.lib.utilities.generic_class import Generic
+from simulation.settings.global_settings import global_settings
 
 settings = Generic()
 
@@ -38,8 +39,8 @@ settings.do_polarisation_modulation = False
 # Read/Write settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 tag = "test"
-base_folder = "/Users/banerji/CORE+/simulation/"
-settings.output_folder = base_folder + tag + '/'
+base_folder = global_settings.base_folder
+settings.output_folder = global_settings.output_folder + tag + '/'
 settings.write_pointing = True
 settings.return_pointing = False
 settings.display_params = True
