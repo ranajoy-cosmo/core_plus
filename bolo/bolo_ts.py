@@ -13,7 +13,7 @@ import simulation.pointing.generate_pointing as gen_p
 
 def Bolo:
 
-    def __init__(self, settings):
+    def __init__(self, settings=None):
         self.settings = settings
         self.bolo_name = settings.bolo_name
         self.
@@ -158,3 +158,7 @@ if __name__=="__main__":
         simulate_beam_tod(settings)
     else:
         simulate_tod(settings)
+
+if __name__=="__main__":
+    from local_settings import settings
+    bolo = 
