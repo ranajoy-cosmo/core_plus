@@ -17,4 +17,4 @@ global_paths.maps_folder = os.path.join(global_paths.base_folder, "maps_and_spec
 # Global settings for resolution
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-global_resolution.nside = 2048
+#global_resolution.nside = 2048
