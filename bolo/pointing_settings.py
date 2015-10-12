@@ -1,4 +1,4 @@
-from simulation.pointing.default_settings import settings
+from simulation.pointing.local_settings import settings
 
 settings.do_beam_profile_pointing = True 
 settings.display_params = False

@@ -5,7 +5,6 @@ import healpy as hp
 import matplotlib.pyplot as plt
 import pyoperators as po
 import sys
-import os
 
 def calculate_params(settings):
     if settings.mode is 1:
@@ -30,14 +29,19 @@ def display_params(settings):
     print "Theta cross : ", settings.theta_cross, " arcmin"
     print "Map resolution : ", hp.nside2resol(settings.nside, arcmin = True), " arcmin"
 
-def generate_pointing(settings=None):
+def generate_pointing(settings=None, beta=None):
     if settings is None:
         from local_settings import settings
     settings = calculate_params(settings)
     if settings.display_params:
         display_params(settings)
 
-    u_init = np.array([np.cos(settings.beta_0), 0.0, np.sin(settings.beta_0)])
+    if settings.do_beam_profile_pointing:
+        u_init = np.array([np.cos(beta), 0.0, np.sin(beta)])
+        if settings.do_pol and beta is not settings.beta_0:
+            settings.do_pol = False
+    else:
+        u_init = np.array([np.cos(settings.beta_0), 0.0, np.sin(settings.beta_0)])
 
     n_steps = int(1000*settings.t_flight/settings.t_sampling)
     print "No. of time steps : ", n_steps
@@ -51,20 +55,26 @@ def generate_pointing(settings=None):
     if settings.do_pol:
         pol_ang = (w_prec + w_spin)*t_steps%np.pi
         if settings.write_pointing:
-            np.save(os.path.join(settings.output_folder, "pointing_0"), v)
-            np.save(os.path.join(settings.output_folder, "pol_angle_0"), pol_ang)
+            if beta is settings.beta_0:
+                np.save(os.path.join(settings.output_folder, "pointing_0"), v)
+                np.save(os.path.join(settings.output_folder, "pol_angle_0"). pol_ang)
+            else:
+                np.save(os.path.join(settings.output_folder, "pointing_0"), v)
         if settings.return_pointing:
-            return v, pol_ang
+            if beta is settings.beta_0:
+                return v, pol_ang
+            else:
+                return v
 
     else:
-        if settings.write_pointing:
+        if settings.write_pointing and beta is settings.beta_0:
             np.save(os.path.join(settings.output_folder, "pointing_0"), v)
         if settings.return_pointing:
             return v
 
 if __name__ == "__main__":
-    from local_settings import settings
-    #settings = calculate_params(settings)
-    #display_params(settings)
-    generate_pointing(settings)
+    from default_settings import settings
+    settings = calculate_params(settings)
+    display_params(settings)
+    generate_pointing(settings, settings.beta_0)
 
