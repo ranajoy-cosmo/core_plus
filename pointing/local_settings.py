@@ -21,7 +21,7 @@ settings.beta_0 = np.deg2rad(beta_deg_0)            #radians
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Settings for time periods of scans
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-settings.t_flight = 1*60*60.0                       #seconds
+settings.t_flight = 10*60*60.0                       #seconds
 settings.t_sampling = 5.0                           #milli-seconds
 settings.t_prec = 1*60*60.0                     #seconds
 settings.t_spin = 60.0                             #seconds
@@ -29,9 +29,9 @@ settings.t_spin = 60.0                             #seconds
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Scan resolutions
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-nside = global_scanning.nside
-settings.theta_cross = hp.nside2resol(nside, arcmin=True)                          #arcmin
-settings.theta_co = hp.nside2resol(nside, arcmin=True)                             #arcmin
+settings.nside = global_scanning.nside
+settings.theta_cross = hp.nside2resol(settings.nside, arcmin=True)                          #arcmin
+settings.theta_co = hp.nside2resol(settings.nside, arcmin=True)                             #arcmin
 
 settings.do_beam_profile_pointing = False
 settings.do_pol = True
@@ -42,4 +42,4 @@ settings.do_pol = True
 settings.output_folder = global_paths.output_folder 
 settings.write_pointing = True 
 settings.return_pointing = False
-settings.display_params = True 
+settings.display_params = False 

@@ -51,14 +51,16 @@ def generate_pointing(settings=None):
     if settings.do_pol:
         pol_ang = (w_prec + w_spin)*t_steps%np.pi
         if settings.write_pointing:
-            np.save(os.path.join(settings.output_folder, "pointing_0"), v)
-            np.save(os.path.join(settings.output_folder, "pol_angle_0"), pol_ang)
+            np.save(os.path.join(settings.output_folder, "pointing"), v)
+            np.save(os.path.join(settings.output_folder, "pol_angle"), pol_ang)
+            np.save(os.path.join(settings.output_folder, "times", t_steps)
         if settings.return_pointing:
             return v, pol_ang
 
     else:
         if settings.write_pointing:
-            np.save(os.path.join(settings.output_folder, "pointing_0"), v)
+            np.save(os.path.join(settings.output_folder, "pointing"), v)
+            np.save(os.path.join(settings.output_folder, "times", t_steps)
         if settings.return_pointing:
             return v
 

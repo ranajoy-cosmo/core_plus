@@ -4,7 +4,7 @@ import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
 import pyoperators as po
-import sys
+import sys, os
 
 def calculate_params(settings):
     if settings.mode is 1:
@@ -43,10 +43,11 @@ def generate_pointing(settings=None, beta=None):
     else:
         u_init = np.array([np.cos(settings.beta_0), 0.0, np.sin(settings.beta_0)])
 
+
     n_steps = int(1000*settings.t_flight/settings.t_sampling)
+    t_steps = 0.001*settings.t_sampling*np.arange(n_steps)
     print "No. of time steps : ", n_steps
     print "~Memory usage : ", 10*n_steps*8.0/1024/1024/1024, " GB" 
-    t_steps = 0.001*settings.t_sampling*np.arange(n_steps)
     w_prec = 2*np.pi/settings.t_prec
     w_spin = 2*np.pi/settings.t_spin
     R = po.Rotation3dOperator("XY'X''", w_prec*t_steps, -1.0*np.full(n_steps, settings.alpha), w_spin*t_steps)
@@ -55,16 +56,10 @@ def generate_pointing(settings=None, beta=None):
     if settings.do_pol:
         pol_ang = (w_prec + w_spin)*t_steps%np.pi
         if settings.write_pointing:
-            if beta is settings.beta_0:
-                np.save(os.path.join(settings.output_folder, "pointing_0"), v)
-                np.save(os.path.join(settings.output_folder, "pol_angle_0"). pol_ang)
-            else:
-                np.save(os.path.join(settings.output_folder, "pointing_0"), v)
+            np.save(os.path.join(settings.output_folder, "pointing_0"), v)
+            np.save(os.path.join(settings.output_folder, "pol_angle_0"), pol_ang)
         if settings.return_pointing:
-            if beta is settings.beta_0:
-                return v, pol_ang
-            else:
-                return v
+            return v, pol_ang
 
     else:
         if settings.write_pointing and beta is settings.beta_0:
@@ -73,8 +68,6 @@ def generate_pointing(settings=None, beta=None):
             return v
 
 if __name__ == "__main__":
-    from default_settings import settings
-    settings = calculate_params(settings)
-    display_params(settings)
-    generate_pointing(settings, settings.beta_0)
+    from local_settings import settings
+    generate_pointing(settings)
 
