@@ -8,7 +8,7 @@ settings = Generic()
 
 #mode is 1 if we define scan resolution and let scan speed be a function of the resolution
 #mode is 2 if we define scan speeds and let the scan resolution be a function of it
-settings.mode = 2 
+settings.mode = 1 
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Settings for orientation of spacecraft 
@@ -29,9 +29,9 @@ settings.t_spin = 60.0                             #seconds
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Scan resolutions
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-settings.nside = global_scanning.nside
-settings.theta_cross = 1.0                          #arcmin
-settings.theta_co = 0.6                             #arcmin
+nside = global_scanning.nside
+settings.theta_cross = hp.nside2resol(nside, arcmin=True)                          #arcmin
+settings.theta_co = hp.nside2resol(nside, arcmin=True)                             #arcmin
 
 settings.do_beam_profile_pointing = False
 settings.do_pol = True
@@ -39,9 +39,7 @@ settings.do_pol = True
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read/Write settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-tag = "test"
-base_folder = global_paths.base_folder
-settings.output_folder = os.path.join(global_paths.output_folder, tag)
+settings.output_folder = global_paths.output_folder 
 settings.write_pointing = True 
 settings.return_pointing = False
 settings.display_params = True 

@@ -2,6 +2,7 @@ import numpy as np
 import os
 from simulation.lib.utilities.generic_class import Generic
 from simulation.settings.global_settings import global_paths, global_scanning
+import simulation.pointing.local_settings as pointing_settings
 
 scan_params = Generic()
 
@@ -9,11 +10,18 @@ scan_params = Generic()
 # Scan Parameters 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-scan_parmas.nside = global_scanning.nside
-scan_parmas.load_pointing = False
-scan_parmas.generate_pointing = True
-scan_parmas.do_pol = True
-scan_parmas.do_beam_kernel = False 
+scan_params.nside = global_scanning.nside
+scan_params.load_pointing = False
+scan_params.generate_pointing = True
+scan_params.do_pol = True
+scan_params.do_beam_kernel = False 
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+# Pointing Parameters
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+
+pointing_params = pointing_settings.settings
+pointing_params = 
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read/Write Settings 
