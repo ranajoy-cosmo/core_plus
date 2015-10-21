@@ -42,4 +42,4 @@ settings.do_pol = True
 settings.output_folder = global_paths.output_folder 
 settings.write_pointing = True 
 settings.return_pointing = False
-settings.display_params = False 
+settings.display_params = True 
