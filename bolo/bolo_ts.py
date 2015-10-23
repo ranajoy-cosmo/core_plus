@@ -10,6 +10,7 @@ from pysimulators import BeamGaussian
 from pysimulators.interfaces.healpy import SceneHealpixCMB
 from pysimulators.interfaces.healpy import HealpixConvolutionGaussianOperator
 import simulation.pointing.generate_pointing as gen_p
+from simulation.beam.beam_kernel import get_beam
 
 def Bolo:
 
@@ -90,11 +91,10 @@ def Bolo:
 
     def simulate_beam_tod(self):
         #Generating the pointing
-        if settings.do_beam_kernel
-            from simulation.beam.beam_kernel import beam_kernel, del_beta
-            import local_settings.pointing_params as pointing_params
-            beta_0 = pointing_settings.settings.beta_0
-            beta = beta_0 + del_beta
+        beam_kernel, del_beta = get_beam()
+        import local_settings.pointing_params as pointing_params
+        beta_0 = pointing_params.beta_0
+        beta = beta_0 + del_beta
 
         sky_map = self.load_maps(scan_settings)
         
