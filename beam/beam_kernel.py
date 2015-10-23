@@ -9,10 +9,6 @@ from simulation.lib.plotting.my_imshow import new_imshow
 class Beam:
 
     def __init__(self, settings=None):
-        if settings is None:
-            print "Beam settings not loaded. Exiting"
-            sys.exit()
-    
         self.settings = settings
 
     def gaussian_2d(self):
@@ -43,12 +39,15 @@ class Beam:
         self.mesh = np.meshgrid(x,y)
 
     def display_beam_settings(self):
-        print "Major axis(FWHM) : ", self.settings.fwhm_major, "arcmins"
-        print "Minor axis(FWHM) : ", self.settings.fwhm_minor, "arcmins"
-        print "Center : ", self.settings.center
-        print "Tilt : ", self.settings.tilt, " degrees"
-        print "Pixel size : ", self.settings.beam_resolution, "arcmins" 
-        print "No, of pixels per fwhm (minor-axis): ", 2*self.settings.fwhm_minor/self.settings.beam_resolution
+        if self.settings.do_pencil_beam:
+            print "Pencil beam"
+        else:
+            print "Major axis(FWHM) : ", self.settings.fwhm_major, "arcmins"
+            print "Minor axis(FWHM) : ", self.settings.fwhm_minor, "arcmins"
+            print "Center : ", self.settings.center
+            print "Tilt : ", self.settings.tilt, " degrees"
+            print "Pixel size : ", self.settings.beam_resolution, "arcmins" 
+            print "No, of pixels per fwhm (minor-axis): ", 2*self.settings.fwhm_minor/self.settings.beam_resolution
 
     def plot_beam(self):
         fig, ax = plt.subplots()
@@ -58,19 +57,27 @@ class Beam:
 
 
 if __name__=="__main__":
-    from default_settings import settings
-    beam = Beam(settings)
-    beam.get_mesh()
-    beam.gaussian_2d()
+    from local_settings import settings
+    if settings.do_pencil_beam:
+        beam = Beam(settings)
+        beam.kernel = np.array([[1]])
+    else:
+        beam = Beam(settings)
+        beam.get_mesh()
+        beam.gaussian_2d()
 
     if settings.display_beam_settings:
         beam.display_beam_settings()
     if settings.plot_beam:
         beam.plot_beam()
 else:
-    from default_settings import settings
-    beam = Beam(settings)
-    beam.get_mesh()
-    beam.gaussian_2d()
-    beam_kernel = beam.kernel
-    del_beta = beam.del_beta
+    from local_settings import settings
+    if settings.do_pencil_beam:
+        beam_kernel = np.array([[1]])
+        del_beta = np.array([0])
+    else:
+        beam = Beam(settings)
+        beam.get_mesh()
+        beam.gaussian_2d()
+        beam_kernel = beam.kernel
+        del_beta = beam.del_beta

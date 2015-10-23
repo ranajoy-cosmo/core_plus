@@ -12,6 +12,7 @@ settings.beam_cutoff = 4                    #sigmas
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Beam shape settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+settings.do_pencil_beam = True
 settings.fwhm_major = 8.0                  #arcmins
 settings.fwhm_minor = 8.0                   #arcmins
 settings.center = (0.0, 0.0)                #arcmins
