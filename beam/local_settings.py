@@ -1,18 +1,21 @@
 import numpy as np
+import healpy as hp
 from simulation.lib.utilities import generic_class
+from simulation.settings.global_settings import global_scanning, global_paths
 
 settings = generic_class.Generic()
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Resolution settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-settings.beam_resolution = 1.5              #arcmins
+nside = global_scanning.nside
+settings.beam_resolution = hp.nside2resol(nside, arcmin=True)            #arcmins
 settings.beam_cutoff = 4                    #sigmas
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Beam shape settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-settings.do_pencil_beam = True
+settings.do_pencil_beam = False
 settings.fwhm_major = 8.0                  #arcmins
 settings.fwhm_minor = 8.0                   #arcmins
 settings.center = (0.0, 0.0)                #arcmins

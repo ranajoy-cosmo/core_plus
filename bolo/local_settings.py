@@ -13,8 +13,7 @@ settings = Generic()
 settings.bolo_names = ['0001']
 settings.nside = global_scanning.nside
 settings.load_pointing = False
-settings.do_pol = True
-settings.do_beam_kernel = False 
+settings.do_pol = False
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Pointing Parameters

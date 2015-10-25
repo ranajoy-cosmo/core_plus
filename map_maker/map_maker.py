@@ -3,16 +3,16 @@
 import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
-from settings import settings
+from local_settings import settings, scan_params
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix
-import simulation.pointing.generate_pointing as gen_p
+import simulation.bolo.timestream as ts
+from local_settings import settings, scan_params
+import os
 
 def make_map_from_signal():
-    if settings.pipe_with_simulation:
-        import simulation.scanning.scanning_T as scanning
-        signal, P = scanning.simulate_beam_tod()
 
+    signal, P = ts.do_simulation(scan_params)
     sky_map = (P.T*P).I*P.T*signal
 
     if settings.display_map:
@@ -20,7 +20,7 @@ def make_map_from_signal():
         plt.show()
 
     if settings.write_map:
-        hp.write_map(settings.output_folder + "reconstructed_map.fits", sky_map)
+        hp.write_map(os.path.join(settings.output_folder, "reconstructed_map.fits"), sky_map)
 
 
 if __name__=="__main__":

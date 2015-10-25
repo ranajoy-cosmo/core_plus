@@ -37,11 +37,10 @@ def generate_pointing(settings=None, del_beta=0):
         display_params(settings)
 
     u_init = np.array([np.cos(settings.beta + del_beta), 0.0, np.sin(settings.beta + del_beta)])
+    print np.degrees(settings.beta +  del_beta)
 
     n_steps = int(1000*settings.t_flight/settings.t_sampling)
     t_steps = 0.001*settings.t_sampling*np.arange(n_steps)
-    print "No. of time steps : ", n_steps
-    print "~Memory usage : ", 10*n_steps*8.0/1024/1024/1024, " GB" 
     w_prec = 2*np.pi/settings.t_prec
     w_spin = 2*np.pi/settings.t_spin
     R = po.Rotation3dOperator("XY'X''", w_prec*t_steps, -1.0*np.full(n_steps, settings.alpha), w_spin*t_steps)

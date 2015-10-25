@@ -38,7 +38,7 @@ class Bolo:
         #Getting the beam profile and the del_beta
         beam_kernel, del_beta = get_beam()
 
-        sky_map = hp.read_map(settings.input_map)
+        sky_map = hp.read_map(self.settings.input_map)
 
         #Building the projection matrix P
         nsamples = int(1000.0*self.pointing_params.t_flight/self.pointing_params.t_sampling) 
@@ -51,7 +51,7 @@ class Bolo:
         signal = np.zeros(nsamples)
         
         for i in range(del_beta.size):
-            v = gen_p.generate_pointing(self.pointing_params, del_beta[i])
+            v = gen_p.generate_pointing(self.pointing_params, np.deg2rad(del_beta[i]/60.0))
             hit_pix = hp.vec2pix(self.settings.nside, v[...,0], v[...,1], v[...,2])
         
             matrix.data.index = hit_pix[..., None]
@@ -75,8 +75,8 @@ class Bolo:
         scanned_map = np.full(hitmap.size, np.nan)
         scanned_map[mask] = sky_map[mask]
 
-        if settings.write_signal:
-            np.save(self.settings.output_folder + "signal", signal)
+        if self.settings.write_signal:
+            np.save(os.path.join(self.settings.output_folder, "signal"), signal)
 
         if self.settings.display_scanned_map:
             hp.mollzoom(hitmap)
@@ -85,19 +85,25 @@ class Bolo:
             plt.show()
         
         if self.settings.write_scanned_map:
-            hp.write_map(self.settings.output_folder + "hitmap.fits", hitmap)
-            hp.write_map(self.settings.output_folder + "scanned_map.fits", scanned_map)
+            hp.write_map(os.path.join(self.settings.output_folder, "hitmap.fits"), hitmap)
+            hp.write_map(os.path.join(self.settings.output_folder, "scanned_map.fits"), scanned_map)
 
         if self.settings.write_signal:
-            np.save(self.settings.output_folder + "signal", signal)
+            np.save(os.path.join(self.settings.output_folder, "signal"), signal)
         
         if self.settings.pipe_with_map_maker:
             return signal, P
 
     def load_maps(self):
-        input_map = hp.read_map(self.settings.input_mapi, field=(0,1,2))
+        input_map = hp.read_map(self.settings.input_map, field=(0,1,2))
         return input_map
 
+def do_simulation(settings=None):
+    if settings==None:
+        from local_settings import settings
+    bolo = Bolo(settings=settings)
+    if settings.pipe_with_map_maker:
+        return bolo.simulate_timestream()
 
 if __name__=="__main__":
     from local_settings import settings
