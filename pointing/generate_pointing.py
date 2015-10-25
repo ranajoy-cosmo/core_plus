@@ -8,18 +8,18 @@ import sys, os
 
 def calculate_params(settings):
     if settings.mode is 1:
-        settings.t_spin = 360.0*60.0*np.sin(settings.beta_0)*settings.t_sampling/1000.0/settings.theta_co
+        settings.t_spin = 360.0*60.0*np.sin(settings.beta)*settings.t_sampling/1000.0/settings.theta_co
         settings.t_prec = 360.0*60.0*np.sin(settings.alpha)*settings.t_spin/settings.theta_cross
 
     if settings.mode is 2:
         settings.theta_cross = 360.0*60.0*np.sin(settings.alpha)*settings.t_spin/settings.t_prec
-        settings.theta_co = 360*60*np.sin(settings.beta_0)*settings.t_sampling/1000.0/settings.t_spin
+        settings.theta_co = 360*60*np.sin(settings.beta)*settings.t_sampling/1000.0/settings.t_spin
 
     return settings
 
 def display_params(settings):
     print "alpha : ", np.degrees(settings.alpha), " degrees"
-    print "beta : ", np.degrees(settings.beta_0), " degrees"
+    print "beta : ", np.degrees(settings.beta), " degrees"
     print "T flight : ", settings.t_flight/60.0/60.0, "hours"
     print "T precession : ", settings.t_prec/60.0/60.0, "hours"
     print "T spin : ", settings.t_spin, " seconds"
@@ -29,20 +29,14 @@ def display_params(settings):
     print "Theta cross : ", settings.theta_cross, " arcmin"
     print "Map resolution : ", hp.nside2resol(settings.nside, arcmin = True), " arcmin"
 
-def generate_pointing(settings=None, beta=None):
+def generate_pointing(settings=None, del_beta=0):
     if settings is None:
         from local_settings import settings
     settings = calculate_params(settings)
     if settings.display_params:
         display_params(settings)
 
-    if settings.do_beam_profile_pointing:
-        u_init = np.array([np.cos(beta), 0.0, np.sin(beta)])
-        if settings.do_pol and beta is not settings.beta_0:
-            settings.do_pol = False
-    else:
-        u_init = np.array([np.cos(settings.beta_0), 0.0, np.sin(settings.beta_0)])
-
+    u_init = np.array([np.cos(settings.beta + del_beta), 0.0, np.sin(settings.beta + del_beta)])
 
     n_steps = int(1000*settings.t_flight/settings.t_sampling)
     t_steps = 0.001*settings.t_sampling*np.arange(n_steps)
@@ -53,7 +47,7 @@ def generate_pointing(settings=None, beta=None):
     R = po.Rotation3dOperator("XY'X''", w_prec*t_steps, -1.0*np.full(n_steps, settings.alpha), w_spin*t_steps)
     v = R*u_init
 
-    if settings.do_pol:
+    if settings.do_pol is True and del_beta is 0:
         pol_ang = (w_prec + w_spin)*t_steps%np.pi
         if settings.write_pointing:
             np.save(os.path.join(settings.output_folder, "pointing.npy"), v)
@@ -63,7 +57,7 @@ def generate_pointing(settings=None, beta=None):
             return v, pol_ang
 
     else:
-        if settings.write_pointing and beta is settings.beta_0:
+        if settings.write_pointing:
             np.save(os.path.join(settings.output_folder, "pointing.npy"), v)
             np.save(os.path.join(settings.output_folder, "times.npy"), t_steps)
         if settings.return_pointing:

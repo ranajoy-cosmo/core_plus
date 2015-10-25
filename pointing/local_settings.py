@@ -15,8 +15,8 @@ settings.mode = 1
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 alpha_deg = 45.0                                    #degrees
 settings.alpha = np.deg2rad(alpha_deg)              #radians
-beta_deg_0 = 45.0                                   #degrees
-settings.beta_0 = np.deg2rad(beta_deg_0)            #radians
+beta_deg = 45.0                                   #degrees
+settings.beta = np.deg2rad(beta_deg)            #radians
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Settings for time periods of scans
@@ -33,7 +33,6 @@ settings.nside = global_scanning.nside
 settings.theta_cross = hp.nside2resol(settings.nside, arcmin=True)                          #arcmin
 settings.theta_co = hp.nside2resol(settings.nside, arcmin=True)                             #arcmin
 
-settings.do_beam_profile_pointing = False
 settings.do_pol = True
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
