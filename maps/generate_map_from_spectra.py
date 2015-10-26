@@ -3,6 +3,7 @@
 import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
+import os
 
 def make_maps(settings=None):
     input_spectra = np.load(settings.spectra_file)
@@ -36,5 +37,5 @@ def make_maps(settings=None):
         return sky_map
 
 if __name__=='__main__':
-    from settings import settings
+    from local_settings import settings
     make_maps(settings)

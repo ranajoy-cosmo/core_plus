@@ -43,7 +43,7 @@ def generate_pointing(settings=None, del_beta=0):
     t_steps = 0.001*settings.t_sampling*np.arange(n_steps)
     w_prec = 2*np.pi/settings.t_prec
     w_spin = 2*np.pi/settings.t_spin
-    R = po.Rotation3dOperator("XY'X''", w_prec*t_steps, -1.0*np.full(n_steps, settings.alpha), w_spin*t_steps)
+    R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(n_steps, settings.alpha), w_spin*t_steps)
     v = R*u_init
 
     if settings.do_pol is True and del_beta is 0:

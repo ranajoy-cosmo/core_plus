@@ -2,6 +2,8 @@
 
 import numpy as np
 from simulation.lib.utilities.generic_class import Generic
+from simulation.settings.global_settings import global_paths, global_scanning
+import os
 
 settings = Generic()
 
@@ -9,7 +11,7 @@ settings = Generic()
 # Map resolution settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 settings.lmax = 4000
-settings.nside = 2048 
+settings.nside = global_scanning.nside
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Beam and Polarisation Settings 
@@ -23,16 +25,14 @@ settings.do_pol = True
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read/Write Settings 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-settings.tag = "test_map"
+settings.tag = global_paths.tag
 root_folder = "/Users/banerji/CORE+/simulation/"
 
-spectrum_input_folder = root_folder + "maps_and_spectra/spectra/"
 spectra_file_name = "test_4000.npy"
-settings.spectra_file = spectrum_input_folder + spectra_file_name  
+settings.spectra_file = os.path.join(global_paths.spectra_folder, spectra_file_name) 
 
-output_map_folder = root_folder + "maps_and_spectra/maps/"
 map_file_name = settings.tag + '_' + str(settings.nside)
-settings.map_file = output_map_folder + map_file_name
+settings.map_file = os.path.join(global_paths.maps_folder, map_file_name) 
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # I/O Settings 

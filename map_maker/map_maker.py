@@ -3,7 +3,6 @@
 import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
-from local_settings import settings, scan_params
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix
 import simulation.bolo.timestream as ts

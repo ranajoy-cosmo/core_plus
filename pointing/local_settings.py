@@ -21,7 +21,7 @@ settings.beta = np.deg2rad(beta_deg)            #radians
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Settings for time periods of scans
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-settings.t_flight = 10*60*60.0                       #seconds
+settings.t_flight = 200*60*60.0                       #seconds
 settings.t_sampling = 5.0                           #milli-seconds
 settings.t_prec = 1*60*60.0                     #seconds
 settings.t_spin = 60.0                             #seconds

@@ -1,8 +1,9 @@
 from simulation.lib.utilities.generic_class import Generic
+from simulation.settings.global_settings import global_scanning, global_paths
 
 settings = Generic()
 
-settings.tag = 'test'
+settings.tag =global_paths.tag
 
 settings.lmax = 4000
 
