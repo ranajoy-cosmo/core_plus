@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import os
 
 def make_maps(settings=None):
+    if settings is None:
+        from local_settings import settings
     input_spectra = np.load(settings.spectra_file)
     map_seed = 1234
     

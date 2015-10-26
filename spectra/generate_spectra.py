@@ -6,7 +6,7 @@ import pycamb
 
 def make_spectra(settings = None):
     if settings is None:
-        from settings import settings
+        from local_settings import settings
     if settings.cosmo_params['source'] is "pycamb_default":
         spectra = pycamb.camb(settings.lmax)
     elif settings.cosmo_params['source'] is "planck_latest":
@@ -44,5 +44,5 @@ def make_subplot(plot_number, title, plot, ell, xlabel, ylabel):
     plt.annotate(title, xy=(0.85, 0.85), xycoords='axes fraction')
 
 if __name__=="__main__":
-    from settings import settings
+    from local_settings import settings
     make_spectra(settings)
