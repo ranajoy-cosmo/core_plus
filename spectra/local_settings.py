@@ -13,6 +13,8 @@ settings.cosmo_params['source'] = "pycamb_default"
 
 settings.normalise_spectra = False
 
+settings.make_alm = True
+
 out_folder = global_paths.spectra_folder
 file_name = settings.tag + '_' + str(settings.lmax)
 settings.spectra_file = os.path.join(out_folder, file_name)

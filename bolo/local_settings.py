@@ -24,7 +24,7 @@ pointing_params = pointing_settings.settings
 pointing_params.write_pointing = True
 pointing_params.return_pointing = True
 pointing_params.display_params = False
-pointing_params.do_pol = True
+pointing_params.do_pol = False
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read/Write Settings 

@@ -25,6 +25,7 @@ def make_spectra(settings = None):
         make_subplot(4, 'TE', spectra[3], ell, 'l', '')    
         plt.show()
 
+
     if settings.normalise_spectra is False:
         norm_fact = ell*(ell + 1)/(2*np.pi)
         spectra = spectra/norm_fact
