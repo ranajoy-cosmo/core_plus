@@ -4,7 +4,7 @@ import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
 from pysimulators import ProjectionOperator
-from pysimulators.sparse import FSRMatrix
+from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 import simulation.bolo.timestream as ts
 from local_settings import settings, scan_params
 import os

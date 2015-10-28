@@ -5,7 +5,7 @@ import healpy as hp
 import matplotlib.pyplot as plt
 import sys, copy, os
 from pysimulators import ProjectionOperator
-from pysimulators.sparse import FSRMatrix
+from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 from pysimulators import BeamGaussian
 from pysimulators.interfaces.healpy import SceneHealpixCMB
 from pysimulators.interfaces.healpy import HealpixConvolutionGaussianOperator
@@ -38,28 +38,33 @@ class Bolo:
         #Getting the beam profile and the del_beta
         beam_kernel, del_beta = get_beam()
 
-        sky_map = hp.read_map(self.settings.input_map)
+        sky_map = self.load_maps()
 
         #Building the projection matrix P
         nsamples = int(1000.0*self.pointing_params.t_flight/self.pointing_params.t_sampling) 
         npix = hp.nside2npix(self.settings.nside_in)
-        matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32,
-                               dtype_index = np.int32)
-        matrix.data.value = 1
-        P = ProjectionOperator(matrix, shapein=npix, shapeout=nsamples)        
+
+        matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index=np.int32)
+        
+        P = ProjectionOperator(matrix)#, shapein=npix, shapeout=nsamples)        
          
         signal = np.zeros(nsamples)
         
         for i in range(del_beta.size):
-            v = gen_p.generate_pointing(self.pointing_params, np.deg2rad(del_beta[i]/60.0))
+            v, pol_ang = gen_p.generate_pointing(self.pointing_params, np.deg2rad(del_beta[i]/60.0))
             hit_pix = hp.vec2pix(self.settings.nside_in, v[...,0], v[...,1], v[...,2])
+            matrix.data.index[:, 0] = hit_pix
+            matrix.data.value[:, 0, 0, 0] = 0.5
+            matrix.data.value[:, 0, 0, 1] = 0.5 * np.cos(2*pol_ang)
+            matrix.data.value[:, 0, 0, 2] = 0.5 * np.sin(2*pol_ang)
         
-            matrix.data.index = hit_pix[..., None]
             P.matrix = matrix
+            
             if i is del_beta.size/2:
                 matrix_central = copy.deepcopy(matrix)
+
             #Generating the time ordered signal
-            signal += np.convolve(P(sky_map), beam_kernel.T[i], mode = 'same')
+            signal += np.convolve(P(sky_map.T), beam_kernel.T[i], mode = 'same')
 
         beam_sum = np.sum(beam_kernel)
         signal/=beam_sum
@@ -67,13 +72,12 @@ class Bolo:
         P.matrix = matrix_central
         
         #Generating the hitmap
-        hitmap = P.T(np.ones(nsamples, dtype=np.float32))
+        hitmap = 2.0*P.T(np.ones(nsamples, dtype=np.float32))[:, 0]
        
         #Generating the scan patch
-        mask = np.full(hitmap.size, False, dtype = bool)
-        mask[hitmap > 0] = True
-        scanned_map = np.full(hitmap.size, np.nan)
-        scanned_map[mask] = sky_map[mask]
+        mask = hitmap>0
+        scanned_map = sky_map.copy() 
+        scanned_map[..., ~mask] = np.nan
 
         if self.settings.display_scanned_map:
             hp.mollzoom(hitmap)
@@ -93,7 +97,7 @@ class Bolo:
 
     def load_maps(self):
         input_map = hp.read_map(self.settings.input_map, field=(0,1,2))
-        return input_map
+        return np.array(input_map)
 
 def do_simulation(settings=None):
     if settings==None:

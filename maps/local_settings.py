@@ -11,7 +11,7 @@ settings = Generic()
 # Map resolution settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 settings.lmax = 4000
-settings.nside = global_scanning.nside_in
+settings.nside = global_scanning.nside_out
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Beam and Polarisation Settings 
