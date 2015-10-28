@@ -42,7 +42,7 @@ class Bolo:
 
         #Building the projection matrix P
         nsamples = int(1000.0*self.pointing_params.t_flight/self.pointing_params.t_sampling) 
-        npix = hp.nside2npix(self.settings.nside)
+        npix = hp.nside2npix(self.settings.nside_in)
         matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32,
                                dtype_index = np.int32)
         matrix.data.value = 1
@@ -52,7 +52,7 @@ class Bolo:
         
         for i in range(del_beta.size):
             v = gen_p.generate_pointing(self.pointing_params, np.deg2rad(del_beta[i]/60.0))
-            hit_pix = hp.vec2pix(self.settings.nside, v[...,0], v[...,1], v[...,2])
+            hit_pix = hp.vec2pix(self.settings.nside_in, v[...,0], v[...,1], v[...,2])
         
             matrix.data.index = hit_pix[..., None]
             if i is del_beta.size/2:
@@ -75,9 +75,6 @@ class Bolo:
         scanned_map = np.full(hitmap.size, np.nan)
         scanned_map[mask] = sky_map[mask]
 
-        if self.settings.write_signal:
-            np.save(os.path.join(self.settings.output_folder, "signal"), signal)
-
         if self.settings.display_scanned_map:
             hp.mollzoom(hitmap)
             plt.show()
@@ -85,14 +82,14 @@ class Bolo:
             plt.show()
         
         if self.settings.write_scanned_map:
-            hp.write_map(os.path.join(self.settings.output_folder, "hitmap.fits"), hitmap)
+            hp.write_map(os.path.join(self.settings.output_folder, "hitmap_in.fits"), hitmap)
             hp.write_map(os.path.join(self.settings.output_folder, "scanned_map.fits"), scanned_map)
 
         if self.settings.write_signal:
             np.save(os.path.join(self.settings.output_folder, "signal"), signal)
         
         if self.settings.pipe_with_map_maker:
-            return signal, P
+            return signal
 
     def load_maps(self):
         input_map = hp.read_map(self.settings.input_map, field=(0,1,2))

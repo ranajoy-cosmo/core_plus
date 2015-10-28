@@ -11,7 +11,7 @@ settings = Generic()
 # Map resolution settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 settings.lmax = 4000
-settings.nside = global_scanning.nside
+settings.nside = global_scanning.nside_in
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Beam and Polarisation Settings 
@@ -25,8 +25,8 @@ settings.do_pol = True
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read/Write Settings 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-settings.tag = global_paths.tag
-
+#settings.tag = global_paths.tag
+settings.tag = 'test'
 spectra_file_name = "test_4000.npy"
 settings.spectra_file = os.path.join(global_paths.spectra_folder, spectra_file_name) 
 
@@ -38,4 +38,4 @@ settings.map_file = os.path.join(global_paths.maps_folder, map_file_name)
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 settings.write_map = True
 settings.return_map = False
-settings.display_maps = False
+settings.display_maps = True

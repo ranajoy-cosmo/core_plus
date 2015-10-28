@@ -11,7 +11,8 @@ settings = Generic()
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 settings.bolo_names = ['0001']
-settings.nside = global_scanning.nside
+settings.nside_in = global_scanning.nside_in
+settings.nside_out = global_scanning.nside_out
 settings.load_pointing = False
 settings.do_pol = False
 
@@ -20,9 +21,10 @@ settings.do_pol = False
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 pointing_params = pointing_settings.settings
-pointing_params.write_pointing = False
+pointing_params.write_pointing = True
 pointing_params.return_pointing = True
 pointing_params.display_params = False
+pointing_params.do_pol = False
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read/Write Settings 
@@ -36,4 +38,5 @@ settings.output_folder = global_paths.output_folder
 settings.write_signal = True 
 settings.display_scanned_map = True 
 settings.write_scanned_map = True
+settings.write_hitmap = True
 settings.pipe_with_map_maker = False 

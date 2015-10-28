@@ -13,12 +13,13 @@ def make_maps(settings=None):
     
     if settings.do_unbeamed_map:
         np.random.seed(map_seed)
-        sky_map = hp.synfast(input_spectra, nside = settings.nside, lmax = settings.lmax, new = True, pol = settings.do_pol)
+        sky_map = hp.synfast(input_spectra, nside=settings.nside, lmax=3950, new=True, pol=settings.do_pol)
+        sky_map = np.array(sky_map, dtype=np.float32)
 
     if settings.do_beamed_map:
         np.random.seed(map_seed)
-        sky_map_beamed = hp.synfast(input_spectra, nside = settings.nside, lmax = settings.lmax, fwhm = settings.fwhm, new = True, 
-                    pol = settings.do_pol)
+        sky_map_beamed = hp.synfast(input_spectra, nside=settings.nside, lmax=3950, fwhm=settings.fwhm, new=True, pol=settings.do_pol)
+        sky_map_beamed = np.array(sky_map_beamed, dtype=np.float32)
        
     if settings.write_map:
         if settings.do_unbeamed_map:

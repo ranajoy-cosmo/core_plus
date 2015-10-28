@@ -27,7 +27,6 @@ def display_params(settings):
     print "Scan frequency : ", 1000.0/settings.t_sampling, "Hz"
     print "Theta co : ", settings.theta_co, " arcmin"
     print "Theta cross : ", settings.theta_cross, " arcmin"
-    print "Map resolution : ", hp.nside2resol(settings.nside, arcmin = True), " arcmin"
 
 def generate_pointing(settings=None, del_beta=0):
     if settings is None:
@@ -46,20 +45,26 @@ def generate_pointing(settings=None, del_beta=0):
     R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(n_steps, settings.alpha), w_spin*t_steps)
     v = R*u_init
 
-    if settings.do_pol is True and del_beta is 0:
+    if settings.do_pol is True and del_beta == 0.0:
         pol_ang = (w_prec + w_spin)*t_steps%np.pi
+        print "Flag 1"
         if settings.write_pointing:
+            print "Flag 2"
             np.save(os.path.join(settings.output_folder, "pointing.npy"), v)
             np.save(os.path.join(settings.output_folder, "pol_angle.npy"), pol_ang)
             np.save(os.path.join(settings.output_folder, "times.npy"), t_steps)
         if settings.return_pointing:
+            print "Flag 3"
             return v, pol_ang
 
     else:
-        if settings.write_pointing:
+        print "Flag 4"
+        if settings.write_pointing and del_beta == 0.0:
+            print "Flag 5"
             np.save(os.path.join(settings.output_folder, "pointing.npy"), v)
             np.save(os.path.join(settings.output_folder, "times.npy"), t_steps)
         if settings.return_pointing:
+            print "Flag 6"
             return v
 
 if __name__ == "__main__":
