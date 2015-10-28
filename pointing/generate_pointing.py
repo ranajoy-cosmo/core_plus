@@ -30,7 +30,7 @@ def display_params(settings):
 
 def generate_pointing(settings=None, del_beta=0):
     if settings is None:
-        from local_settings import settings
+        from custom_settings import settings
     settings = calculate_params(settings)
     if settings.display_params:
         display_params(settings)
@@ -68,6 +68,6 @@ def generate_pointing(settings=None, del_beta=0):
             return v
 
 if __name__ == "__main__":
-    from local_settings import settings
+    from custom_settings import settings
     generate_pointing(settings)
 

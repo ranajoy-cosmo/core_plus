@@ -11,7 +11,8 @@ settings = Generic()
 # Map resolution settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 settings.lmax = 4000
-settings.nside = global_scanning.nside_out
+settings.nside = global_scanning.nside_in
+settings.nside_deg = global_scanning.nside_out
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Beam and Polarisation Settings 
@@ -20,6 +21,7 @@ settings.fwhm_arcmin = 8.0
 settings.fwhm = np.deg2rad(settings.fwhm_arcmin/60.0)
 settings.do_unbeamed_map = True
 settings.do_beamed_map = True 
+settings.do_degraded_map = True
 settings.do_pol = True
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*

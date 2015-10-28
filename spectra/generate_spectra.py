@@ -6,7 +6,7 @@ import pycamb
 
 def make_spectra(settings = None):
     if settings is None:
-        from local_settings import settings
+        from custom_settings import settings
     
     ell = np.arange(0, settings.lmax + 1)
     spectra = np.zeros((4,ell.size))
@@ -46,5 +46,5 @@ def make_subplot(plot_number, title, plot, ell, xlabel, ylabel):
     plt.annotate(title, xy=(0.85, 0.85), xycoords='axes fraction')
 
 if __name__=="__main__":
-    from local_settings import settings
+    from custom_settings import settings
     make_spectra(settings)

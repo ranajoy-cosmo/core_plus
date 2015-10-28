@@ -16,13 +16,13 @@ class Bolo:
 
     def __init__(self, settings=None, pointing_params=None, bolo_name='0001'):
         if pointing_params is None:
-            from local_settings import pointing_params 
+            from custom_settings import pointing_params 
             self.pointing_params = pointing_params  
         else:
             self.pointing_params = pointing_params
 
         if settings is None:
-            from local_settings import settings 
+            from custom_settings import settings 
             self.settings = settings
         else:
             self.settings = settings
@@ -97,13 +97,13 @@ class Bolo:
 
 def do_simulation(settings=None):
     if settings==None:
-        from local_settings import settings
+        from custom_settings import settings
     bolo = Bolo(settings=settings)
     if settings.pipe_with_map_maker:
         return bolo.simulate_timestream()
 
 if __name__=="__main__":
-    from local_settings import settings
+    from custom_settings import settings
     for bolo_name in settings.bolo_names:
         bolo = Bolo()
         bolo.simulate_timestream()

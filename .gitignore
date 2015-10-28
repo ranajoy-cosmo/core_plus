@@ -6,4 +6,4 @@
 *.fits
 *.npy
 output
-maps_and_spectra/maps
+custom_settings.py
