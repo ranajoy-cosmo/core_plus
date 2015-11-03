@@ -10,7 +10,7 @@ settings = Generic()
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Map resolution settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-settings.lmax = 4000
+settings.lmax = 3950
 settings.nside = global_scanning.nside_in
 settings.nside_deg = global_scanning.nside_out
 
@@ -21,7 +21,7 @@ settings.fwhm_arcmin = 8.0
 settings.fwhm = np.deg2rad(settings.fwhm_arcmin/60.0)
 settings.do_unbeamed_map = True
 settings.do_beamed_map = True 
-settings.do_degraded_map = True
+settings.do_degraded_map = True 
 settings.do_pol = True
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
@@ -40,4 +40,4 @@ settings.map_file = os.path.join(global_paths.maps_folder, map_file_name)
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 settings.write_map = True
 settings.return_map = False
-settings.display_maps = True
+settings.display_maps = False

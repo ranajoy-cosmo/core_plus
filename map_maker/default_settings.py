@@ -1,7 +1,7 @@
 import numpy as np
 from simulation.lib.utilities.generic_class import Generic
 from simulation.settings.global_settings import global_paths, global_scanning
-import simulation.bolo.local_settings as scan_settings
+import simulation.bolo.default_settings as scan_settings
 import os
 
 settings = Generic()

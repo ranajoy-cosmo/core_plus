@@ -8,14 +8,14 @@ def make_spectra(settings = None):
     if settings is None:
         from custom_settings import settings
     
-    ell = np.arange(0, settings.lmax + 1)
+    ell = np.arange(2, settings.lmax + 1)
     spectra = np.zeros((4,ell.size))
     if settings.cosmo_params['source'] is "pycamb_default":
-        spectra[...,2:] = pycamb.camb(settings.lmax)
+        spectra = pycamb.camb(settings.lmax)
     elif settings.cosmo_params['source'] is "planck_latest":
-        spectra[...,2:] = pycamb.camb(settings.lmax, settings.cosmo_params)
+        spectra = pycamb.camb(settings.lmax, settings.cosmo_params)
     else:
-        spectra[...,2:] = pycamb.camb(settings.lmax, settings.cosmo_params)
+        spectra = pycamb.camb(settings.lmax, settings.cosmo_params)
 
     if settings.plot_spectra:
         plt.figure()

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 import simulation.bolo.timestream as ts
-from local_settings import settings, scan_params
+from custom_settings import settings, scan_params
 import os
 
 def make_map_from_signal():

@@ -53,7 +53,7 @@ def plot_beam():
 
 
 if __name__=="__main__":
-    from local_settings import settings
+    from custom_settings import settings
     if settings.do_pencil_beam:
         beam_kernel = np.array([[1]])
         del_beta = np.array([0])
@@ -67,7 +67,7 @@ if __name__=="__main__":
         plot_beam()
 
 def get_beam():
-    from local_settings import settings
+    from custom_settings import settings
     if settings.do_pencil_beam:
         beam_kernel = np.array([[1]])
         del_beta = np.array([0])

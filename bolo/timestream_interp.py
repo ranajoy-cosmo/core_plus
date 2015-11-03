@@ -49,7 +49,7 @@ class Bolo:
             theta, phi = hp.vec2ang(v)
         
             if i is del_beta.size/2: 
-                hit_pix = hp.vec2pix(self.settings.nside, v[...,0], v[...,1], v[...,2])
+                hit_pix = hp.vec2pix(self.settings.nside_in, v[...,0], v[...,1], v[...,2])
                 
             #Generating the time ordered signal
             signal += np.convolve(hp.get_interp_val(sky_map, theta, phi), beam_kernel.T[i], mode = 'same')
@@ -58,7 +58,7 @@ class Bolo:
         signal/=beam_sum
 
         #Building the projection matrix P
-        npix = hp.nside2npix(self.settings.nside)
+        npix = hp.nside2npix(self.settings.nside_in)
         matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32,
                                dtype_index = np.int32)
         matrix.data.value = 1
@@ -93,7 +93,7 @@ class Bolo:
             np.save(os.path.join(self.settings.output_folder, "signal"), signal)
         
         if self.settings.pipe_with_map_maker:
-            return signal, P
+            return signal
 
     def load_maps(self):
         input_map = hp.read_map(self.settings.input_map, field=(0,1,2))

@@ -7,7 +7,7 @@ from pyoperators import DiagonalOperator, PackOperator, pcg
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 import simulation.bolo.timestream_pol as ts
-from local_settings import settings, scan_params
+from custom_settings import settings, scan_params
 import os
 
 def make_map_from_signal():
@@ -32,16 +32,17 @@ def make_map_from_signal():
     hitmap = P.T(np.ones(nsamples, dtype=np.float32))[:, 0]*2
     mask = hitmap>0
 
-    P = P.restrict(mask, inplace=True)
+    P = P.restrict_new(mask, inplace=True)
     pack = PackOperator(mask, broadcast='rightward')
 
     A = P.T*P
     b = P.T*signal
     M = DiagonalOperator(1/hitmap[mask], broadcast='rightward')
 
-    solution = pcg(A, b, M=M, disp=True, tol=3*1e-4, maxiter=2000)
-    sky_map = pack.T*solution['x']
-    #x[hitmap == 0] = np.nan
+    solution = pcg(A, b, M=M, disp=True, tol=1e-4, maxiter=2000)
+    x = pack.T*solution['x']
+    x[hitmap == 0] = np.nan
+    sky_map = 2*x.T
 
     if settings.write_map:
         hp.write_map(os.path.join(settings.output_folder, "reconstructed_map.fits"), sky_map)
