@@ -23,7 +23,8 @@ def make_maps(settings=None):
 
     if settings.do_degraded_map:
         sky_map_degraded = hp.ud_grade(sky_map, settings.nside_deg)
-        sky_map_beamed_degraded = hp.ud_grade(sky_map_beamed, settings.nside_deg)
+        if settings.do_beamed_map:
+            sky_map_beamed_degraded = hp.ud_grade(sky_map_beamed, settings.nside_deg)
        
     if settings.write_map:
         if settings.do_unbeamed_map:
