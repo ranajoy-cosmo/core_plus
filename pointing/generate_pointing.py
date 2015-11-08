@@ -24,6 +24,7 @@ def display_params(settings):
     print "T precession : ", settings.t_prec/60.0/60.0, "hours"
     print "T spin : ", settings.t_spin, " seconds"
     print "T sampling : ", settings.t_sampling, " milli-seconds"
+    print "Scan speed : ", 360*np.sin(settings.beta)/settings.t_spin, " degrees/sec"
     print "Scan frequency : ", 1000.0/settings.t_sampling, "Hz"
     print "Theta co : ", settings.theta_co, " arcmin"
     print "Theta cross : ", settings.theta_cross, " arcmin"
