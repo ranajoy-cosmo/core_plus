@@ -1,7 +1,7 @@
 import numpy as np
 import os
 from simulation.lib.utilities.generic_class import Generic
-from simulation.settings.global_settings import global_paths, global_scanning
+from simulation.settings.custom_settings import global_paths, global_scanning
 import simulation.pointing.default_settings as pointing_settings
 
 settings = Generic()

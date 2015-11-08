@@ -2,7 +2,7 @@ import numpy as np
 import healpy as hp
 import os
 from simulation.lib.utilities.generic_class import Generic
-from simulation.settings.global_settings import global_paths, global_scanning
+from simulation.settings.custom_settings import global_paths, global_scanning
 
 settings = Generic()
 

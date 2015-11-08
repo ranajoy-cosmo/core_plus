@@ -2,7 +2,7 @@
 
 import numpy as np
 from simulation.lib.utilities.generic_class import Generic
-from simulation.settings.global_settings import global_paths, global_scanning
+from simulation.settings.custom_settings import global_paths, global_scanning
 import os
 
 settings = Generic()

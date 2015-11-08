@@ -1,5 +1,5 @@
 from simulation.lib.utilities.generic_class import Generic
-from simulation.settings.global_settings import global_scanning, global_paths
+from simulation.settings.custom_settings import global_scanning, global_paths
 import os
 
 settings = Generic()
