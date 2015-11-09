@@ -30,7 +30,7 @@ settings.t_spin = 60.0                             #seconds
 # Scan resolutions
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 settings.nside = global_scanning.nside_in
-settings.theta_cross = 0.5*hp.nside2resol(settings.nside, arcmin=True)                          #arcmin
+settings.theta_cross = hp.nside2resol(settings.nside, arcmin=True)                          #arcmin
 settings.theta_co = hp.nside2resol(settings.nside, arcmin=True)                             #arcmin
 
 settings.do_pol = True

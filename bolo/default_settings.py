@@ -13,8 +13,8 @@ settings = Generic()
 settings.bolo_names = ['0001']
 settings.nside_in = global_scanning.nside_in
 settings.nside_out = global_scanning.nside_out
-settings.load_pointing = False
-settings.do_pol = False
+settings.load_pointing = True
+settings.do_pol = True
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Pointing Parameters
@@ -31,7 +31,7 @@ pointing_params.do_pol = True
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 settings.base_folder = global_paths.base_folder 
-settings.input_map = os.path.join(global_paths.maps_folder, "test_map_1024_0.fits")
+settings.input_map = os.path.join(global_paths.maps_folder, "sky_map_4096_0.fits")
 settings.bolo_param_folder = os.path.join(global_paths.base_folder, "bolo", "bolo_params")
 settings.output_folder = global_paths.output_folder 
 

@@ -27,12 +27,11 @@ settings.do_pol = True
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read/Write Settings 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-#settings.tag = global_paths.tag
-settings.tag = 'test'
+settings.tag = 'sky'
 spectra_file_name = "test_4000.npy"
 settings.spectra_file = os.path.join(global_paths.spectra_folder, spectra_file_name) 
 
-map_file_name = settings.tag + '_map_' + str(settings.nside)
+map_file_name = settings.tag + '_map_'
 settings.map_file = os.path.join(global_paths.maps_folder, map_file_name) 
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*

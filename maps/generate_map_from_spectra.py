@@ -15,26 +15,26 @@ def make_maps(settings=None):
         np.random.seed(map_seed)
         sky_map = hp.synfast(input_spectra, nside=settings.nside, lmax=settings.lmax, new=True, pol=settings.do_pol)
         sky_map = np.array(sky_map, dtype=np.float32)
+        if settings.write_map:
+            hp.write_map(settings.map_file + str(settings.nside) + '_0.fits', sky_map)
+
 
     if settings.do_beamed_map:
         np.random.seed(map_seed)
         sky_map_beamed = hp.synfast(input_spectra, nside=settings.nside, lmax=settings.lmax, fwhm=settings.fwhm, new=True, pol=settings.do_pol)
         sky_map_beamed = np.array(sky_map_beamed, dtype=np.float32)
+        if settings.write_map:
+            hp.write_map(settings.map_file + str(settings.nside) + '_' + str(int(settings.fwhm_arcmin)) +".fits", sky_map_beamed)
 
     if settings.do_degraded_map:
         sky_map_degraded = hp.ud_grade(sky_map, settings.nside_deg)
+        if settings.write_map:
+            hp.write_map(settings.map_file + str(settings.nside_deg) + '_0_deg.fits', sky_map_degraded)
         if settings.do_beamed_map:
             sky_map_beamed_degraded = hp.ud_grade(sky_map_beamed, settings.nside_deg)
+            if settings.write_map:
+                hp.write_map(settings.map_file + str(settings.nside_deg) + '_' + str(int(settings.fwhm_arcmin)) +"_deg.fits", sky_map_beamed_degraded)
        
-    if settings.write_map:
-        if settings.do_unbeamed_map:
-            hp.write_map(settings.map_file + '_' + str(settings.nside) + '_0.fits', sky_map)
-        if settings.do_beamed_map:
-            hp.write_map(settings.map_file + '_' + str(settings.nside) + '_' + str(int(settings.fwhm_arcmin)) +".fits", sky_map_beamed)
-        if settings.do_unbeamed_map and settings.do_degraded_map:
-            hp.write_map(settings.map_file + '_' + str(settings.nside) + '_0_deg.fits', sky_map_degraded)
-        if settings.do_beamed_map and settings.do_degraded_map:
-            hp.write_map(settings.map_file +  '_' + str(settings.nside) + '_' + str(int(settings.fwhm_arcmin)) +"_deg.fits", sky_map_beamed_degraded)
     
     if settings.display_maps:
         if settings.do_pol:

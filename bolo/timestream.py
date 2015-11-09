@@ -27,7 +27,6 @@ class Bolo:
         else:
             self.settings = settings
 
-        #self.bolo_params = np.load(os.path.join(settings.bolo_param_folder, bolo_name) + '.py')
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Simulating the time-ordered data for any beam
