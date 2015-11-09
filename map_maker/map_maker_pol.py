@@ -42,7 +42,7 @@ def make_map_from_signal():
     solution = pcg(A, b, M=M, disp=True, tol=1e-4, maxiter=2000)
     x = pack.T*solution['x']
     x[hitmap == 0] = np.nan
-    sky_map = 2*x.T
+    sky_map = x.T
 
     if settings.write_map:
         hp.write_map(os.path.join(settings.output_folder, "reconstructed_map.fits"), sky_map)

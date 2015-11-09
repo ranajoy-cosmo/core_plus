@@ -45,27 +45,25 @@ def generate_pointing(settings=None, del_beta=0):
     w_spin = 2*np.pi/settings.t_spin
     R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(n_steps, settings.alpha), w_spin*t_steps)
     v = R*u_init
+    #lat = np.pi/2 + np.random.random(n_steps)*np.pi*10/180
+    #lon = np.random.random(n_steps)*np.pi*10/180
+    #v = hp.ang2vec(lat, lon)
 
     if settings.do_pol is True and del_beta == 0.0:
         pol_ang = (w_prec + w_spin)*t_steps%np.pi
-        print "Flag 1"
+        #pol_ang = np.random.random(n_steps)*np.pi
         if settings.write_pointing:
-            print "Flag 2"
             np.save(os.path.join(settings.output_folder, "pointing.npy"), v)
             np.save(os.path.join(settings.output_folder, "pol_angle.npy"), pol_ang)
             np.save(os.path.join(settings.output_folder, "times.npy"), t_steps)
         if settings.return_pointing:
-            print "Flag 3"
             return v, pol_ang
 
     else:
-        print "Flag 4"
         if settings.write_pointing and del_beta == 0.0:
-            print "Flag 5"
             np.save(os.path.join(settings.output_folder, "pointing.npy"), v)
             np.save(os.path.join(settings.output_folder, "times.npy"), t_steps)
         if settings.return_pointing:
-            print "Flag 6"
             return v
 
 if __name__ == "__main__":
