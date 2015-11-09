@@ -27,7 +27,6 @@ class Bolo:
         else:
             self.settings = settings
 
-        #self.bolo_params = np.load(os.path.join(settings.bolo_param_folder, bolo_name) + '.py')
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Simulating the time-ordered data for any beam
@@ -45,7 +44,6 @@ class Bolo:
         
         for i in range(del_beta.size):
             v = gen_p.generate_pointing(self.pointing_params, np.deg2rad(del_beta[i]/60.0))
-            #theta, phi = hp.vec2ang(v[...,0], v[...,1], v[...,2])
             theta, phi = hp.vec2ang(v)
         
             if i is del_beta.size/2: 
