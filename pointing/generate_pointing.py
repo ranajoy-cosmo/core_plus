@@ -41,10 +41,13 @@ def generate_pointing(settings=None, del_beta=0):
 
     n_steps = int(1000*settings.t_flight/settings.t_sampling)
     t_steps = 0.001*settings.t_sampling*np.arange(n_steps)
+    w_orbit = 2*np.pi/settings.t_year
     w_prec = 2*np.pi/settings.t_prec
     w_spin = 2*np.pi/settings.t_spin
     R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(n_steps, settings.alpha), w_spin*t_steps)
     v = R*u_init
+    R = po.Rotation3dOperator("Z", w_orbit*t_steps)
+    v = R*v
     #lat = np.pi/2 + np.random.random(n_steps)*np.pi*10/180
     #lon = np.random.random(n_steps)*np.pi*10/180
     #v = hp.ang2vec(lat, lon)
