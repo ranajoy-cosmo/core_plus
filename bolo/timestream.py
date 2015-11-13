@@ -55,14 +55,12 @@ class Bolo:
         for i in range(del_beta.size):
             v = gen_p.generate_pointing(self.pointing_params, np.deg2rad(del_beta[i]/60.0))
             hit_pix = hp.vec2pix(self.settings.nside_in, v[...,0], v[...,1], v[...,2])
-            print v.shape
             matrix.data.index = hit_pix[..., None]
             P.matrix = matrix
             if i is del_beta.size/2:
                 v_central = v[::self.settings.oversampling_rate]
                 print v_central.shape
             #Generating the time ordered signal
-            sys.exit() 
             signal += np.convolve(P(sky_map), beam_kernel.T[i], mode = 'same')
 
         beam_sum = np.sum(beam_kernel)
@@ -94,7 +92,7 @@ class Bolo:
         return input_map
 
     def get_hitmap(self, v):
-        nsamples = v.size
+        nsamples = v[0].size
         npix = hp.nside2npix(self.settings.nside_in)
         matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
         matrix.data.value = 1
