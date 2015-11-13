@@ -14,12 +14,18 @@ from simulation.beam.beam_kernel import get_beam
 
 class Bolo:
 
-    def __init__(self, settings=None, pointing_params=None, bolo_name='0001'):
+    def __init__(self, settings=None, pointing_params=None, beam_params=None, bolo_name='0001'):
         if pointing_params is None:
             from custom_settings import pointing_params 
             self.pointing_params = pointing_params  
         else:
             self.pointing_params = pointing_params
+
+        if beam_params is None:
+            from custom_settings import beam_params 
+            self.beam_params = beam_params  
+        else:
+            self.beam_params = beam_params
 
         if settings is None:
             from custom_settings import settings 
@@ -39,7 +45,7 @@ class Bolo:
 
         sky_map = hp.read_map(self.settings.input_map)
 
-        nsamples = int(1000.0*self.pointing_params.t_flight/self.pointing_params.t_sampling) 
+        nsamples = int(1000.0*self.pointing_params.t_flight/self.pointing_params.t_sampling)*self.settings.oversampling_rate 
         signal = np.zeros(nsamples)
         
         for i in range(del_beta.size):
@@ -47,32 +53,18 @@ class Bolo:
             theta, phi = hp.vec2ang(v)
         
             if i is del_beta.size/2: 
-                hit_pix = hp.vec2pix(self.settings.nside_in, v[...,0], v[...,1], v[...,2])
+                v_central = v[::self.settings.oversampling_rate]
                 
             #Generating the time ordered signal
             signal += np.convolve(hp.get_interp_val(sky_map, theta, phi), beam_kernel.T[i], mode = 'same')
 
         beam_sum = np.sum(beam_kernel)
         signal/=beam_sum
+        signal = signal[::self.settings.oversampling_rate]
 
-        #Building the projection matrix P
-        npix = hp.nside2npix(self.settings.nside_in)
-        matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32,
-                               dtype_index = np.int32)
-        matrix.data.value = 1
-        matrix.data.index = hit_pix[..., None]
-        P = ProjectionOperator(matrix, shapein = npix, shapeout = nsamples)        
-         
-        P.matrix = matrix
-        
-        #Generating the hitmap
-        hitmap = P.T(np.ones(nsamples, dtype=np.float32))
-       
-        #Generating the scan patch
-        mask = np.full(hitmap.size, False, dtype = bool)
-        mask[hitmap > 0] = True
-        scanned_map = np.full(hitmap.size, np.nan)
-        scanned_map[mask] = sky_map[mask]
+        hitmap = self.get_hitmap(v_central)
+
+        scanned_map = self.get_scanned_map(sky_map, hitmap)
 
         if self.settings.write_signal:
             np.save(os.path.join(self.settings.output_folder, "signal"), signal)
@@ -92,6 +84,28 @@ class Bolo:
         
         if self.settings.pipe_with_map_maker:
             return signal
+
+    def get_hitmap(self, v):
+        nsamples = v.size
+        npix = hp.nside2npix(self.settings.nside_in)
+        matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
+        matrix.data.value = 1
+        P = ProjectionOperator(matrix, shapein=npix, shapeout=nsamples)        
+        hit_pix = hp.vec2pix(self.settings.nside_in, v[...,0], v[...,1], v[...,2])
+        matrix.data.index = hit_pix[..., None]
+        P.matrix = matrix
+        hitmap = P.T(np.ones(nsamples, dtype=np.float32))
+        return hitmap
+
+    def get_scanned_map(self, sky_map, hitmap=None):
+        if hitmap is None:
+            print "Need hitmap first"
+            sys.exit()
+        mask = np.full(hitmap.size, False, dtype = bool)
+        mask[hitmap > 0] = True
+        scanned_map = np.full(hitmap.size, np.nan)
+        scanned_map[mask] = sky_map[mask]
+        return scanned_map
 
     def load_maps(self):
         input_map = hp.read_map(self.settings.input_map, field=(0,1,2))

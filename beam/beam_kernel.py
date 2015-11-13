@@ -66,8 +66,9 @@ if __name__=="__main__":
     if settings.plot_beam:
         plot_beam()
 
-def get_beam():
-    from custom_settings import settings
+def get_beam(settings=None):
+    if settings is None:
+        from custom_settings import settings
     if settings.do_pencil_beam:
         beam_kernel = np.array([[1]])
         del_beta = np.array([0])

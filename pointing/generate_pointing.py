@@ -39,8 +39,8 @@ def generate_pointing(settings=None, del_beta=0):
     u_init = np.array([np.cos(settings.beta + del_beta), 0.0, np.sin(settings.beta + del_beta)])
     print np.degrees(settings.beta +  del_beta)
 
-    n_steps = int(1000*settings.t_flight/settings.t_sampling)
-    t_steps = 0.001*settings.t_sampling*np.arange(n_steps)
+    n_steps = int(1000*settings.t_flight/settings.t_sampling)*settings.oversampling_rate
+    t_steps = 0.001*settings.t_sampling*np.arange(n_steps)/settings.oversampling_rate
     w_orbit = 2*np.pi/settings.t_year
     w_prec = 2*np.pi/settings.t_prec
     w_spin = 2*np.pi/settings.t_spin
@@ -56,16 +56,16 @@ def generate_pointing(settings=None, del_beta=0):
         pol_ang = (w_prec + w_spin)*t_steps%np.pi
         #pol_ang = np.random.random(n_steps)*np.pi
         if settings.write_pointing:
-            np.save(os.path.join(settings.output_folder, "pointing.npy"), v)
-            np.save(os.path.join(settings.output_folder, "pol_angle.npy"), pol_ang)
-            np.save(os.path.join(settings.output_folder, "times.npy"), t_steps)
+            np.save(os.path.join(settings.output_folder, "pointing.npy"), v[::settings.oversampling_rate])
+            np.save(os.path.join(settings.output_folder, "pol_angle.npy"), pol_ang[::settings.oversampling_rate])
+            np.save(os.path.join(settings.output_folder, "times.npy"), t_steps[::settings.oversampling_rate])
         if settings.return_pointing:
             return v, pol_ang
 
     else:
         if settings.write_pointing and del_beta == 0.0:
-            np.save(os.path.join(settings.output_folder, "pointing.npy"), v)
-            np.save(os.path.join(settings.output_folder, "times.npy"), t_steps)
+            np.save(os.path.join(settings.output_folder, "pointing.npy"), v[::settings.oversampling_rate])
+            np.save(os.path.join(settings.output_folder, "times.npy"), t_steps[::settings.oversampling_rate])
         if settings.return_pointing:
             return v
 
