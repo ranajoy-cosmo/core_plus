@@ -53,8 +53,8 @@ def generate_pointing(settings=None, del_beta=0):
     #v = hp.ang2vec(lat, lon)
 
     if settings.do_pol is True and del_beta == 0.0:
-        pol_ang = (w_prec + w_spin)*t_steps%np.pi
-        #pol_ang = np.random.random(n_steps)*np.pi
+        #pol_ang = (w_prec + w_spin)*t_steps%np.pi
+        pol_ang = np.random.random(n_steps)*np.pi
         if settings.write_pointing:
             np.save(os.path.join(settings.output_folder, "pointing.npy"), v)
             np.save(os.path.join(settings.output_folder, "pol_angle.npy"), pol_ang)

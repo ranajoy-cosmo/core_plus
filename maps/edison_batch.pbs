@@ -14,4 +14,4 @@ cd $PBS_O_WORKDIR
 export KMP_DUPLICATE_LIB_OK=TRUE
 module switch PrgEnv-gnu/5.2.56 PrgEnv-intel
 
-aprun -n 1 python map_maker_pol.py
+aprun -n 1 python generate_map_from_spectra.py 

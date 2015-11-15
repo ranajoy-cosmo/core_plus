@@ -5,7 +5,7 @@ import healpy as hp
 import matplotlib.pyplot as plt
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
-import simulation.bolo.timestream as ts
+import simulation.bolo.timestream_interp as ts
 from custom_settings import settings, scan_params
 import os
 

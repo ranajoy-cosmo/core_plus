@@ -96,7 +96,12 @@ class Bolo:
             return signal
 
     def load_maps(self):
-        input_map = hp.read_map(self.settings.input_map, field=(0,1,2))
+        if self.settings.do_pol:
+            input_map = hp.read_map(self.settings.input_map, field=(0,1,2))
+        else:
+            npix = hp.nside2npix(self.settings.nside_in)
+            input_map = np.zeros((3, npix))
+            input_map[1] = hp.read_map(self.settings.input_map)
         return np.array(input_map)
 
 def do_simulation(settings=None):

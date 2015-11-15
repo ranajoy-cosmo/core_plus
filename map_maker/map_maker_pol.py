@@ -39,7 +39,7 @@ def make_map_from_signal():
     b = P.T*signal
     M = DiagonalOperator(1/hitmap[mask], broadcast='rightward')
 
-    solution = pcg(A, b, M=M, disp=True, tol=1e-4, maxiter=2000)
+    solution = pcg(A, b, M=M, disp=True, tol=1e-4, maxiter=200)
     x = pack.T*solution['x']
     x[hitmap == 0] = np.nan
     sky_map = x.T
