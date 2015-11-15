@@ -37,7 +37,7 @@ def generate_pointing(settings=None, del_beta=0):
         display_params(settings)
 
     u_init = np.array([np.cos(settings.beta + del_beta), 0.0, np.sin(settings.beta + del_beta)])
-    print np.degrees(settings.beta +  del_beta)
+    print int(np.degrees(settings.beta + del_beta)), (np.degrees(settings.beta + del_beta)%1)*60
 
     n_steps = int(1000*settings.t_flight/settings.t_sampling)*settings.oversampling_rate
     t_steps = 0.001*settings.t_sampling*np.arange(n_steps)/settings.oversampling_rate

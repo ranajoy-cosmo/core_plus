@@ -43,7 +43,7 @@ class Bolo:
         #Getting the beam profile and the del_beta
         beam_kernel, del_beta = get_beam(self.beam_params)
 
-        #sky_map = hp.read_map(self.settings.input_map)
+        sky_map = hp.read_map(self.settings.input_map)
 
         #Building the projection matrix P
         nsamples = int(1000.0*self.pointing_params.t_flight/self.pointing_params.t_sampling)*self.settings.oversampling_rate 
@@ -51,6 +51,8 @@ class Bolo:
         matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
         matrix.data.value = 1
         P = ProjectionOperator(matrix, shapein=npix, shapeout=nsamples)        
+
+        signal = np.zeros(nsamples)
          
         for i in range(del_beta.size):
             v = gen_p.generate_pointing(self.pointing_params, np.deg2rad(del_beta[i]/60.0))
@@ -59,7 +61,6 @@ class Bolo:
             P.matrix = matrix
             if i is del_beta.size/2:
                 v_central = v[::self.settings.oversampling_rate]
-                print v_central.shape
             #Generating the time ordered signal
             signal += np.convolve(P(sky_map), beam_kernel.T[i], mode = 'same')
 
@@ -92,7 +93,7 @@ class Bolo:
         return input_map
 
     def get_hitmap(self, v):
-        nsamples = v[0].size
+        nsamples = v.shape[0]
         npix = hp.nside2npix(self.settings.nside_in)
         matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
         matrix.data.value = 1

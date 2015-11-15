@@ -41,7 +41,7 @@ class Bolo:
     def simulate_timestream(self):
         
         #Getting the beam profile and the del_beta
-        beam_kernel, del_beta = get_beam()
+        beam_kernel, del_beta = get_beam(self.beam_params)
 
         sky_map = hp.read_map(self.settings.input_map)
 
@@ -86,7 +86,7 @@ class Bolo:
             return signal
 
     def get_hitmap(self, v):
-        nsamples = v.size
+        nsamples = v.shape[0]
         npix = hp.nside2npix(self.settings.nside_in)
         matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
         matrix.data.value = 1
