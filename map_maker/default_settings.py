@@ -24,6 +24,6 @@ settings.write_map = True
 # Scan Params 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 scan_params = scan_settings.settings
-scan_params.write_signal = False
-scan_params.pipe_with_map_maker = True
+scan_params.write_signal = True
+scan_params.pipe_with_map_maker = False
 scan_params.display_scanned_map = False
