@@ -38,15 +38,16 @@ class Bolo:
 # Simulating the time-ordered data for any beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-    def simulate_timestream(self):
+    def simulate_timestream(self, b_count, rank, sky_map=None):
         
         #Getting the beam profile and the del_beta
         beam_kernel, del_beta = get_beam(self.beam_params)
-
-        sky_map = hp.read_map(self.settings.input_map)
+        
+        if sky_map is None:
+            sky_map = hp.read_map(self.settings.input_map)
 
         #Building the projection matrix P
-        nsamples = int(1000.0*self.pointing_params.t_flight/self.pointing_params.t_sampling)*self.settings.oversampling_rate 
+        nsamples = int(1000.0*self.pointing_params.t_segment/self.pointing_params.t_sampling)*self.settings.oversampling_rate 
         npix = hp.nside2npix(self.settings.nside_in)
         matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
         matrix.data.value = 1
@@ -55,7 +56,7 @@ class Bolo:
         signal = np.zeros(nsamples)
          
         for i in range(del_beta.size):
-            v = gen_p.generate_pointing(self.pointing_params, np.deg2rad(del_beta[i]/60.0))
+            v = gen_p.generate_pointing(rank, self.pointing_params, np.deg2rad(del_beta[i]/60.0))
             hit_pix = hp.vec2pix(self.settings.nside_in, v[...,0], v[...,1], v[...,2])
             matrix.data.index = hit_pix[..., None]
             P.matrix = matrix
@@ -70,26 +71,14 @@ class Bolo:
 
         hitmap = self.get_hitmap(v_central)
 
-        scanned_map = self.get_scanned_map(sky_map, hitmap)
-
-        if self.settings.display_scanned_map:
-            hp.mollzoom(hitmap)
-            plt.show()
-            hp.mollzoom(scanned_map)
-            plt.show()
-        
-        if self.settings.write_scanned_map:
-            hp.write_map(os.path.join(self.settings.output_folder, "hitmap_in.fits"), hitmap)
-            hp.write_map(os.path.join(self.settings.output_folder, "scanned_map.fits"), scanned_map)
-
         if self.settings.write_signal:
-            np.save(os.path.join(self.settings.output_folder, "signal_0001"), signal)
-        
-        if self.settings.pipe_with_map_maker:
-            return signal
+            self.write_ts(signal, rank)
+
+        return hitmap
+
 
     def load_maps(self):
-        input_map = hp.read_map(self.settings.input_map, field=(0,1,2))
+        input_map = hp.read_map(self.settings.input_map)
         return input_map
 
     def get_hitmap(self, v):
@@ -104,26 +93,40 @@ class Bolo:
         hitmap = P.T(np.ones(nsamples, dtype=np.float32))
         return hitmap
 
-    def get_scanned_map(self, sky_map, hitmap=None):
-        if hitmap is None:
-            print "Need hitmap first"
-            sys.exit()
-        mask = np.full(hitmap.size, False, dtype = bool)
-        mask[hitmap > 0] = True
-        scanned_map = np.full(hitmap.size, np.nan)
-        scanned_map[mask] = sky_map[mask]
-        return scanned_map
 
-def do_simulation(settings=None):
-    if settings==None:
-        from custom_settings import settings
-    bolo = Bolo(settings=settings)
-    if settings.pipe_with_map_maker:
-        return bolo.simulate_timestream()
+    def write_ts(self, rank, signal): 
+        out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp, "bolo_ts")
+        ts_file = "ts_" + str(rank).zfill(4)
+        if rank is 1:
+            os.makedirs(out_dir)
+        np.save(ts_file, signal)
+
+def get_scanned_map(sky_map, hitmap):
+    valid = hitmap>0
+    sky_map[~valid] = np.nan
+    return sky_map
+
+def run_serial(settings, pointing_params, beam_params):
+    num_bolos = len(settings.bolo_names)
+    num_segments = int(pointing_params.t_flight/pointing_params.t_segment)
+    num_jobs = num_bolos*num_segments
+    sky_map = hp.read_map(settings.input_map)
+    hitmap = np.zeros(sky_map.size)
+    b_count = 1
+    rank = 1
+    for bolo_name in settings.bolo_names:
+        bolo = Bolo(settings, pointing_params, beam_params)
+        for i in range(num_segments):
+            hitmap += bolo.simulate_timestream(b_count, rank, sky_map)
+            rank += 1
+        b_count += 1
+    out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp)
+    if settings.write_scanned_map:
+        scanned_map = get_scanned_map(sky_map, hitmap)
+        hp.write_map(os.path.join(out_dir, "scanned_map.fits"), scanned_map)
+    if settings.write_hitmap:
+        hp.write_map(os.path.join(out_dir, "hitmap_in.fits"), hitmap)
 
 if __name__=="__main__":
-    from custom_settings import settings
-    for bolo_name in settings.bolo_names:
-        bolo = Bolo()
-        bolo.simulate_timestream()
-
+    from custom_settings import settings, pointing_params, beam_params
+    run_serial(settings, pointing_params, beam_params)

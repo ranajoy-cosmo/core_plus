@@ -3,6 +3,7 @@ import healpy as hp
 import os
 from simulation.lib.utilities.generic_class import Generic
 from simulation.settings.custom_settings import global_paths, global_scanning
+from simulation.lib.utilities.time_util import get_time_stamp
 
 settings = Generic()
 
@@ -23,6 +24,7 @@ settings.beta = np.deg2rad(beta_deg)            #radians
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 settings.t_year = 365*24*60*60.0                    #seconds
 settings.t_flight = 10*60*60.0                       #seconds
+settings.t_segment = 2*60*60.0
 settings.t_sampling = 5.0                           #milli-seconds
 settings.t_prec = 1*60*60.0                     #seconds
 settings.t_spin = 60.0                             #seconds
@@ -40,7 +42,8 @@ settings.do_pol = True
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read/Write settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-settings.output_folder = global_paths.output_folder 
+settings.time_stamp = get_time_stamp()
+settings.global_output_dir = global_paths.output_dir
 settings.write_pointing = True 
 settings.return_pointing = False
-settings.display_params = True 
+settings.display_params = False 

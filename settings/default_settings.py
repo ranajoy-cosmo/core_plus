@@ -7,11 +7,11 @@ from simulation.lib.utilities.generic_class import Generic
 global_paths = Generic()
 
 global_paths.tag = 'test'
-global_paths.base_folder = os.path.abspath("../")
+global_paths.base_dir = os.path.abspath("../")
 
-global_paths.output_folder = os.path.join(global_paths.base_folder, 'output', global_paths.tag)
-global_paths.spectra_folder = os.path.join(global_paths.base_folder, 'spectra')
-global_paths.maps_folder = os.path.join(global_paths.base_folder, 'maps', 'maps')
+global_paths.output_dir = os.path.join(global_paths.base_dir, 'output')
+global_paths.spectra_dir = os.path.join(global_paths.base_dir, 'spectra')
+global_paths.maps_dir = os.path.join(global_paths.base_dir, 'maps', 'maps')
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Global settings for scanning
