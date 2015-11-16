@@ -14,11 +14,13 @@ def generate_pointing(rank, settings=None, del_beta=0):
         display_params(settings)
 
     u_init = np.array([np.cos(settings.beta + del_beta), 0.0, np.sin(settings.beta + del_beta)])
-    print int(np.degrees(settings.beta + del_beta)), (np.degrees(settings.beta + del_beta)%1)*60
+    #print int(np.degrees(settings.beta + del_beta)), (np.degrees(settings.beta + del_beta)%1)*60
 
+    num_segments = int(settings.t_flight/settings.t_segment)
     n_steps = int(1000*settings.t_segment/settings.t_sampling)*settings.oversampling_rate
-    t_start = settings.t_segment*rank
+    t_start = settings.t_segment*(rank%num_segments)
     t_steps = t_start + 0.001*settings.t_sampling*np.arange(n_steps)/settings.oversampling_rate
+    print "Time range : [", t_steps[0], ", ", t_steps[-1], "]" 
     w_orbit = 2*np.pi/settings.t_year
     w_prec = 2*np.pi/settings.t_prec
     w_spin = 2*np.pi/settings.t_spin
@@ -46,9 +48,9 @@ def generate_pointing(rank, settings=None, del_beta=0):
 
 def write_pointing(settings, rank, v, pol=None):
     out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp, "pointing") 
-    out_file = str(rank).zfill(4)
+    out_file = str(rank+1).zfill(4)
 
-    if rank is 1:
+    if rank is 0:
         os.makedirs(out_dir)
     
     v_file = os.path.join(out_dir, 'vec_' + out_file)
