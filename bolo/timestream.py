@@ -4,7 +4,7 @@ import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
 import sys, copy, os
-#from mpi4py import MPI
+from mpi4py import MPI
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix
 from pysimulators import BeamGaussian
@@ -39,14 +39,11 @@ class Bolo:
 # Simulating the time-ordered data for any beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-    def simulate_timestream(self, rank, sky_map=None):
+    def simulate_timestream(self, comm, rank, sky_map):
         
         #Getting the beam profile and the del_beta
         beam_kernel, del_beta = get_beam(self.beam_params)
         
-        if sky_map is None:
-            sky_map = hp.read_map(self.settings.input_map)
-
         #Building the projection matrix P
         nsamples = int(1000.0*self.pointing_params.t_segment/self.pointing_params.t_sampling)*self.settings.oversampling_rate 
         npix = hp.nside2npix(self.settings.nside_in)
@@ -57,7 +54,7 @@ class Bolo:
         signal = np.zeros(nsamples)
 
         for i in range(del_beta.size):
-            v = gen_p.generate_pointing(rank, self.pointing_params, np.deg2rad(del_beta[i]/60.0))
+            v = gen_p.generate_pointing(comm, rank, self.pointing_params, np.deg2rad(del_beta[i]/60.0))
             hit_pix = hp.vec2pix(self.settings.nside_in, v[...,0], v[...,1], v[...,2])
             matrix.data.index = hit_pix[..., None]
             P.matrix = matrix
@@ -73,7 +70,7 @@ class Bolo:
         hitmap = self.get_hitmap(v_central)
 
         if self.settings.write_signal:
-            self.write_ts(rank, signal)
+            self.write_ts(comm, rank, signal)
 
         return hitmap
 
@@ -91,11 +88,12 @@ class Bolo:
         return hitmap
 
 
-    def write_ts(self, rank, signal): 
+    def write_ts(self, comm, rank, signal): 
         out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp, "bolo_ts")
         ts_file = "ts_" + str(rank+1).zfill(4)
         if rank is 0:
             os.makedirs(out_dir)
+        comm.Barrier()
         np.save(os.path.join(out_dir, ts_file), signal)
 
 def get_scanned_map(sky_map, hitmap):
@@ -116,7 +114,7 @@ def run_serial(settings, pointing_params, beam_params):
         for i in range(num_segments):
             print "Segment : ", i
             print "Rank : ", count
-            hitmap += bolo.simulate_timestream(count, sky_map)
+            hitmap += bolo.simulate_timestream(None, count, sky_map)
             count += 1
         bolo_num += 1
 
@@ -127,21 +125,27 @@ def run_serial(settings, pointing_params, beam_params):
     if settings.write_hitmap:
         hp.write_map(os.path.join(out_dir, "hitmap_in.fits"), hitmap)
 
-"""
 def run_mpi(settings, pointing_params, beam_params):
     comm = MPI.COMM_WORLD
     size = comm.Get_size()
     rank = comm.Get_rank()
 
     num_segments = int(pointing_params.t_flight/pointing_params.t_segment)
-    hitmap = np.zeros(sky_map.size)
-    count = 1
+    sky_map = hp.read_map(settings.input_map)
+    if rank is 0:
+        hitmap = np.zeros(sky_map.size)
+    else:
+        hitmap = None
+    count = 0
     
     for bolo_name in settings.bolo_names:
+        print "Doing Bolo : ", bolo_name
         for i in range(num_segments):
-            if count%size is (rank + 1):
+            print "Segment : ", i
+            print "Rank : ", count
+            if count%size is rank:
                 bolo = Bolo(settings, pointing_params, beam_params, bolo_name)
-                comm.Reduce(bolo.simulate_timestream(rank), hitmap, MPI.SUM, 0) 
+                comm.Reduce([bolo.simulate_timestream(comm, rank, sky_map), MPI.DOUBLE], [hitmap, MPI.DOUBLE], MPI.SUM, 0) 
             count += 1
 
     if rank is 0:
@@ -151,8 +155,7 @@ def run_mpi(settings, pointing_params, beam_params):
             hp.write_map(os.path.join(out_dir, "scanned_map.fits"), scanned_map)
         if settings.write_hitmap:
             hp.write_map(os.path.join(out_dir, "hitmap_in.fits"), hitmap)
-"""
 
 if __name__=="__main__":
     from custom_settings import settings, pointing_params, beam_params
-    run_serial(settings, pointing_params, beam_params)
+    run_mpi(settings, pointing_params, beam_params)
