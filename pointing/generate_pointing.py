@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import pyoperators as po
 import sys, os
 
-def generate_pointing(comm, rank, settings=None, del_beta=0):
+def generate_pointing(rank, settings=None, del_beta=0):
     if settings is None:
         from custom_settings import settings
     settings = calculate_params(settings)
@@ -36,23 +36,19 @@ def generate_pointing(comm, rank, settings=None, del_beta=0):
         #pol_ang = (w_prec + w_spin)*t_steps%np.pi
         pol_ang = np.random.random(n_steps)*np.pi
         if settings.write_pointing:
-            write_pointing(settings, comm, rank, v, pol_ang)
+            write_pointing(settings, rank, v, pol_ang)
         if settings.return_pointing:
             return v, pol_ang
 
     else:
         if settings.write_pointing and del_beta == 0.0:
-            write_pointing(settings, comm, rank, v)
+            write_pointing(settings, rank, v)
         if settings.return_pointing:
             return v
 
-def write_pointing(settings, comm, rank, v, pol=None):
+def write_pointing(settings, rank, v, pol=None):
     out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp, "pointing") 
     out_file = str(rank+1).zfill(4)
-
-    if rank is 0:
-        os.makedirs(out_dir)
-    comm.Barrier()
     v_file = os.path.join(out_dir, 'vec_' + out_file)
     np.save(v_file, v[::settings.oversampling_rate])
 
@@ -86,7 +82,7 @@ def display_params(settings):
 def run_serial(settings):
     num_segments = int(settings.t_flight/settings.t_segment)
     for rank in range(num_segments):
-        generate_pointing(None, rank, settings) 
+        generate_pointing(rank, settings) 
 
 if __name__ == "__main__":
     from custom_settings import settings

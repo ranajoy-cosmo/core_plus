@@ -54,7 +54,7 @@ class Bolo:
         signal = np.zeros(nsamples)
 
         for i in range(del_beta.size):
-            v = gen_p.generate_pointing(comm, rank, self.pointing_params, np.deg2rad(del_beta[i]/60.0))
+            v = gen_p.generate_pointing(rank, self.pointing_params, np.deg2rad(del_beta[i]/60.0))
             hit_pix = hp.vec2pix(self.settings.nside_in, v[...,0], v[...,1], v[...,2])
             matrix.data.index = hit_pix[..., None]
             P.matrix = matrix
@@ -70,7 +70,7 @@ class Bolo:
         hitmap = self.get_hitmap(v_central)
 
         if self.settings.write_signal:
-            self.write_ts(comm, rank, signal)
+            self.write_ts(rank, signal)
 
         return hitmap
 
@@ -88,18 +88,20 @@ class Bolo:
         return hitmap
 
 
-    def write_ts(self, comm, rank, signal): 
+    def write_ts(self, rank, signal): 
         out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp, "bolo_ts")
         ts_file = "ts_" + str(rank+1).zfill(4)
-        if rank is 0:
-            os.makedirs(out_dir)
-        comm.Barrier()
         np.save(os.path.join(out_dir, ts_file), signal)
 
 def get_scanned_map(sky_map, hitmap):
     valid = hitmap>0
     sky_map[~valid] = np.nan
     return sky_map
+
+def create_output_dirs(settings):
+    out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp)
+    os.makedirs(os.path.join(out_dir, "bolo_ts"))
+    os.makedirs(os.path.join(out_dir, "pointing"))
 
 def run_serial(settings, pointing_params, beam_params):
     num_segments = int(pointing_params.t_flight/pointing_params.t_segment)
@@ -133,19 +135,21 @@ def run_mpi(settings, pointing_params, beam_params):
     num_segments = int(pointing_params.t_flight/pointing_params.t_segment)
     sky_map = hp.read_map(settings.input_map)
     if rank is 0:
-        hitmap = np.zeros(sky_map.size)
+        create_output_dirs(settings)
+        hitmap = np.zeros(sky_map.size, dtype=np.float32)
     else:
         hitmap = None
     count = 0
     
     for bolo_name in settings.bolo_names:
-        print "Doing Bolo : ", bolo_name
         for i in range(num_segments):
-            print "Segment : ", i
-            print "Rank : ", count
             if count%size is rank:
+                print "Doing Bolo : ", bolo_name
+                print "Segment : ", i
+                print "Rank : ", count
                 bolo = Bolo(settings, pointing_params, beam_params, bolo_name)
-                comm.Reduce([bolo.simulate_timestream(comm, rank, sky_map), MPI.DOUBLE], [hitmap, MPI.DOUBLE], MPI.SUM, 0) 
+                hitmap_local = bolo.simulate_timestream(comm, rank, sky_map)
+                comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0) 
             count += 1
 
     if rank is 0:
