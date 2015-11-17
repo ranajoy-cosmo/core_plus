@@ -50,11 +50,14 @@ class Bolo:
         matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
         matrix.data.value = 1
         P = ProjectionOperator(matrix, shapein=npix, shapeout=nsamples)        
+        print "Flag 5"
 
         signal = np.zeros(nsamples)
 
+        print "Flag 6"
         for i in range(del_beta.size):
             v = gen_p.generate_pointing(rank, self.pointing_params, np.deg2rad(del_beta[i]/60.0))
+            print "Flag 7"
             hit_pix = hp.vec2pix(self.settings.nside_in, v[...,0], v[...,1], v[...,2])
             matrix.data.index = hit_pix[..., None]
             P.matrix = matrix
@@ -133,14 +136,17 @@ def run_mpi(settings, pointing_params, beam_params):
     rank = comm.Get_rank()
 
     num_segments = int(pointing_params.t_flight/pointing_params.t_segment)
+    print "Flag 1"
     sky_map = hp.read_map(settings.input_map)
+    print "Flag 2"
     if rank is 0:
         create_output_dirs(settings)
         hitmap = np.zeros(sky_map.size, dtype=np.float32)
+        print "Flag 3"
     else:
         hitmap = None
     count = 0
-    
+    print "Flag 4"
     for bolo_name in settings.bolo_names:
         for i in range(num_segments):
             if count%size is rank:
