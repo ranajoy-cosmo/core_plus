@@ -25,9 +25,9 @@ settings.oversampling_rate = 1
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Scan resolutions
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-settings.nside = global_scanning.nside_in
-settings.theta_cross = hp.nside2resol(settings.nside, arcmin=True)                          #arcmin
-settings.theta_co = hp.nside2resol(settings.nside, arcmin=True)                             #arcmin
+nside = global_scanning.nside_in
+settings.theta_cross = hp.nside2resol(nside, arcmin=True)                          #arcmin
+settings.theta_co = hp.nside2resol(nside, arcmin=True)                             #arcmin
 
 settings.do_pol = True
 

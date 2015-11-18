@@ -6,14 +6,14 @@ import matplotlib.pyplot as plt
 import pyoperators as po
 import sys, os, importlib
 
-def generate_pointing(segment, settings, bolo_params, del_beta=0):
+def generate_pointing(segment, settings, bolo_params, del_beta=0.0):
     settings = calculate_params(settings, bolo_params)
     if settings.display_params:
         display_params(settings, bolo_params)
 
     u_init = get_bolo_initial(bolo_params, del_beta)
 
-    #print int(np.degrees(settings.beta + del_beta)), (np.degrees(settings.beta + del_beta)%1)*60
+    print int(bolo_params.beta + del_beta), ((bolo_params.beta + del_beta)%1)*60
 
     n_steps = int(1000*settings.t_segment/settings.t_sampling)*settings.oversampling_rate
     t_start = settings.t_segment*segment
@@ -24,8 +24,9 @@ def generate_pointing(segment, settings, bolo_params, del_beta=0):
     w_orbit = 2*np.pi/settings.t_year
     w_prec = 2*np.pi/settings.t_prec
     w_spin = 2*np.pi/settings.t_spin
+    alpha = np.deg2rad(bolo_params.alpha)
 
-    R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(n_steps, bolo_params.alpha), w_spin*t_steps)
+    R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(n_steps, alpha), w_spin*t_steps)
     v = R*u_init
     R = po.Rotation3dOperator("Z", w_orbit*t_steps)
     v = R*v
@@ -33,14 +34,18 @@ def generate_pointing(segment, settings, bolo_params, del_beta=0):
     #lon = np.random.random(n_steps)*np.pi*10/180
     #v = hp.ang2vec(lat, lon)
 
-    if settings.do_pol:
-        #pol_ang = (w_prec + w_spin)*t_steps%np.pi
+    if settings.do_pol and del_beta==0.0:
+        print "Flag 1"
+        pol_init = np.deg2rad(bolo_params.pol_ang)
+        #pol_ang = ((w_prec + w_spin)*t_steps + pol_init)%np.pi  
         pol_ang = np.random.random(n_steps)*np.pi
 
-    if settings.write_pointing and del_beta == 0.0:
-        if settings.do_pol:
+    if settings.write_pointing and del_beta==0.0:
+        if settings.do_pol: 
+            print "Flag 2"
             write_pointing(settings, bolo_params, segment, v, pol_ang)
         else:
+            print "Flag 3"
             write_pointing(settings, bolo_params, segment, v)
 
     if settings.return_pointing:
@@ -68,8 +73,9 @@ def get_bolo_initial(bolo_params, del_beta):
     beta = np.deg2rad(bolo_params.beta)
     del_x = np.deg2rad(bolo_params.del_x/60.0)
     del_y = np.deg2rad(bolo_params.del_y/60.0)
+    del_beta_rad = np.deg2rad(del_beta/60.0)
 
-    u_init = np.array([np.cos(bolo_params.beta + del_beta), 0.0, np.sin(bolo_params.beta + del_beta)])
+    u_init = np.array([np.cos(beta + del_beta_rad), 0.0, np.sin(beta + del_beta_rad)])
     R = po.Rotation3dOperator('ZY', del_x, del_y)
     u_init = R*u_init
 
@@ -87,13 +93,12 @@ def calculate_params(settings, bolo_params):
     return settings
 
 def display_params(settings, bolo_params):
-    print "alpha : ", np.degrees(bolo_params.alpha), " degrees"
-    print "beta : ", np.degrees(bolo_params.beta), " degrees"
+    print "alpha : ", bolo_params.alpha, " degrees"
+    print "beta : ", bolo_params.beta, " degrees"
     print "T flight : ", settings.t_flight/60.0/60.0, "hours"
     print "T precession : ", settings.t_prec/60.0/60.0, "hours"
     print "T spin : ", settings.t_spin, " seconds"
     print "T sampling : ", settings.t_sampling, " milli-seconds"
-    print "Scan speed : ", 360*np.sin(settings.beta)/settings.t_spin, " degrees/sec"
     print "Scan frequency : ", 1000.0/settings.t_sampling, "Hz"
     print "Theta co : ", settings.theta_co, " arcmin"
     print "Theta cross : ", settings.theta_cross, " arcmin"
