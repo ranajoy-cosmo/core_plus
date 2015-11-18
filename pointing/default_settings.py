@@ -12,14 +12,6 @@ settings = Generic()
 settings.mode = 1 
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Settings for orientation of spacecraft 
-#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-alpha_deg = 45.0                                    #degrees
-settings.alpha = np.deg2rad(alpha_deg)              #radians
-beta_deg = 45.0                                   #degrees
-settings.beta = np.deg2rad(beta_deg)            #radians
-
-#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Settings for time periods of scans
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 settings.t_year = 365*24*60*60.0                    #seconds
@@ -42,6 +34,7 @@ settings.do_pol = True
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read/Write settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+settings.bolo_names = ['0001'. '0001']
 settings.time_stamp = get_time_stamp()
 settings.global_output_dir = global_paths.output_dir
 settings.write_pointing = True 
