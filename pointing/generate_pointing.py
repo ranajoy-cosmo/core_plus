@@ -25,7 +25,7 @@ def generate_pointing(segment, settings, bolo_params, del_beta=0):
     w_prec = 2*np.pi/settings.t_prec
     w_spin = 2*np.pi/settings.t_spin
 
-    R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(n_steps, settings.alpha), w_spin*t_steps)
+    R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(n_steps, bolo_params.alpha), w_spin*t_steps)
     v = R*u_init
     R = po.Rotation3dOperator("Z", w_orbit*t_steps)
     v = R*v
@@ -64,10 +64,10 @@ def write_pointing(settings, bolo_params, segment, v, pol=None):
         pol_file = os.path.join(out_dir, 'pol_' + out_file)
         np.save(pol_file, pol[::settings.oversampling_rate])
 
-def get_bolo_initials(bolo_params, del_beta):
-    beta = np.deg2rad(beam_params.beta)
-    del_x = np.deg2rad(beam_params.del_x/60.0)
-    del_y = np.deg2rad(beam_params.del_y/60.0)
+def get_bolo_initial(bolo_params, del_beta):
+    beta = np.deg2rad(bolo_params.beta)
+    del_x = np.deg2rad(bolo_params.del_x/60.0)
+    del_y = np.deg2rad(bolo_params.del_y/60.0)
 
     u_init = np.array([np.cos(bolo_params.beta + del_beta), 0.0, np.sin(bolo_params.beta + del_beta)])
     R = po.Rotation3dOperator('ZY', del_x, del_y)
@@ -75,20 +75,20 @@ def get_bolo_initials(bolo_params, del_beta):
 
     return u_init
 
-def calculate_params(settings):
+def calculate_params(settings, bolo_params):
     if settings.mode is 1:
-        settings.t_spin = 360.0*60.0*np.sin(settings.beta)*settings.t_sampling/1000.0/settings.theta_co
-        settings.t_prec = 360.0*60.0*np.sin(settings.alpha)*settings.t_spin/settings.theta_cross
+        settings.t_spin = 360.0*60.0*np.sin(bolo_params.beta)*settings.t_sampling/1000.0/settings.theta_co
+        settings.t_prec = 360.0*60.0*np.sin(bolo_params.alpha)*settings.t_spin/settings.theta_cross
 
     if settings.mode is 2:
-        settings.theta_cross = 360.0*60.0*np.sin(settings.alpha)*settings.t_spin/settings.t_prec
-        settings.theta_co = 360*60*np.sin(settings.beta)*settings.t_sampling/1000.0/settings.t_spin
+        settings.theta_cross = 360.0*60.0*np.sin(bolo_params.alpha)*settings.t_spin/settings.t_prec
+        settings.theta_co = 360*60*np.sin(bolo_params.beta)*settings.t_sampling/1000.0/settings.t_spin
 
     return settings
 
-def display_params(settings):
-    print "alpha : ", np.degrees(settings.alpha), " degrees"
-    print "beta : ", np.degrees(settings.beta), " degrees"
+def display_params(settings, bolo_params):
+    print "alpha : ", np.degrees(bolo_params.alpha), " degrees"
+    print "beta : ", np.degrees(bolo_params.beta), " degrees"
     print "T flight : ", settings.t_flight/60.0/60.0, "hours"
     print "T precession : ", settings.t_prec/60.0/60.0, "hours"
     print "T spin : ", settings.t_spin, " seconds"
@@ -106,7 +106,7 @@ def run_serial(settings):
         print "Doing bolo : ", bolo_name
         for segment in range(num_segments):
             print "Segment : ", segment
-            generate_pointing(segment, settings) 
+            generate_pointing(segment, settings, bolo_params) 
 
 if __name__ == "__main__":
     from custom_settings import settings
