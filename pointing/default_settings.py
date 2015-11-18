@@ -34,7 +34,7 @@ settings.do_pol = True
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read/Write settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-settings.bolo_names = ['0001'. '0001']
+settings.bolo_names = ['0001', '0002']
 settings.time_stamp = get_time_stamp()
 settings.global_output_dir = global_paths.output_dir
 settings.write_pointing = True 
