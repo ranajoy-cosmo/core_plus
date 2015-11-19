@@ -34,18 +34,15 @@ def generate_pointing(segment, settings, bolo_params, del_beta=0.0):
     #lon = np.random.random(n_steps)*np.pi*10/180
     #v = hp.ang2vec(lat, lon)
 
-    if settings.do_pol and del_beta==0.0:
-        print "Flag 1"
+    if settings.do_pol:
         pol_init = np.deg2rad(bolo_params.pol_ang)
         #pol_ang = ((w_prec + w_spin)*t_steps + pol_init)%np.pi  
         pol_ang = np.random.random(n_steps)*np.pi
 
     if settings.write_pointing and del_beta==0.0:
         if settings.do_pol: 
-            print "Flag 2"
             write_pointing(settings, bolo_params, segment, v, pol_ang)
         else:
-            print "Flag 3"
             write_pointing(settings, bolo_params, segment, v)
 
     if settings.return_pointing:
