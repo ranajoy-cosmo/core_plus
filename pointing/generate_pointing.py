@@ -24,16 +24,16 @@ def generate_pointing(segment, settings, bolo_params, del_beta=0.0):
     w_spin = 2*np.pi/settings.t_spin
     alpha = np.deg2rad(bolo_params.alpha)
 
-    R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(n_steps, alpha), w_spin*t_steps)
-    v = R*u_init
-    R = po.Rotation3dOperator("Z", w_orbit*t_steps)
-    v = R*v
-    #lat = np.pi/2 + np.random.random(n_steps)*np.pi*10/180
-    #lon = np.random.random(n_steps)*np.pi*10/180
-    #v = hp.ang2vec(lat, lon)
+    #R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(n_steps, alpha), w_spin*t_steps)
+    #v = R*u_init
+    #R = po.Rotation3dOperator("Z", w_orbit*t_steps)
+    #v = R*v
+    lat = np.pi/2 + np.random.random(n_steps)*np.pi*10/180
+    lon = np.random.random(n_steps)*np.pi*10/180
+    v = hp.ang2vec(lat, lon)
 
     if settings.do_pol:
-        pol_init = np.deg2rad(bolo_params.pol_ang)
+        #pol_init = np.deg2rad(bolo_params.pol_ang)
         #pol_ang = ((w_prec + w_spin)*t_steps + pol_init)%np.pi  
         pol_ang = np.random.random(n_steps)*np.pi
 
