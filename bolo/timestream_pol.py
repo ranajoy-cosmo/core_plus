@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import sys, copy, os, importlib
 from mpi4py import MPI
 from pysimulators import ProjectionOperator
-from pysimulators.sparse import FSRMatrix
+from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 from pysimulators import BeamGaussian
 from pysimulators.interfaces.healpy import SceneHealpixCMB
 from pysimulators.interfaces.healpy import HealpixConvolutionGaussianOperator
@@ -49,7 +49,7 @@ class Bolo:
             if i is del_beta.size/2:
                 v_central = v[::self.settings.oversampling_rate]
             #Generating the time ordered signal
-            signal += np.convolve(P(sky_map), beam_kernel.T[i], mode = 'same')
+            signal += np.convolve(P(sky_map.T), beam_kernel.T[i], mode = 'same')
 
         beam_sum = np.sum(beam_kernel)
         signal/=beam_sum
@@ -83,7 +83,7 @@ class Bolo:
 
 def get_scanned_map(sky_map, hitmap):
     valid = hitmap>0
-    sky_map[~valid] = np.nan
+    sky_map[...,~valid] = np.nan
     return sky_map
 
 def create_output_dirs(settings):
@@ -130,7 +130,7 @@ def run_mpi(settings, pointing_params, beam_params):
     sky_map = get_sky_map(settings) 
     if rank is 0:
         create_output_dirs(settings)
-        hitmap = np.zeros(sky_map.size, dtype=np.float32)
+        hitmap = np.zeros(hp.nside2npix(settings.nside_in), dtype=np.float32)
     else:
         hitmap = None
     count = 0
