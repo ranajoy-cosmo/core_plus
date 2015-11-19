@@ -13,13 +13,11 @@ def generate_pointing(segment, settings, bolo_params, del_beta=0.0):
 
     u_init = get_bolo_initial(bolo_params, del_beta)
 
-    print int(bolo_params.beta + del_beta), ((bolo_params.beta + del_beta)%1)*60
+    print int(bolo_params.beta + del_beta/60.0), ((bolo_params.beta + del_beta/60.0)%1)*60
 
     n_steps = int(1000*settings.t_segment/settings.t_sampling)*settings.oversampling_rate
     t_start = settings.t_segment*segment
     t_steps = t_start + 0.001*(settings.t_sampling/settings.oversampling_rate)*np.arange(n_steps)
-
-    print "Time range : [", t_steps[0], ", ", t_steps[-1], "]" 
 
     w_orbit = 2*np.pi/settings.t_year
     w_prec = 2*np.pi/settings.t_prec
