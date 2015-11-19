@@ -39,7 +39,6 @@ settings.pipe_with_map_maker = False
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 pointing_params = pointing_settings.settings
-pointing_params.t_flight = 200*60*60.0                       #seconds
 pointing_params.write_pointing = True
 pointing_params.return_pointing = True
 pointing_params.display_params = False

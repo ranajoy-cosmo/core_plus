@@ -3,7 +3,7 @@
 import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
-import sys, copy, os
+import sys, copy, os, importlib
 from mpi4py import MPI
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix
@@ -40,7 +40,7 @@ class Bolo:
         signal = np.zeros(nsamples)
 
         for i in range(del_beta.size):
-            v = gen_p.generate_pointing(segment, self.pointing_params, self.bolo_params, np.deg2rad(del_beta[i]/60.0))
+            v = gen_p.generate_pointing(segment, self.pointing_params, self.bolo_params, del_beta[i])
             hit_pix = hp.vec2pix(self.settings.nside_in, v[...,0], v[...,1], v[...,2])
             matrix.data.index = hit_pix[..., None]
             P.matrix = matrix
@@ -56,7 +56,7 @@ class Bolo:
         hitmap = self.get_hitmap(v_central)
 
         if self.settings.write_signal:
-            self.write_ts(signal, bolo_name, segment)
+            self.write_ts(signal, self.bolo_params.bolo_name, segment)
 
         return hitmap
 
@@ -127,13 +127,11 @@ def run_mpi(settings, pointing_params, beam_params):
         hitmap = None
     count = 0
     for bolo_name in settings.bolo_names:
-        for i in range(num_segments):
+        for segment in range(num_segments):
             if count%size is rank:
-                print "Doing Bolo : ", bolo_name
-                print "Segment : ", i
-                print "Rank : ", count
+                print "Doing Bolo : ", bolo_name, "Segment : ", segment, "Rank : ", rank, "Count :", count
                 bolo = Bolo(settings, pointing_params, beam_params, bolo_name)
-                hitmap_local = bolo.simulate_timestream(comm, rank, segment, sky_map)
+                hitmap_local = bolo.simulate_timestream(comm, segment, sky_map)
                 comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0) 
             count += 1
 
