@@ -3,18 +3,14 @@
 import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
-from pyoperators import DiagonalOperator, PackOperator, pcg
+from mpi4py import MPI
+from pyoperators import DiagonalOperator, PackOperator, pcg, MPIDistributionIdentityOperator
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 import simulation.bolo.timestream_pol as ts
-from custom_settings import settings, scan_params
 import os
 
-def make_map_from_signal():
-
-    signal = ts.do_simulation(scan_params)
-    v = np.load(os.path.join(settings.output_folder, "pointing.npy"))
-    pol_ang = np.load(os.path.join(settings.output_folder, "pol_angle.npy"))
+def make_map_from_signal(signal, v, pol_ang, bolo_name, segment):
 
     hit_pix = hp.vec2pix(settings.nside_out, v[...,0], v[...,1], v[...,2])
     nsamples = hit_pix.size
@@ -28,32 +24,63 @@ def make_map_from_signal():
     matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
     
     P = ProjectionOperator(matrix)#, shapein = npix, shapeout = nsamples)
+    D = MPIDistributionIdentityOperator()
+    H = P*D
     
-    hitmap = P.T(np.ones(nsamples, dtype=np.float32))[:, 0]*2
-    mask = hitmap>0
+    hitmap = H.T(np.ones(nsamples, dtype=np.float32))[:, 0]*2
+    #mask = hitmap>0
 
-    P = P.restrict_new(mask, inplace=True)
-    pack = PackOperator(mask, broadcast='rightward')
+    #H = H.restrict_new(mask, inplace=True)
+    #pack = PackOperator(mask, broadcast='rightward')
 
-    A = P.T*P
-    b = P.T*signal
-    M = DiagonalOperator(1/hitmap[mask], broadcast='rightward')
+    A = H.T*H
+    b = H.T*signal
+    #M = DiagonalOperator(1/hitmap[mask], broadcast='rightward')
+    #M = DiagonalOperator(1/hitmap, broadcast='rightward')
 
-    solution = pcg(A, b, M=M, disp=True, tol=1e-4, maxiter=200)
-    x = pack.T*solution['x']
+    #solution = pcg(A, b, M=M, disp=True, tol=1e-4, maxiter=200)
+    solution = pcg(A, b, disp=True, tol=1e-4, maxiter=200)
+    #x = pack.T*solution['x']
+    x = solution['x']
     x[hitmap == 0] = np.nan
     sky_map = x.T
 
-    if settings.write_map:
-        hp.write_map(os.path.join(settings.output_folder, "reconstructed_map.fits"), sky_map)
-        hp.write_map(os.path.join(settings.output_folder, "hitmap_out.fits"), hitmap)
-
-    if settings.display_map:
-        hp.mollzoom(sky_map[0])
-        plt.show()
+    return sky_map, hitmap
 
 
+def get_signal(settings, bolo_name, segment):
+    out_dir = os.path.join(settings.global_output_dir, "scanning", settings.scanning_time_stamp)
+    file_suffix = str(segment+1).zfill(4) + '.npy'
+    ts = np.load(os.path.join(out_dir, bolo_name, 'ts_'+file_suffix))
+    v = np.load(os.path.join(out_dir, bolo_name, 'vec_'+file_suffix))
+    pol = np.load(os.path.join(out_dir, bolo_name, 'pol_'+file_suffix))
+    return ts, v, pol
 
-if __name__=="__main__":
-    make_map_from_signal()
+def write_map(settings, sky_map, hitmap):
+    out_dir = os.path.join(settings.global_output_dir, "reconstructing", settings.time_stamp)
+    os.makedirs(out_dir)
+    hp.write_map(os.path.join(out_dir, "reconstructed_map.fits"), sky_map)
+    hp.write_map(os.path.join(out_dir, "hitmap_out.fits"), hitmap)
+
+def run_mpi(settings):
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size() 
     
+    num_segments = int(settings.t_flight/settings.t_segment)
+    count = 0
+
+    for bolo_name in settings.bolo_names:
+        for segment in range(num_segments): 
+            signal, v, pol_ang= get_signal(settings, bolo_name, segment)
+            if count%size is rank:
+                print "Doing Bolo : ", bolo_name, "Segment : ", segment, "Rank : ", rank, "Count : ", count 
+                sky_map, hitmap = make_map_from_signal(signal, v, pol_ang, bolo_name, segment)
+            count+=1
+
+    if rank is 0:
+        write_map(settings, sky_map, hitmap)
+        
+if __name__=="__main__":
+    from custom_settings import settings
+    run_mpi(settings)
