@@ -13,7 +13,7 @@ def generate_pointing(segment, settings, bolo_params, del_beta=0.0):
 
     u_init = get_bolo_initial(bolo_params, del_beta)
 
-    print int(bolo_params.beta + del_beta), ((bolo_params.beta + del_beta)%1)*60
+    print int(bolo_params.beta + del_beta/60.0), ((bolo_params.beta + del_beta/60.0)%1)*60
 
     n_steps = int(1000*settings.t_segment/settings.t_sampling)*settings.oversampling_rate
     t_start = settings.t_segment*segment
@@ -26,18 +26,18 @@ def generate_pointing(segment, settings, bolo_params, del_beta=0.0):
     w_spin = 2*np.pi/settings.t_spin
     alpha = np.deg2rad(bolo_params.alpha)
 
-    #R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(n_steps, alpha), w_spin*t_steps)
-    #v = R*u_init
-    #R = po.Rotation3dOperator("Z", w_orbit*t_steps)
-    #v = R*v
-    lat = np.pi/2 + np.random.random(n_steps)*np.pi*10/180
-    lon = np.random.random(n_steps)*np.pi*10/180
-    v = hp.ang2vec(lat, lon)
+    R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(n_steps, alpha), w_spin*t_steps)
+    v = R*u_init
+    R = po.Rotation3dOperator("Z", w_orbit*t_steps)
+    v = R*v
+    #lat = np.pi/2 + np.random.random(n_steps)*np.pi*10/180
+    #lon = np.random.random(n_steps)*np.pi*10/180
+    #v = hp.ang2vec(lat, lon)
 
     if settings.do_pol:
-        #pol_init = np.deg2rad(bolo_params.pol_ang)
-        #pol_ang = ((w_prec + w_spin)*t_steps + pol_init)%np.pi  
-        pol_ang = np.random.random(n_steps)*np.pi
+        pol_init = np.deg2rad(bolo_params.pol_ang)
+        pol_ang = ((w_prec + w_spin)*t_steps + pol_init)%np.pi  
+        #pol_ang = np.random.random(n_steps)*np.pi
 
     if settings.write_pointing and del_beta==0.0:
         if settings.do_pol: 
@@ -73,8 +73,8 @@ def get_bolo_initial(bolo_params, del_beta):
     del_beta_rad = np.deg2rad(del_beta/60.0)
 
     u_init = np.array([np.cos(beta + del_beta_rad), 0.0, np.sin(beta + del_beta_rad)])
-    R = po.Rotation3dOperator('ZY', del_x, del_y)
-    u_init = R*u_init
+    #R = po.Rotation3dOperator('ZY', del_x, del_y)
+    #u_init = R*u_init
 
     return u_init
 

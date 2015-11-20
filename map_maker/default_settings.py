@@ -16,10 +16,10 @@ settings.nside_out = global_scanning.nside_out
 # Read/Write Params 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 settings.time_stamp = get_time_stamp()
-settings.scanning_time_stamp = "19_36_33__19_11_2015"
-settings.bolo_names = ["0001", "0002"]
-settings.t_flight = 10*60*60.0
-settings.t_segment = 5*60*60.0
+settings.scanning_time_stamp = "20_42_03__19_11_2015" 
+settings.bolo_names = ["0001", "0002", "0003", "0004"]
+settings.t_flight = 4*24*60*60.0
+settings.t_segment = 12*60*60.0
 settings.global_output_dir = global_paths.output_dir
 settings.display_map = False 
 settings.write_map = True

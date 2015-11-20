@@ -1,6 +1,6 @@
 #PBS -S /bin/bash
 #PBS -q debug
-#PBS -l mppwidth=24
+#PBS -l mppwidth=192
 #PBS -l walltime=00:30:00
 #PBS -N core_sim
 #PBS -e core_sim_job.$PBS_JOBID.err
@@ -15,4 +15,4 @@ export KMP_DUPLICATE_LIB_OK=TRUE
 module switch PrgEnv-gnu/5.2.56 PrgEnv-intel
 
 #aprun -n 12 -N 2 -S 1 python map_maker.py
-aprun -n 1 python map_maker.py
+aprun -n 32 -N 4 -S 2 python map_maker_pol.py
