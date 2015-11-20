@@ -3,6 +3,6 @@
 import time
 
 def get_time_stamp():
-    format = '%H_%M_%S__%d_%m_%Y'
+    format = '%Y_%m_%d__%H_%M_%S'
     t = time.gmtime()
     return time.strftime(format, t)

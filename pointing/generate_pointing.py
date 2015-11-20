@@ -93,12 +93,16 @@ def display_params(settings, bolo_params):
     print "alpha : ", bolo_params.alpha, " degrees"
     print "beta : ", bolo_params.beta, " degrees"
     print "T flight : ", settings.t_flight/60.0/60.0, "hours"
+    print "T segment :", settings.t_segment/60.0/60.0, "hours"
     print "T precession : ", settings.t_prec/60.0/60.0, "hours"
     print "T spin : ", settings.t_spin, " seconds"
     print "T sampling : ", settings.t_sampling, " milli-seconds"
     print "Scan frequency : ", 1000.0/settings.t_sampling, "Hz"
     print "Theta co : ", settings.theta_co, " arcmin"
     print "Theta cross : ", settings.theta_cross, " arcmin"
+    n_steps = int(1000*settings.t_segment/settings.t_sampling)*settings.oversampling_rate
+    print "#Samples per segment : ", n_steps
+    print "Estimated use of memory : ", 15*n_steps*8.0/1024/1024, "MB"
 
 def run_serial(settings):
     make_output_dirs(settings)
@@ -112,5 +116,8 @@ def run_serial(settings):
 
 if __name__ == "__main__":
     from custom_settings import settings
-    run_serial(settings)
+    #run_serial(settings)
+    bolo_params = importlib.import_module("simulation.bolo.bolo_params." + "0001").bolo_params 
+    settings = calculate_params(settings, bolo_params)
+    display_params(settings, bolo_params)
 

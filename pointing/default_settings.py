@@ -9,14 +9,14 @@ settings = Generic()
 
 #mode is 1 if we define scan resolution and let scan speed be a function of the resolution
 #mode is 2 if we define scan speeds and let the scan resolution be a function of it
-settings.mode = 1 
+settings.mode = 2 
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Settings for time periods of scans
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 settings.t_year = 365*24*60*60.0                    #seconds
-settings.t_flight = 10*60*60.0                       #seconds
-settings.t_segment = 2*60*60.0
+settings.t_flight = 4*24*60*60.0                       #seconds
+settings.t_segment = 12*60*60.0
 settings.t_sampling = 5.0                           #milli-seconds
 settings.t_prec = 4*24*60*60.0                     #seconds
 settings.t_spin = 60.0                             #seconds
