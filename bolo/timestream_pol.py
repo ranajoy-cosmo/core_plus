@@ -12,6 +12,10 @@ from pysimulators.interfaces.healpy import SceneHealpixCMB
 from pysimulators.interfaces.healpy import HealpixConvolutionGaussianOperator
 import simulation.pointing.generate_pointing as gen_p
 from simulation.beam.beam_kernel import get_beam
+#import simulation.lib.utilities.memory_management as mem
+
+machine = 'edison'
+num_proc = 24
 
 class Bolo:
 
@@ -125,9 +129,11 @@ def run_mpi(settings, pointing_params, beam_params):
     comm = MPI.COMM_WORLD
     size = comm.Get_size()
     rank = comm.Get_rank()
+    #mem.check_memory("Scanning flag 1", machine, num_proc) 
 
     num_segments = int(pointing_params.t_flight/pointing_params.t_segment)
     sky_map = get_sky_map(settings) 
+    #mem.check_memory("Scanning flag 2", machine, num_proc) 
     if rank is 0:
         create_output_dirs(settings)
         hitmap = np.zeros(hp.nside2npix(settings.nside_in), dtype=np.float32)
@@ -139,8 +145,11 @@ def run_mpi(settings, pointing_params, beam_params):
             if count%size is rank:
                 print "Doing Bolo : ", bolo_name, "Segment : ", segment, "Rank : ", rank, "Count :", count
                 bolo = Bolo(settings, pointing_params, beam_params, bolo_name)
+                #mem.check_memory("Scanning flag 3", machine, num_proc) 
                 hitmap_local = bolo.simulate_timestream(comm, segment, sky_map)
+                #mem.check_memory("Scanning flag 4", machine, num_proc) 
                 comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0) 
+                #mem.check_memory("Scanning flag 5", machine, num_proc) 
             count += 1
 
     if rank is 0:

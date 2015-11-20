@@ -28,19 +28,19 @@ def make_map_from_signal(signal, v, pol_ang, bolo_name, segment):
     H = P*D
     
     hitmap = H.T(np.ones(nsamples, dtype=np.float32))[:, 0]*2
-    #mask = hitmap>0
+    mask = hitmap>0
 
-    #H = H.restrict_new(mask, inplace=True)
-    #pack = PackOperator(mask, broadcast='rightward')
+    H = H.restrict_new(mask, inplace=True)
+    pack = PackOperator(mask, broadcast='rightward')
 
     A = H.T*H
     b = H.T*signal
-    #M = DiagonalOperator(1/hitmap[mask], broadcast='rightward')
+    M = DiagonalOperator(1/hitmap[mask], broadcast='rightward')
     #M = DiagonalOperator(1/hitmap, broadcast='rightward')
 
-    #solution = pcg(A, b, M=M, disp=True, tol=1e-4, maxiter=200)
-    solution = pcg(A, b, disp=True, tol=1e-4, maxiter=200)
-    #x = pack.T*solution['x']
+    solution = pcg(A, b, M=M, disp=True, tol=1e-4, maxiter=200)
+    #solution = pcg(A, b, disp=True, tol=1e-4, maxiter=200)
+    x = pack.T*solution['x']
     x = solution['x']
     x[hitmap == 0] = np.nan
     sky_map = x.T
