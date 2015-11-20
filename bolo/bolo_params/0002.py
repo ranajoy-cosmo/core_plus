@@ -10,4 +10,4 @@ bolo_params.beta = 45.0         #degrees
 bolo_params.del_x = 0.0         #arc-min
 bolo_params.del_y = 0.0         #arc-min
 
-bolo_params.pol_ang = 45.0       #degrees
+bolo_params.pol_ang = 30.0       #degrees
