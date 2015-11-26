@@ -1,7 +1,7 @@
 #PBS -S /bin/bash
-#PBS -q regular
-#PBS -l mppwidth=1152
-#PBS -l walltime=01:00:00
+#PBS -q debug
+#PBS -l mppwidth=48
+#PBS -l walltime=00:30:00
 #PBS -N core_sim
 #PBS -e core_sim_job.$PBS_JOBID.err
 #PBS -o core_sim_job.$PBS_JOBID.out
@@ -14,4 +14,4 @@ cd $PBS_O_WORKDIR
 export KMP_DUPLICATE_LIB_OK=TRUE
 module switch PrgEnv-gnu/5.2.56 PrgEnv-intel
 
-aprun -n 96 -N 2 -S 1 python timestream_pol.py
+aprun -n 8 -N 4 -S 2 python timestream_pol.py
