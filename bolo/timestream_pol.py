@@ -12,6 +12,7 @@ from pysimulators.interfaces.healpy import SceneHealpixCMB
 from pysimulators.interfaces.healpy import HealpixConvolutionGaussianOperator
 import simulation.pointing.generate_pointing as gen_p
 from simulation.beam.beam_kernel import get_beam
+from simulation.lib.utilities.time_util import get_time_stamp
 #import simulation.lib.utilities.memory_management as mem
 
 machine = 'edison'
@@ -129,31 +130,36 @@ def run_mpi(settings, pointing_params, beam_params):
     comm = MPI.COMM_WORLD
     size = comm.Get_size()
     rank = comm.Get_rank()
-    #mem.check_memory("Scanning flag 1", machine, num_proc) 
 
     num_segments = int(pointing_params.t_flight/pointing_params.t_segment)
     sky_map = get_sky_map(settings) 
-    #mem.check_memory("Scanning flag 2", machine, num_proc) 
+
+    time_stamp = [None]
+    if rank is 0:
+        time_stamp[0] = get_time_stamp()
+    time_stamp = comm.bcast(time_stamp, root=0)
+    settings.time_stamp = time_stamp[0]
+    pointing_params.time_stamp = time_stamp[0]
+
     if rank is 0:
         create_output_dirs(settings)
         hitmap = np.zeros(hp.nside2npix(settings.nside_in), dtype=np.float32)
     else:
         hitmap = None
+
     count = 0
     for bolo_name in settings.bolo_names:
         for segment in range(num_segments):
             if count%size is rank:
                 print "Doing Bolo : ", bolo_name, "Segment : ", segment, "Rank : ", rank, "Count :", count
                 bolo = Bolo(settings, pointing_params, beam_params, bolo_name)
-                #mem.check_memory("Scanning flag 3", machine, num_proc) 
                 hitmap_local = bolo.simulate_timestream(comm, segment, sky_map)
-                #mem.check_memory("Scanning flag 4", machine, num_proc) 
                 comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0) 
-                #mem.check_memory("Scanning flag 5", machine, num_proc) 
             count += 1
 
     if rank is 0:
         out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp)
+        print out_dir
         if settings.write_scanned_map:
             scanned_map = get_scanned_map(sky_map, hitmap)
             hp.write_map(os.path.join(out_dir, "scanned_map.fits"), scanned_map)
