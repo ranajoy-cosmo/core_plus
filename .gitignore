@@ -10,3 +10,4 @@ output
 custom_settings.py
 *.out
 maps/maps
+*test*
