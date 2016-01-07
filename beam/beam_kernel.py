@@ -34,6 +34,9 @@ def get_mesh(settings):
     y = np.linspace(-1.0*nxy*dd, nxy*dd, 2*nxy + 1)
     return np.meshgrid(x,y), x 
 
+def convolve_mesh(mesh, settings):
+    pass
+
 def display_beam_settings():
     if settings.do_pencil_beam:
         print "Pencil beam"
@@ -43,7 +46,7 @@ def display_beam_settings():
         print "Center : ", settings.center
         print "Tilt : ", settings.tilt, " degrees"
         print "Pixel size : ", settings.beam_resolution, "arcmins" 
-        print "No, of pixels per fwhm (minor-axis): ", 2*settings.fwhm_minor/settings.beam_resolution
+        print "No of pixels per fwhm (minor-axis): ", 2*settings.fwhm_minor/settings.beam_resolution
 
 def plot_beam():
     fig, ax = plt.subplots()

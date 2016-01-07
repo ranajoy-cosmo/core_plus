@@ -21,6 +21,7 @@ settings.fwhm_minor = 8.0                   #arcmins
 settings.center = (0.0, 0.0)                #arcmins
 settings.tilt = 0.0                        #degrees
 settings.normalise_beam = False
+settings.scan_radius = 45.0                 #degrees
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Display settings
