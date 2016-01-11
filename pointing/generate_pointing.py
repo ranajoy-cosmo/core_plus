@@ -1,17 +1,13 @@
-#! /usr/bin/env python 
+#! /usr/bin/env python
 
 import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
 import pyoperators as po
 import sys, os, importlib
-#import simulation.lib.utilities.memory_management as mem
-
-machine='edison'
-num_proc = 24
 
 def generate_pointing(segment, settings, bolo_params, del_beta=0.0):
-    #mem.check_memory("Pointing flag 1", macnine, num_proc) 
+    #mem.check_memory("Pointing flag 1", macnine, num_proc)
     settings = calculate_params(settings, bolo_params)
     if settings.display_params:
         display_params(settings, bolo_params)
@@ -28,30 +24,27 @@ def generate_pointing(segment, settings, bolo_params, del_beta=0.0):
     w_prec = 2*np.pi/settings.t_prec
     w_spin = 2*np.pi/settings.t_spin
     alpha = np.deg2rad(bolo_params.alpha)
-    #mem.check_memory("Pointing flag 2", macnine, num_proc) 
+    #mem.check_memory("Pointing flag 2", macnine, num_proc)
 
     R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(n_steps, alpha), w_spin*t_steps)
     v = R*u_init
-    #mem.check_memory("Pointing flag 3", macnine, num_proc) 
     R = po.Rotation3dOperator("Z", w_orbit*t_steps)
     v = R*v
-    #mem.check_memory("Pointing flag 4", macnine, num_proc) 
     #lat = np.pi/2 + np.random.random(n_steps)*np.pi*10/180
     #lon = np.random.random(n_steps)*np.pi*10/180
     #v = hp.ang2vec(lat, lon)
 
     if settings.do_pol:
         pol_init = np.deg2rad(bolo_params.pol_ang)
-        pol_ang = ((w_prec + w_spin)*t_steps + pol_init)%np.pi  
+        pol_ang = ((w_prec + w_spin)*t_steps + pol_init)%np.pi
         #pol_ang = np.random.random(n_steps)*np.pi
 
     if settings.write_pointing and del_beta==0.0:
-        if settings.do_pol: 
+        if settings.do_pol:
             write_pointing(settings, bolo_params, segment, v, pol_ang)
         else:
             write_pointing(settings, bolo_params, segment, v)
 
-    #mem.check_memory("Pointing flag 5", macnine, num_proc) 
     if settings.return_pointing:
         if settings.do_pol:
             return v, pol_ang
@@ -64,7 +57,7 @@ def make_output_dirs(settings):
         os.makedirs(os.path.join(out_dir, bolo_name))
 
 def write_pointing(settings, bolo_params, segment, v, pol=None):
-    out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp, bolo_params.bolo_name) 
+    out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp, bolo_params.bolo_name)
     out_file = str(segment+1).zfill(4)
     v_file = os.path.join(out_dir, 'vec_' + out_file)
     np.save(v_file, v[::settings.oversampling_rate])
@@ -114,17 +107,16 @@ def display_params(settings, bolo_params):
 def run_serial(settings):
     make_output_dirs(settings)
     for bolo_name in settings.bolo_names:
-        bolo_params = importlib.import_module("simulation.bolo.bolo_params." + bolo_name).bolo_params 
+        bolo_params = importlib.import_module("simulation.bolo.bolo_params." + bolo_name).bolo_params
         num_segments = int(settings.t_flight/settings.t_segment)
         print "Doing bolo : ", bolo_name
         for segment in range(num_segments):
             print "Segment : ", segment
-            generate_pointing(segment, settings, bolo_params) 
+            generate_pointing(segment, settings, bolo_params)
 
 if __name__ == "__main__":
     from custom_settings import settings
     #run_serial(settings)
-    bolo_params = importlib.import_module("simulation.bolo.bolo_params." + "0001").bolo_params 
+    bolo_params = importlib.import_module("simulation.bolo.bolo_params." + "0001").bolo_params
     settings = calculate_params(settings, bolo_params)
     display_params(settings, bolo_params)
-

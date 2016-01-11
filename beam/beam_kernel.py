@@ -5,6 +5,7 @@ import healpy as hp
 import matplotlib.pyplot as plt
 import sys
 from simulation.lib.plotting.my_imshow import new_imshow
+from pysimulators import BeamGaussian
 
 
 def gaussian_2d(settings, mesh):
@@ -35,7 +36,8 @@ def get_mesh(settings):
     return np.meshgrid(x,y), x 
 
 def convolve_mesh(mesh, settings):
-    pass
+    beam = BeamGaussian(np.radians(settings.fwhm_major/60.0))
+    beam_healpix = beam.healpix(settings.nside)
 
 def display_beam_settings():
     if settings.do_pencil_beam:

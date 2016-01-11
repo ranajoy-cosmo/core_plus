@@ -1,8 +1,7 @@
-import numpy as np
 import healpy as hp
 import os
 from simulation.lib.utilities.generic_class import Generic
-from simulation.settings.custom_settings import global_paths, global_scanning
+from simulation.settings.custom_settings import global_paths, global_scanning, global_system
 import simulation.pointing.default_settings as pointing_settings
 import simulation.beam.default_settings as beam_settings
 from simulation.lib.utilities.time_util import get_time_stamp
@@ -10,7 +9,7 @@ from simulation.lib.utilities.time_util import get_time_stamp
 settings = Generic()
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Scan Parameters 
+# Scan Parameters
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 settings.bolo_names = ['0001']
@@ -20,19 +19,19 @@ settings.do_pol = True
 settings.oversampling_rate = 1
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Read/Write Settings 
+# Read/Write Settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 settings.base_dir = global_paths.base_dir 
 settings.global_output_dir = global_paths.output_dir
 settings.input_map = os.path.join(global_paths.maps_dir, "sky_map_4096_0.fits")
 settings.bolo_param_dir = os.path.join(global_paths.base_dir, "bolo", "bolo_params")
-settings.time_stamp = get_time_stamp() 
+settings.time_stamp = get_time_stamp()
 
-settings.write_signal = True 
+settings.write_signal = True
 settings.write_scanned_map = True
 settings.write_hitmap = True
-settings.pipe_with_map_maker = False 
+settings.pipe_with_map_maker = False
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Pointing Parameters
@@ -50,6 +49,6 @@ pointing_params.time_stamp = settings.time_stamp
 # Beam Parameters
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-beam_params = beam_settings.settings 
+beam_params = beam_settings.settings
 beam_params.do_pencil_beam = True
-beam_params.beam_resolution = pointing_params.theta_co/settings.oversampling_rate 
+beam_params.beam_resolution = pointing_params.theta_co/settings.oversampling_rate

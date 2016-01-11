@@ -13,10 +13,6 @@ from pysimulators.interfaces.healpy import HealpixConvolutionGaussianOperator
 import simulation.pointing.generate_pointing as gen_p
 from simulation.beam.beam_kernel import get_beam
 from simulation.lib.utilities.time_util import get_time_stamp
-#import simulation.lib.utilities.memory_management as mem
-
-machine = 'edison'
-num_proc = 24
 
 class Bolo:
 
@@ -24,19 +20,19 @@ class Bolo:
             self.settings = settings
             self.pointing_params = pointing_params
             self.beam_params = beam_params
-            self.bolo_params = importlib.import_module("simulation.bolo.bolo_params." + bolo_name).bolo_params 
+            self.bolo_params = importlib.import_module("simulation.bolo.bolo_params." + bolo_name).bolo_params
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Simulating the time-ordered data for any beam
+# Simulating the time-ordered data for a given bolo with any beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
     def simulate_timestream(self, comm, segment, sky_map):
-        
+
         #Getting the beam profile and the del_beta
         beam_kernel, del_beta = get_beam(self.beam_params)
-        
+
         #Building the projection matrix P
-        nsamples = int(1000.0*self.pointing_params.t_segment/self.pointing_params.t_sampling)*self.settings.oversampling_rate 
+        nsamples = int(1000.0*self.pointing_params.t_segment/self.pointing_params.t_sampling)*self.settings.oversampling_rate
         npix = hp.nside2npix(self.settings.nside_in)
         matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
         P = ProjectionOperator(matrix)
@@ -73,7 +69,7 @@ class Bolo:
         npix = hp.nside2npix(self.settings.nside_in)
         matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
         matrix.data.value = 1
-        P = ProjectionOperator(matrix, shapein=npix, shapeout=nsamples)        
+        P = ProjectionOperator(matrix, shapein=npix, shapeout=nsamples)
         hit_pix = hp.vec2pix(self.settings.nside_in, v[...,0], v[...,1], v[...,2])
         matrix.data.index = hit_pix[..., None]
         P.matrix = matrix
@@ -81,7 +77,7 @@ class Bolo:
         return hitmap
 
 
-    def write_ts(self, signal, bolo_name, segment): 
+    def write_ts(self, signal, bolo_name, segment):
         out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp, bolo_name)
         ts_file = "ts_" + str(segment+1).zfill(4)
         np.save(os.path.join(out_dir, ts_file), signal)
@@ -104,7 +100,7 @@ def get_sky_map(settings):
 
 def run_serial(settings, pointing_params, beam_params):
     num_segments = int(pointing_params.t_flight/pointing_params.t_segment)
-    sky_map = get_sky_map(settings) 
+    sky_map = get_sky_map(settings)
     hitmap = np.zeros(sky_map.size)
     bolo_num = 0
     count = 0
@@ -132,7 +128,7 @@ def run_mpi(settings, pointing_params, beam_params):
     rank = comm.Get_rank()
 
     num_segments = int(pointing_params.t_flight/pointing_params.t_segment)
-    sky_map = get_sky_map(settings) 
+    sky_map = get_sky_map(settings)
 
     time_stamp = [None]
     if rank is 0:
@@ -154,7 +150,7 @@ def run_mpi(settings, pointing_params, beam_params):
                 print "Doing Bolo : ", bolo_name, "Segment : ", segment, "Rank : ", rank, "Count :", count
                 bolo = Bolo(settings, pointing_params, beam_params, bolo_name)
                 hitmap_local = bolo.simulate_timestream(comm, segment, sky_map)
-                comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0) 
+                comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0)
             count += 1
 
     if rank is 0:
