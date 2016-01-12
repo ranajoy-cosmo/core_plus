@@ -8,8 +8,8 @@ settings = generic_class.Generic()
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Resolution settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-nside = global_scanning.nside_in
-settings.beam_resolution = hp.nside2resol(nside, arcmin=True)            #arcmins
+settings.nside = global_scanning.nside_in
+settings.beam_resolution = hp.nside2resol(settings.nside, arcmin=True)            #arcmins
 settings.beam_cutoff = 7                    #sigmas
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
