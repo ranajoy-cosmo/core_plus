@@ -5,7 +5,7 @@ import healpy as hp
 import matplotlib.pyplot as plt
 import sys, copy, os, importlib
 from mpi4py import MPI
-from pysimulators import ProjectionOperator
+from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 from pysimulators import BeamGaussian
 from pysimulators.interfaces.healpy import SceneHealpixCMB
@@ -63,6 +63,8 @@ class Bolo:
 
         return hitmap
 
+    def get_beam_profile(self):
+        beam = BeamGaussian(self.settings
 
     def get_hitmap(self, v):
         nsamples = v.shape[0]
