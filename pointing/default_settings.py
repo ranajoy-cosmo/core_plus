@@ -9,7 +9,7 @@ settings = Generic()
 
 #mode is 1 if we define scan resolution and let scan speed be a function of the resolution
 #mode is 2 if we define scan speeds and let the scan resolution be a function of it
-settings.mode = 2 
+settings.mode = 1 
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Settings for time periods of scans
