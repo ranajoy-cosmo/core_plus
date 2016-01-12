@@ -9,7 +9,7 @@ settings = Generic()
 
 #mode is 1 if we define scan resolution and let scan speed be a function of the resolution
 #mode is 2 if we define scan speeds and let the scan resolution be a function of it
-settings.mode = 1 
+settings.mode = 2 
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Settings for time periods of scans
@@ -25,9 +25,9 @@ settings.oversampling_rate = 1
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Scan resolutions
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-nside = global_scanning.nside_in
-settings.theta_cross = hp.nside2resol(nside, arcmin=True)                          #arcmin
-settings.theta_co = hp.nside2resol(nside, arcmin=True)                             #arcmin
+settings.nside = global_scanning.nside_in
+settings.theta_cross = hp.nside2resol(settings.nside, arcmin=True)                          #arcmin
+settings.theta_co = hp.nside2resol(settings.nside, arcmin=True)                             #arcmin
 
 settings.do_pol = True
 

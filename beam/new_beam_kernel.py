@@ -8,36 +8,71 @@ import pyoperators as po
 from pysimulators import BeamGaussian
 from simulation.lib.plotting.my_imshow import new_imshow
 from custom_settings import settings
-from simulations.bolo.custom_settings import pointing_params
+from simulation.bolo.custom_settings import pointing_params
 bolo_params = importlib.import_module("simulation.bolo.bolo_params.0001").bolo_params
 
 
-beam = BeamGaussian(np.radians(settings.fwhm_major/60.0))
-print "FWHM :",settings.fwhm_major
-beam_healpix = beam.healpix(settings.nside)
-pointing_healpix = np.zeros(beam_healpix.size)
-del_beta = pointing_params.theta_co/pointing_params.oversampling_rate
-print "Theta-co :", pointing_params.theta_co
-print "Del beta :", del_beta
-n = int(3*settings.fwhm/del_beta)
-del_betas = np.arange(-n, n+1)*del_beta
-print del_betas
-for del_beta in del_betas:
-    v = generate_pointing(del_beta)
-    pix = hp.vec2pix(nside, v[...,0], v[...,1], v[...,2])
-    pointing_healpix[pix] = 1
-
-
 def generate_pointing(del_beta):
-    u_init = np.array([np.cos(bolo_params.beta + del_beta), 0.0, np.sin(bolo_params.beta + del_beta)])
-    t_spin = 360.0*60.0*np.sin(bolo_params.beta)*pointing_params.t_sampling/1000.0/pointing_params.theta_co
-    t_prec = 360.0*60.0*np.sin(bolo_params.alpha)*pointing_params.t_spin/pointing_params.theta_cross
-    w_prec = 2*np.pi/t_prec
-    w_spin = 2*np.pi/t_spin
+    beta = np.radians(bolo_params.beta + del_beta/60.0)
+    u_init = np.array([np.cos(beta), 0.0, np.sin(beta)])
+    w_prec = 2*np.pi/pointing_params.t_prec
+    w_spin = 2*np.pi/pointing_params.t_spin
     t_steps = 0.001*(pointing_params.t_sampling/pointing_params.oversampling_rate)*np.arange(-n, n+1)
-    R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(2*n+1, bolo_params.alpha), -w_spin*t_steps)
+    if del_beta==0.0:
+        print "Initial vector :", u_init
+        print "t steps :", t_steps
+    R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(2*n+1, np.radians(bolo_params.alpha)), -w_spin*t_steps)
     v = R*u_init
     return v
+
+beam = BeamGaussian(np.radians(settings.fwhm_major/60.0))
+beam_healpix = beam.healpix(settings.nside)
+
+print "Beta :", bolo_params.beta
+print "Alpha :", bolo_params.alpha
+print "FWHM :",settings.fwhm_major
+print "NSIDE :", settings.nside
+
+pointing_healpix = np.zeros(beam_healpix.size)
+
+theta_cross = 360.0*60.0*np.sin(bolo_params.alpha)*pointing_params.t_spin/pointing_params.t_prec
+theta_co = 360*60*np.sin(bolo_params.beta)*pointing_params.t_sampling/1000.0/pointing_params.t_spin
+del_beta = theta_co/pointing_params.oversampling_rate
+print "T Precession :", pointing_params.t_prec/60.0/60.0
+print "T Spin :", pointing_params.t_spin
+print "Theta-co :", theta_co
+print "Theta-cross :", theta_cross
+print "Del beta :", del_beta
+
+n = int(2*pointing_params.oversampling_rate*settings.fwhm_major/theta_co)
+#n = int(1000*pointing_params.t_spin/pointing_params.t_sampling)
+del_betas = np.arange(-n, n+1)*del_beta
+print del_betas
+
+beam_kernel = np.zeros(2*n+1)
+
+for del_beta in del_betas:
+    v = generate_pointing(del_beta)
+    lat, lon = hp.vec2ang(v)
+    pix = hp.vec2pix(settings.nside, v[...,0], v[...,1], v[...,2])
+    
+    beam_row = hp.get_interp_val(beam_healpix, lat, lon)
+    beam_kernel = np.vstack((beam_kernel, beam_row))
+    
+    """
+    print pix
+    if del_beta==0.0:
+        #v = generate_pointing(del_beta)
+        #pix = hp.vec2pix(settings.nside, v[...,0], v[...,1], v[...,2])
+        lat, lon = hp.pix2ang(settings.nside, pix)
+        print "Lat :", lat
+        print "Lon :", lon
+    pointing_healpix[pix] = 1
+    """
+
+beam_kernel = beam_kernel[1:]
+print beam_kernel.shape
+
 
 def display_beam_settings():
     if settings.do_pencil_beam:
@@ -55,3 +90,5 @@ def plot_beam():
     im = new_imshow(ax, beam_kernel)
     fig.colorbar(im, ax=ax)
     plt.show()
+
+plot_beam()
