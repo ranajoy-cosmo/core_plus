@@ -25,26 +25,35 @@ def generate_pointing(del_beta):
     v = R*u_init
     return v
 
+settings.nside = 4096*4
+
 beam = BeamGaussian(np.radians(settings.fwhm_major/60.0))
 beam_healpix = beam.healpix(settings.nside)
 
 print "Beta :", bolo_params.beta
 print "Alpha :", bolo_params.alpha
-print "FWHM :",settings.fwhm_major
+print "FWHM :", settings.fwhm_major
 print "NSIDE :", settings.nside
 
 pointing_healpix = np.zeros(beam_healpix.size)
 
-theta_cross = 360.0*60.0*np.sin(bolo_params.alpha)*pointing_params.t_spin/pointing_params.t_prec
-theta_co = 360*60*np.sin(bolo_params.beta)*pointing_params.t_sampling/1000.0/pointing_params.t_spin
-del_beta = theta_co/pointing_params.oversampling_rate
+if pointing_params.mode==1:
+    settings.t_spin = 360.0*60.0*np.sin(bolo_params.beta)*settings.t_sampling/1000.0/settings.theta_co
+    settings.t_prec = 360.0*60.0*np.sin(bolo_params.alpha)*settings.t_spin/settings.theta_cross
+
+if pointing_params.mode==2:
+    pointing_params.theta_cross = 360.0*60.0*np.sin(bolo_params.alpha)*pointing_params.t_spin/pointing_params.t_prec
+    pointing_params.theta_co = 360*60*np.sin(bolo_params.beta)*pointing_params.t_sampling/1000.0/pointing_params.t_spin
+
+del_beta = pointing_params.theta_co/pointing_params.oversampling_rate
 print "T Precession :", pointing_params.t_prec/60.0/60.0
 print "T Spin :", pointing_params.t_spin
-print "Theta-co :", theta_co
-print "Theta-cross :", theta_cross
+print "Theta-co :", pointing_params.theta_co
+print "Theta-cross :", pointing_params.theta_cross
+print "Oversampling rate :", pointing_params.oversampling_rate
 print "Del beta :", del_beta
 
-n = int(2*pointing_params.oversampling_rate*settings.fwhm_major/theta_co)
+n = int(2*pointing_params.oversampling_rate*settings.fwhm_major/pointing_params.theta_co)
 #n = int(1000*pointing_params.t_spin/pointing_params.t_sampling)
 del_betas = np.arange(-n, n+1)*del_beta
 print del_betas
