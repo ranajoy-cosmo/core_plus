@@ -17,8 +17,8 @@ settings.nside_deg = global_scanning.nside_out
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Beam and Polarisation Settings 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-settings.fwhm_arcmin = 8.0
-settings.fwhm = np.deg2rad(settings.fwhm_arcmin/60.0)
+settings.fwhm_arcmin = 8.0                                          #arc-minutes
+settings.fwhm = np.deg2rad(settings.fwhm_arcmin/60.0)               #radians
 settings.do_unbeamed_map = True
 settings.do_beamed_map = True 
 settings.do_degraded_map = True 

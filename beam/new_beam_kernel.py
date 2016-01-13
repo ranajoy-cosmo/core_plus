@@ -73,22 +73,10 @@ for del_beta in del_betas:
 beam_kernel = beam_kernel[1:]
 print beam_kernel.shape
 
-
-def display_beam_settings():
-    if settings.do_pencil_beam:
-        print "Pencil beam"
-    else:
-        print "Major axis(FWHM) : ", settings.fwhm_major, "arcmins"
-        print "Minor axis(FWHM) : ", settings.fwhm_minor, "arcmins"
-        print "Center : ", settings.center
-        print "Tilt : ", settings.tilt, " degrees"
-        print "Pixel size : ", settings.beam_resolution, "arcmins" 
-        print "No, of pixels per fwhm (minor-axis): ", 2*settings.fwhm_minor/settings.beam_resolution
-
 def plot_beam():
     fig, ax = plt.subplots()
     im = new_imshow(ax, beam_kernel)
     fig.colorbar(im, ax=ax)
     plt.show()
 
-plot_beam()
+#plot_beam()

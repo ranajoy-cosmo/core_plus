@@ -35,8 +35,6 @@ def get_signal(rank, settings):
     signal = np.load(os.path.join(out_dir, "bolo_ts", signal_name))
     v = np.load(os.path.join(out_dir, "pointing", v_name))
     return signal, v
-    if rank is 0:
-        write_map(settings, sky_map, hitmap)
 
 def write_map(settings, sky_map, hitmap):
     out_dir = os.path.join(settings.global_output_dir, "reconstructing", settings.time_stamp)

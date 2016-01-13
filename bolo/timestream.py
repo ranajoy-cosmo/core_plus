@@ -4,7 +4,7 @@ import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
 import sys, copy, os, importlib
-from mpi4py import MPI
+#from mpi4py import MPI
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix
 from pysimulators import BeamGaussian
@@ -28,7 +28,9 @@ class Bolo:
     def simulate_timestream(self, comm, segment, sky_map):
         
         #Getting the beam profile and the del_beta
-        beam_kernel, del_beta = get_beam(self.beam_params)
+        #beam_kernel, del_beta = get_beam(self.beam_params)
+        from simulation.beam.new_beam_kernel import beam_kernel
+        from simulation.beam.new_beam_kernel import del_betas as del_beta
         
         #Building the projection matrix P
         nsamples = int(1000.0*self.pointing_params.t_segment/self.pointing_params.t_sampling)*self.settings.oversampling_rate 
@@ -145,4 +147,4 @@ def run_mpi(settings, pointing_params, beam_params):
 
 if __name__=="__main__":
     from custom_settings import settings, pointing_params, beam_params
-    run_mpi(settings, pointing_params, beam_params)
+    run_serial(settings, pointing_params, beam_params)
