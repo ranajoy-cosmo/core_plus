@@ -17,20 +17,24 @@ def make_maps(settings=None):
     
     if settings.do_unbeamed_map:
         np.random.seed(map_seed)
-        sky_map = hp.synfast(input_spectra, nside=settings.nside, lmax=settings.lmax, new=True, pol=settings.do_pol)
+        sky_map = hp.synfast(input_spectra, nside=settings.nside, lmax=settings.lmax, new=True, pol=settings.do_pol, pixwin=settings.do_pixel_window)
         sky_map = np.array(sky_map, dtype=np.float32)
         if settings.write_map:
-            map_file_name = settings.map_file + str(settings.nside) + '_0.fits'
-            hp.write_map(map_file_name, sky_map)
+            map_file_name = settings.map_file + str(settings.nside) + '_0'
+            if settings.do_pixel_window:
+                map_file_name = map_file_name + '_pixwin'
+            hp.write_map(map_file_name + '.fits', sky_map)
 
 
     if settings.do_beamed_map:
         np.random.seed(map_seed)
-        sky_map_beamed = hp.synfast(input_spectra, nside=settings.nside, lmax=settings.lmax, fwhm=settings.fwhm, new=True, pol=settings.do_pol)
+        sky_map_beamed = hp.synfast(input_spectra, nside=settings.nside, lmax=settings.lmax, fwhm=settings.fwhm, new=True, pol=settings.do_pol, pixwin=settings.do_pixel_window)
         sky_map_beamed = np.array(sky_map_beamed, dtype=np.float32)
         if settings.write_map:
-            map_file_name = settings.map_file + str(settings.nside) + '_' + str(int(settings.fwhm_arcmin)) +".fits"
-            hp.write_map(map_file_name, sky_map_beamed)
+            map_file_name = settings.map_file + str(settings.nside) + '_' + str(int(settings.fwhm_arcmin))
+            if settings.do_pixel_window:
+                map_file_name = map_file_name + '_pixwin'
+            hp.write_map(map_file_name + '.fits', sky_map_beamed)
 
 
     if settings.do_degraded_map:
