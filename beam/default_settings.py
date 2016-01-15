@@ -10,18 +10,18 @@ settings = generic_class.Generic()
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 settings.nside = global_scanning.nside_in
 settings.beam_resolution = hp.nside2resol(settings.nside, arcmin=True)            #arcmins
-settings.beam_cutoff = 7                    #sigmas
+settings.beam_cutoff = 5                    #sigmas
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Beam shape settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 settings.do_pencil_beam = False
-settings.fwhm_major = 8.0                  #arcmins
+settings.fwhm_major = 8.0                   #arcmins
 settings.fwhm_minor = 8.0                   #arcmins
 settings.center = (0.0, 0.0)                #arcmins
-settings.tilt = 0.0                        #degrees
-settings.normalise_beam = False
+settings.tilt = 0.0                         #degrees
 settings.scan_radius = 45.0                 #degrees
+settings.check_normalisation = True
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Display settings
