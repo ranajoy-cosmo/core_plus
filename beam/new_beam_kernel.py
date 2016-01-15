@@ -25,10 +25,6 @@ def generate_pointing(del_beta):
     v = R*u_init
     return v
 
-settings.nside = 4096*4
-
-beam = BeamGaussian(np.radians(settings.fwhm_major/60.0))
-beam_healpix = beam.healpix(settings.nside)
 
 print "Beta :", bolo_params.beta
 print "Alpha :", bolo_params.alpha
@@ -46,6 +42,7 @@ if pointing_params.mode==2:
     pointing_params.theta_co = 360*60*np.sin(bolo_params.beta)*pointing_params.t_sampling/1000.0/pointing_params.t_spin
 
 del_beta = pointing_params.theta_co/pointing_params.oversampling_rate
+
 print "T Precession :", pointing_params.t_prec/60.0/60.0
 print "T Spin :", pointing_params.t_spin
 print "Theta-co :", pointing_params.theta_co

@@ -18,10 +18,20 @@ def gaussian_2d(settings, mesh):
     b = -1*np.sin(2*theta)/(4*sigma_major**2) + np.sin(2*theta)/(4*sigma_minor**2)
     c = (np.sin(theta)**2)/(2*sigma_major**2) + (np.cos(theta)**2)/(2*sigma_minor**2)
     beam_kernel = np.exp(-1*(a*(x - x0)**2 + 2*b*(x - x0)*(y - y0) + c*(y - y0)**2)) 
-    if settings.normalise_beam:
-        norm = 2*np.pi*sigma_major*sigma_minor
-        beam_kernel /= norm
     return beam_kernel
+
+
+def check_normalisation(settings, beam_kernel):
+    factor = 2*np.sqrt(2*np.log(2))
+    sigma_major = settings.fwhm_major/factor
+    sigma_minor = settings.fwhm_minor/factor
+    norm = 2*np.pi*sigma_major*sigma_minor
+    beam_kernel /= norm
+    dx = settings.beam_resolution
+    dy = settings.beam_resolution
+    integral = np.sum(beam_kernel)*dx*dy
+    print "The integral of the beam is :", integral
+
 
 def get_mesh(settings):
     factor = 2*np.sqrt(2*np.log(2))
@@ -34,16 +44,20 @@ def get_mesh(settings):
     y = np.linspace(-1.0*nxy*dd, nxy*dd, 2*nxy + 1)
     return np.meshgrid(x,y), x 
 
+
 def display_beam_settings():
     if settings.do_pencil_beam:
         print "Pencil beam"
     else:
-        print "Major axis(FWHM) : ", settings.fwhm_major, "arcmins"
-        print "Minor axis(FWHM) : ", settings.fwhm_minor, "arcmins"
-        print "Center : ", settings.center
-        print "Tilt : ", settings.tilt, " degrees"
-        print "Pixel size : ", settings.beam_resolution, "arcmins" 
-        print "No of pixels per fwhm (minor-axis): ", 2*settings.fwhm_minor/settings.beam_resolution
+        factor = 2*np.sqrt(2*np.log(2))
+        print "Major axis(FWHM) :", settings.fwhm_major, "arcmins"
+        print "Minor axis(FWHM) :", settings.fwhm_minor, "arcmins"
+        print "Center :", settings.center
+        print "Tilt :", settings.tilt, "degrees"
+        print "Pixel size :", settings.beam_resolution, "arcmins" 
+        print "Kernel width in FWHM of beam:", 2*settings.beam_cutoff/factor 
+        print "# of pixels per FWHM (minor-axis) of beam :", settings.fwhm_minor/settings.beam_resolution
+        print "Total # of pixels in kernel cross-section :", int(2*settings.beam_cutoff*settings.fwhm_major/factor/settings.beam_resolution) 
 
 def plot_beam():
     fig, ax = plt.subplots()
@@ -61,8 +75,13 @@ if __name__=="__main__":
         mesh, del_beta = get_mesh(settings)
         beam_kernel = gaussian_2d(settings, mesh)
 
+    if settings.check_normalisation:
+        check_normalisation(settings, beam_kernel)
     if settings.display_beam_settings:
         display_beam_settings()
+
+    beam_kernel/=np.max(beam_kernel)
+
     if settings.plot_beam:
         plot_beam()
 
