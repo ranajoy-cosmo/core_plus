@@ -65,7 +65,7 @@ def normalise(q, n=None):
 # output shape : (N,4)
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-def vec_to_quat(vectors):
+def vec2quat(vectors):
     return np.insert(vectors, 0, 0, axis=-1)
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
@@ -75,6 +75,8 @@ def vec_to_quat(vectors):
 # s -> scalar part
 # v -> vector part
 # a*b = (as*bs - av.bv, as*bv + bs*av + avXbv)
+# input shape : (N,4), (N,4)
+# output shape : (N,4)
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 def multiply(q1, q2):
@@ -88,6 +90,29 @@ def multiply(q1, q2):
 
     return np.insert(qv, 0, qs, axis=-1) 
 
-def rotate(thetas, axis, vectors):
-    r = make_quaternion(thetas, axis)
-    return multiply(multiply(r, vec_to_quat(vectors)), conjugate(r))[...,1:]
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+# Rotate a vector v by the normalised quaternion q
+# v' = q*v*conj(q)
+# input shape : (N,4), (N,3)
+# output shape : (N,3)
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+
+def rotate(q, v):
+    return multiply(multiply(q, vec2quat(v)), conjugate(q))[...,1:]
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+# Rotate vectors about an axis by angles of theta 
+# input shape : (N,), (3,), (N,3)
+# output shape : (N,3)
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+
+def rotate_about_fixed_axis(thetas, axis, vectors):
+    return rotate(make_quaternion(thetas, axis), vectors)
+
+def quaternion_XYX(theta1, theta2, theta3):
+    q1 = np.cos(theta2/2)*np.cos((theta1+theta3)/2)
+    q2 = np.cos(theta2/2)*np.sin((theta1+theta3)/2)
+    q3 = np.sin(theta2/2)*np.cos((theta1-theta3)/2)
+    q4 = np.sin(theta2/2)*np.sin((theta1-theta3)/2)
+
+    return np.hstack((q1[...,None], q2[...,None], q3[...,None], q4[...,None]))
