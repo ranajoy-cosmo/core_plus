@@ -3,6 +3,7 @@
 import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
+import pyoperators as po
 import sys
 from simulation.lib.plotting.my_imshow import new_imshow
 
@@ -14,13 +15,11 @@ def gaussian_angular(settings, mesh):
     return beam_kernel
 
 def get_mesh(settings):
-    factor = 2*np.sqrt(2*np.log(2))                     #Factor for conversion between FWHM and sigma
-    sigma = settings.fwhm_major/factor                  #Corresponding sigma in arcmin
-    size = settings.beam_cutoff*sigma                   #Half-width of the beam kernel in arcmin
+    size = settings.beam_cutoff*settings.fwhm                   #Half-width of the beam kernel in arcmin
     dd = settings.beam_resolution                       #Beam pixel size in arcmin
-    nxy = int(size/dd)                                  #No. of pixels per half width
+    n = int(size/dd/2)                                  #No. of pixels per half width
 
-    lat = settings.scan_radius + np.arange(-nxy, nxy+1)*dd/60.0
+    lat = settings.scan_radius + np.arange(-n, n+1)*dd/60.0
     lon = np.arange(-nxy, nxy+1)*dd/60.0/np.sin(np.radians(settings.scan_radius))
     #print lat
     #print lon
