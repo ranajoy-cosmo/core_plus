@@ -138,6 +138,16 @@ def rotate_about_fixed_axis(thetas, axis, vectors, degree=False):
 
     return rotate(make_quaternion(thetas, axis, degree), vectors)
 
+def quaternion_from_euler(theta1, theta2, theta3, degree=False, mode='XYX'):
+
+    """
+    Create the quaternion corresponding to the Euler angles given
+    """
+
+    if mode is 'XYX':
+        q = quaternion_XYX(theta1, theta2, theta3, degree)
+
+    return q
 
 def euler_rotations(theta1, theta2, theta3, vectors, degree=False, mode='XYX'):
 
@@ -145,7 +155,6 @@ def euler_rotations(theta1, theta2, theta3, vectors, degree=False, mode='XYX'):
     Rotate a set of vectors by the 3 Euler angles given in the sequence mentioned
     """
 
-    if mode is 'XYX':
-        q = quaternion_XYX(theta1, theta2, theta3, degree)
+    q = quaternion_from_euler(theta1, theta2, theta3, degree, mode)
 
     return transform(q, vectors)

@@ -37,6 +37,5 @@ settings.do_pol = True
 settings.bolo_names = ['0001', '0002']
 settings.time_stamp = get_time_stamp()
 settings.global_output_dir = global_paths.output_dir
-settings.write_pointing = True 
 settings.return_pointing = False
 settings.display_params = False 

@@ -6,7 +6,8 @@ from simulation.lib.utilities.generic_class import Generic
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 global_paths = Generic()
 
-global_paths.base_dir = os.path.abspath("../")
+#global_paths.base_dir = os.path.abspath("../")
+global_paths.base_dir = "/home/ranajoy/COrE/simulation"
 
 global_paths.output_dir = os.path.join(global_paths.base_dir, 'output')
 global_paths.spectra_dir = os.path.join(global_paths.base_dir, 'spectra')
@@ -17,8 +18,8 @@ global_paths.maps_dir = os.path.join(global_paths.base_dir, 'maps', 'maps')
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 global_scanning = Generic()
 
-global_scanning.nside_in = 4096
-global_scanning.nside_out = 1024
+global_scanning.nside_in = 1024
+global_scanning.nside_out = 256
 global_scanning.lmax = 4000
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*

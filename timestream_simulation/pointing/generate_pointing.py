@@ -7,7 +7,6 @@ import pyoperators as po
 import sys, os, importlib
 
 def generate_pointing(segment, settings, bolo_params, del_beta=0.0):
-    #mem.check_memory("Pointing flag 1", macnine, num_proc)
     settings = calculate_params(settings, bolo_params)
     if settings.display_params:
         display_params(settings, bolo_params)
@@ -24,7 +23,6 @@ def generate_pointing(segment, settings, bolo_params, del_beta=0.0):
     w_prec = 2*np.pi/settings.t_prec
     w_spin = 2*np.pi/settings.t_spin
     alpha = np.deg2rad(bolo_params.alpha)
-    #mem.check_memory("Pointing flag 2", macnine, num_proc)
 
     R = po.Rotation3dOperator("XY'X''", -1.0*w_prec*t_steps, -1.0*np.full(n_steps, alpha), w_spin*t_steps)
     v = R*u_init

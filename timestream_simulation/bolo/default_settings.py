@@ -2,7 +2,7 @@ import healpy as hp
 import os
 from simulation.lib.utilities.generic_class import Generic
 from simulation.settings.custom_settings import global_paths, global_scanning, global_system
-import simulation.pointing.default_settings as pointing_settings
+import simulation.timestream_simulation.pointing.default_settings as pointing_settings
 import simulation.beam.default_settings as beam_settings
 from simulation.lib.utilities.time_util import get_time_stamp
 
@@ -24,11 +24,10 @@ settings.oversampling_rate = 1
 
 settings.base_dir = global_paths.base_dir 
 settings.global_output_dir = global_paths.output_dir
-settings.input_map = os.path.join(global_paths.maps_dir, "sky_map_4096_0.fits")
+settings.input_map = os.path.join(global_paths.maps_dir, "sky_map_1024_0_pixwin.fits")
 settings.bolo_param_dir = os.path.join(global_paths.base_dir, "bolo", "bolo_params")
 settings.time_stamp = get_time_stamp()
 
-settings.write_signal = True
 settings.write_scanned_map = True
 settings.write_hitmap = True
 settings.pipe_with_map_maker = False

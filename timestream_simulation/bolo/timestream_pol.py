@@ -3,15 +3,19 @@
 import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
-import sys, copy, os, importlib
-from mpi4py import MPI
+import sys
+import copy
+import os
+import importlib
+import h5py
+#from mpi4py import MPI
+from simulation.beam.beam_kernel_cartesian import get_beam
 from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 from pysimulators import BeamGaussian
 from pysimulators.interfaces.healpy import SceneHealpixCMB
 from pysimulators.interfaces.healpy import HealpixConvolutionGaussianOperator
-import simulation.pointing.generate_pointing as gen_p
-from simulation.beam.beam_kernel import get_beam
+import simulation.timestream_simulation.pointing.sim_pointing as gen_p
 from simulation.lib.utilities.time_util import get_time_stamp
 
 class Bolo:
@@ -20,18 +24,17 @@ class Bolo:
             self.settings = settings
             self.pointing_params = pointing_params
             self.beam_params = beam_params
-            self.bolo_params = importlib.import_module("simulation.bolo.bolo_params." + bolo_name).bolo_params
+            self.bolo_params = importlib.import_module("simulation.timestream_simulation.bolo.bolo_params." + bolo_name).bolo_params
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Simulating the time-ordered data for a given bolo with any beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-    def simulate_timestream(self, comm, segment, sky_map):
+    def simulate_timestream(self, segment, sky_map, segment_group):
 
         #Getting the beam profile and the del_beta
-        #beam_kernel, del_beta = get_beam(self.beam_params)
-        from simulation.beam.new_beam_kernel import beam_kernel
-        from simulation.beam.new_beam_kernel import del_betas as del_beta
+        beam_kernel, del_beta = get_beam(self.beam_params)
+        #from simulation.beam.beam_kernel_cartesian import beam_kernel, del_beta
 
         #Building the projection matrix P
         nsamples = int(1000.0*self.pointing_params.t_segment/self.pointing_params.t_sampling)*self.settings.oversampling_rate
@@ -42,8 +45,10 @@ class Bolo:
         signal = np.zeros(nsamples)
         matrix.data.value[:, 0, 0, 0] = 0.5
 
+        t_start = self.pointing_params.t_segment*segment
+
         for i in range(del_beta.size):
-            v, pol_ang = gen_p.generate_pointing(segment, self.pointing_params, self.bolo_params, del_beta[i])
+            v, pol_ang = gen_p.generate_pointing(self.pointing_params, self.bolo_params, segment_group, t_start, del_beta[i])
             hit_pix = hp.vec2pix(self.settings.nside_in, v[...,0], v[...,1], v[...,2])
             matrix.data.index[:, 0] = hit_pix
             matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol_ang)
@@ -60,13 +65,9 @@ class Bolo:
 
         hitmap = self.get_hitmap(v_central)
 
-        if self.settings.write_signal:
-            self.write_ts(signal, self.bolo_params.bolo_name, segment)
+        segment_group.create_dataset("ts_signal", data=signal)
 
         return hitmap
-
-    def get_beam_profile(self):
-        beam = BeamGaussian(self.settings
 
     def get_hitmap(self, v):
         nsamples = v.shape[0]
@@ -81,20 +82,10 @@ class Bolo:
         return hitmap
 
 
-    def write_ts(self, signal, bolo_name, segment):
-        out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp, bolo_name)
-        ts_file = "ts_" + str(segment+1).zfill(4)
-        np.save(os.path.join(out_dir, ts_file), signal)
-
 def get_scanned_map(sky_map, hitmap):
     valid = hitmap>0
     sky_map[...,~valid] = np.nan
     return sky_map
-
-def create_output_dirs(settings):
-    out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp)
-    for bolo_name in settings.bolo_names:
-        os.makedirs(os.path.join(out_dir, bolo_name))
 
 def get_sky_map(settings):
     sky_map = np.array(hp.read_map(settings.input_map, field=(0,1,2)))
@@ -104,22 +95,24 @@ def get_sky_map(settings):
 
 def run_serial(settings, pointing_params, beam_params):
     num_segments = int(pointing_params.t_flight/pointing_params.t_segment)
-    sky_map = get_sky_map(settings)
-    hitmap = np.zeros(sky_map.size)
-    bolo_num = 0
-    count = 0
+    sky_map = get_sky_map(settings) 
+    hitmap = np.zeros(sky_map[0].size)
+
+    out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp)
+    os.makedirs(out_dir)
+    
+    root_file = h5py.File(os.path.join(out_dir, "data.hdf5"), libver="latest")
 
     for bolo_name in settings.bolo_names:
         bolo = Bolo(settings, pointing_params, beam_params, bolo_name)
+        bolo_group = root_file.create_group(bolo_name)
         print "Doing Bolo : ", bolo_name
         for i in range(num_segments):
             print "Segment : ", i
-            print "Rank : ", count
-            hitmap += bolo.simulate_timestream(None, count, sky_map)
-            count += 1
-        bolo_num += 1
+            segment_name = str(i+1).zfill(4)
+            segment_group = bolo_group.create_group(segment_name)
+            hitmap += bolo.simulate_timestream(i, sky_map, segment_group)
 
-    out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp)
     if settings.write_scanned_map:
         scanned_map = get_scanned_map(sky_map, hitmap)
         hp.write_map(os.path.join(out_dir, "scanned_map.fits"), scanned_map)
@@ -153,7 +146,7 @@ def run_mpi(settings, pointing_params, beam_params):
             if count%size is rank:
                 print "Doing Bolo : ", bolo_name, "Segment : ", segment, "Rank : ", rank, "Count :", count
                 bolo = Bolo(settings, pointing_params, beam_params, bolo_name)
-                hitmap_local = bolo.simulate_timestream(comm, segment, sky_map)
+                hitmap_local = bolo.simulate_timestream(segment, sky_map)
                 comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0)
             count += 1
 
@@ -168,4 +161,4 @@ def run_mpi(settings, pointing_params, beam_params):
 
 if __name__=="__main__":
     from custom_settings import settings, pointing_params, beam_params
-    run_mpi(settings, pointing_params, beam_params)
+    run_serial(settings, pointing_params, beam_params)
