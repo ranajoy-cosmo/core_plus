@@ -17,7 +17,9 @@ for the NASA Shuttle Program.
 def quaternion_XYX(theta1, theta2, theta3, degree=False):
 
     if degree is True:
-        theta1_rad, theta2_rad, theta3_rad = deg2rad(theta1, theta2, theta3)
+        theta1_rad = deg2rad(theta1)
+        theta2_rad = deg2rad(theta2)
+        theta3_rad = deg2rad(theta3)
     else:
         theta1_rad, theta2_rad, theta3_rad = theta1, theta2, theta3
 

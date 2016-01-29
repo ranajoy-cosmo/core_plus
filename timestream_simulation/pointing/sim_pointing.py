@@ -27,7 +27,7 @@ def generate_pointing(settings, bolo_params, segment_group, t_start, del_beta=0.
     w_spin = 2*np.pi/settings.t_spin
     alpha = np.deg2rad(bolo_params.alpha)
 
-    r_instrument = quaternion.quaternion_from_euler(w_prec*t_steps, alpha, w_spin*t_steps)
+    r_instrument = quaternion.quaternion_from_euler(w_prec*t_steps, -1.0*alpha, w_spin*t_steps)
     r_orbit = quaternion.make_quaternion(w_orbit*t_steps, np.array([0,0,1]))
     r_total = quaternion.multiply(r_orbit, r_instrument)
 
