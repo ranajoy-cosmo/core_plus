@@ -1,10 +1,9 @@
 #! /usr/bin/env python 
 
 import numpy as np
-import healpy as hp
 import matplotlib.pyplot as plt
-import pyoperators as po
 import sys
+import simulation.lib.quaternion.quaternion as qt
 from simulation.lib.plotting.my_imshow import new_imshow
 from simulation.lib.geometry.conversions import *
 
@@ -33,7 +32,16 @@ def get_mesh(settings):
     dd = settings.beam_resolution                       #Beam pixel size in arcmin
     n = int(size/dd/2)                                  #No. of pixels per half width
 
-    lat = settings.scan_radius + np.arange(-n, n+1)*am2deg(dd)
+    rot_axis = np.array([np.cos(deg2rad(settings.scan_radius), 0.0, np.sin(deg2rad(settings.scan_radius)))])
+
+    angles = np.arange(-n, n+1)*am2deg(dd)
+    mesh = np.full((angles.size, 2), 0)
+    
+    q = qt.make_quaternion(angles, axis, degree=True)
+
+    for lat in angles:
+        lon = qt.transform(q, np.array([])
+
     lon = np.arange(-n, n+1)*am2deg(dd)/np.sin(deg2rad(settings.scan_radius))
 
     llon, llat = np.meshgrid(lon, lat)
@@ -69,16 +77,6 @@ def display_beam_settings(settings, mesh):
         print "Expected # of pixels in kernel cross-section :", int(settings.beam_cutoff*settings.fwhm_major/settings.beam_resolution/2)*2 + 1 
         print "Actual # of pixels in kernel cross-section :", mesh[0][0].size 
 
-def get_hitmap(mesh, beam_kernel):
-    hitmap = np.zeros(12*settings.nside**2)
-    pix = hp.ang2pix(settings.nside, np.radians(mesh[1].flatten()), np.radians(mesh[0].flatten()))
-    hitmap[pix] = 1#np.arange(pix.size + 1)
-
-    beam_healpix = np.zeros(12*settings.nside**2)
-    beam_healpix[pix] = beam_kernel.flatten()
-
-    return hitmap, beam_healpix
-
 
 def plot_beam():
     fig, ax = plt.subplots()
@@ -97,8 +95,6 @@ if __name__=="__main__":
         ang_dist_mesh = get_ang_distance(mesh)
         beam_kernel, beam_weights = gaussian_angular(settings, ang_dist_mesh)
     beam_kernel/=np.max(beam_kernel)
-
-    hitmap, beam_healpix = get_hitmap(mesh, beam_kernel)
 
     if settings.display_beam_settings:
         display_beam_settings(settings, mesh)

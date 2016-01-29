@@ -34,18 +34,18 @@ def check_normalisation(settings, beam_kernel):
 
 
 def get_mesh(settings):
-    factor = 2*np.sqrt(2*np.log(2))
-    sigma_max = max(settings.fwhm_major, settings.fwhm_minor)/factor
     offset_max = max(np.abs(settings.center))
-    size = settings.beam_cutoff*sigma_max + offset_max
+    size = settings.beam_cutoff*settings.fwhm_major + offset_max
     dd = settings.beam_resolution
-    nxy = int(size/dd)
-    x = np.linspace(-1.0*nxy*dd, nxy*dd, 2*nxy + 1)
-    y = np.linspace(-1.0*nxy*dd, nxy*dd, 2*nxy + 1)
+    nxy = int(size/dd/2)
+    x = np.arange(-nxy, nxy+1)*settings.beam_resolution
+    y = np.arange(-nxy, nxy+1)*settings.beam_resolution
+    #x = np.linspace(-1.0*nxy*dd, nxy*dd, 2*nxy + 1)
+    #y = np.linspace(-1.0*nxy*dd, nxy*dd, 2*nxy + 1)
     return np.meshgrid(x,y), x 
 
 
-def display_beam_settings():
+def display_beam_settings(settings, mesh):
     if settings.do_pencil_beam:
         print "Pencil beam"
     else:
@@ -55,11 +55,12 @@ def display_beam_settings():
         print "Center :", settings.center
         print "Tilt :", settings.tilt, "degrees"
         print "Pixel size :", settings.beam_resolution, "arcmins" 
-        print "Kernel width in FWHM of beam:", 2*settings.beam_cutoff/factor 
+        print "Kernel width in FWHM of beam:", settings.beam_cutoff
         print "# of pixels per FWHM (minor-axis) of beam :", settings.fwhm_minor/settings.beam_resolution
-        print "Total # of pixels in kernel cross-section :", int(2*settings.beam_cutoff*settings.fwhm_major/factor/settings.beam_resolution) 
+        print "Expected # of pixels in kernel cross-section :", int(settings.beam_cutoff*settings.fwhm_major/settings.beam_resolution/2)*2 + 1 
+        print "Actual # of pixels in kernel cross-section :", mesh[0][0].size 
 
-def plot_beam():
+def plot_beam(beam_kernel):
     fig, ax = plt.subplots()
     im = new_imshow(ax, beam_kernel)
     fig.colorbar(im, ax=ax)
@@ -78,12 +79,12 @@ if __name__=="__main__":
     if settings.check_normalisation:
         check_normalisation(settings, beam_kernel)
     if settings.display_beam_settings:
-        display_beam_settings()
+        display_beam_settings(settings, mesh)
 
     beam_kernel/=np.max(beam_kernel)
 
     if settings.plot_beam:
-        plot_beam()
+        plot_beam(beam_kernel)
 
 
 def get_beam(settings=None):

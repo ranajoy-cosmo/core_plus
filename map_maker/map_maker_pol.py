@@ -46,12 +46,11 @@ def make_map_from_signal(signal, v, pol_ang, bolo_name, segment):
     return sky_map, hitmap
 
 
-def get_signal(settings, bolo_name, segment):
-    out_dir = os.path.join(settings.global_output_dir, "scanning", settings.scanning_time_stamp)
-    file_suffix = str(segment+1).zfill(4) + '.npy'
-    ts = np.load(os.path.join(out_dir, bolo_name, 'ts_'+file_suffix))
-    v = np.load(os.path.join(out_dir, bolo_name, 'vec_'+file_suffix))
-    pol = np.load(os.path.join(out_dir, bolo_name, 'pol_'+file_suffix))
+def get_signal(settings, bolo_name, segment, data_root):
+    segment_name = str(segment+1).zfill(4)
+    ts = data_root[os.path.join(bolo_name, segment_name, "ts_signal"][:]
+    v = data_root[os.path.join(bolo_name, segment_name, "vector"][:]
+    pol = data_root[os.path.join(bolo_name, segment_name, "pol_ang"][:]
     return ts, v, pol
 
 def write_map(settings, sky_map, hitmap):
@@ -68,9 +67,12 @@ def run_mpi(settings):
     num_segments = int(settings.t_flight/settings.t_segment)
     count = 0
 
+    out_dir = os.path.join(settings.global_output_dir, "scanning", settings.scanning_time_stamp)
+    data_root = h5py.File(os.path.join(out_dir, "data.hdf5"), "r")
+
     for bolo_name in settings.bolo_names:
         for segment in range(num_segments): 
-            signal, v, pol_ang= get_signal(settings, bolo_name, segment)
+            signal, v, pol_ang= get_signal(settings, bolo_name, segmenti, data_root)
             if count%size is rank:
                 print "Doing Bolo : ", bolo_name, "Segment : ", segment, "Rank : ", rank, "Count : ", count 
                 sky_map, hitmap = make_map_from_signal(signal, v, pol_ang, bolo_name, segment)
