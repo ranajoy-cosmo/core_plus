@@ -106,14 +106,12 @@ if __name__=="__main__":
     if settings.plot_beam:
         plot_beam()
 
-def get_beam(settings=None):
-    if settings is None:
-        from custom_settings import settings
-    if settings.do_pencil_beam:
+def get_beam(beam_params, bolo_params):
+    if beam_params.do_pencil_beam:
         beam_kernel = np.array([[1]])
         del_beta = np.array([0])
     else:
-        mesh, del_beta = get_mesh(settings)
+        mesh, del_beta = get_mesh(beam_params, bolo_params)
         ang_dist_mesh = get_ang_distance(mesh)
         beam_kernel, beam_weights = gaussian_angular(settings, ang_dist_mesh)
     beam_kernel/=np.max(beam_kernel)

@@ -18,8 +18,8 @@ global_paths.maps_dir = os.path.join(global_paths.base_dir, 'maps', 'maps')
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 global_scanning = Generic()
 
-global_scanning.nside_in = 1024
-global_scanning.nside_out = 256
+global_scanning.nside_in = 4096
+global_scanning.nside_out = 1024
 global_scanning.lmax = 4000
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
