@@ -17,7 +17,7 @@ import simulation.timestream_simulation.sim_pointing as gen_p
 class Bolo:
 
     def __init__(self, bolo_name):
-            self.bolo_params = importlib.import_module("simulation.timestream_simulation.bolo.bolo_params." + bolo_name).bolo_params
+            self.bolo_params = importlib.import_module("simulation.timestream_simulation.bolo_params." + bolo_name).bolo_params
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Simulating the time-ordered data for a given bolo with any beam
@@ -26,11 +26,11 @@ class Bolo:
     def simulate_timestream(self, segment, sky_map, segment_group):
 
         #Getting the beam profile and the del_beta
-        beam_kernel, del_beta = get_beam(beam_params)
+        beam_kernel, del_beta = get_beam(beam_params, self.bolo_params)
 
         #Building the projection matrix P
         nsamples = int(1000.0*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate
-        npix = hp.nside2npix(scan_params.nside_in)
+        npix = hp.nside2npix(scan_params.nside)
         matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
         P = ProjectionOperator(matrix)
 
@@ -67,7 +67,7 @@ class Bolo:
         matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
         matrix.data.value = 1
         P = ProjectionOperator(matrix, shapein=npix, shapeout=nsamples)
-        hit_pix = hp.vec2pix(scan_params.nside_in, v[...,0], v[...,1], v[...,2])
+        hit_pix = hp.vec2pix(scan_params.nside, v[...,0], v[...,1], v[...,2])
         matrix.data.index = hit_pix[..., None]
         P.matrix = matrix
         hitmap = P.T(np.ones(nsamples, dtype=np.float32))
@@ -84,6 +84,21 @@ def calculate_params():
         scan_params.theta_co = 360*60*np.sin(scan_params.beta)*scan_params.t_sampling/1000.0/scan_params.t_spin
 
     beam_params.beam_resolution = scan_params.theta_co/scan_params.oversampling_rate
+
+def display_params():
+    print "alpha : ", scan_params.alpha, " degrees"
+    print "beta : ", scan_params.beta, " degrees"
+    print "T flight : ", scan_params.t_flight/60.0/60.0, "hours"
+    print "T segment :", scan_params.t_segment/60.0/60.0, "hours"
+    print "T precession : ", scan_params.t_prec/60.0/60.0, "hours"
+    print "T spin : ", scan_params.t_spin, " seconds"
+    print "T sampling : ", scan_params.t_sampling, " milli-seconds"
+    print "Scan frequency : ", 1000.0/scan_params.t_sampling, "Hz"
+    print "Theta co : ", scan_params.theta_co, " arcmin"
+    print "Theta cross : ", scan_params.theta_cross, " arcmin"
+    n_steps = int(1000*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate
+    print "#Samples per segment : ", n_steps
+    print "Estimated use of memory : ", 15*n_steps*8.0/1024/1024, "MB"
 
 def get_scanned_map(sky_map, hitmap):
     valid = hitmap>0
@@ -110,14 +125,17 @@ def run_serial():
 
     calculate_params()
 
+    if scan_params.display_params:
+        display_params()
+
     for bolo_name in scan_params.bolo_names:
         bolo = Bolo(bolo_name)
         bolo_group = root_file.create_group(bolo_name)
         print "Doing Bolo : ", bolo_name
         for segment in range(num_segments):
-            print "Segment : ", segment
             segment_name = str(segment+1).zfill(4)
             segment_group = bolo_group.create_group(segment_name)
+            print "Segment : ", segment_name
             hitmap += bolo.simulate_timestream(segment, sky_map, segment_group)
 
     scanned_map = get_scanned_map(sky_map, hitmap)

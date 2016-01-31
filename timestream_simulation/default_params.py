@@ -5,7 +5,7 @@ from simulation.lib.utilities.time_util import get_time_stamp
 from simulation.settings.custom_settings import global_paths, global_scanning, global_system
 from simulation.beam.default_params import beam_params
 
-settings = Generic()
+scan_params = Generic()
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Scan Parameters
@@ -24,6 +24,9 @@ scan_params.t_sampling = 5.0                           #milli-seconds
 scan_params.t_prec = 4*24*60*60.0                     #seconds
 scan_params.t_spin = 60.0                             #seconds
 
+scan_params.alpha = 45.0                                #degrees
+scan_params.beta = 45.0                                #degrees
+
 scan_params.theta_cross = hp.nside2resol(scan_params.nside, arcmin=True)                          #arcmin
 scan_params.theta_co = hp.nside2resol(scan_params.nside, arcmin=True)                             #arcmin
 
@@ -35,9 +38,11 @@ scan_params.do_pol = True
 scan_params.time_stamp = get_time_stamp()
 scan_params.base_dir = global_paths.base_dir 
 scan_params.global_output_dir = global_paths.output_dir
-scan_params.input_map = os.path.join(global_paths.maps_dir, "sky_map_4096_0_pixwin.fits")
+scan_params.input_map = os.path.join(global_paths.maps_dir, "sky_map_1024_0_pixwin.fits")
 scan_params.bolo_param_dir = os.path.join(global_paths.base_dir, "bolo", "bolo_params")
 scan_params.time_stamp = get_time_stamp()
+scan_params.display_params = True
+scan_params.return_pointing = True
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Beam Parameters

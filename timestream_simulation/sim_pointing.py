@@ -11,12 +11,10 @@ import h5py
 from simulation.lib.quaternion import quaternion
 
 def generate_pointing(scan_params, bolo_params, segment_group, t_start, del_beta=0.0):
-    if scan_params.display_params:
-        display_params(scan_params, bolo_params)
 
-    u_view, axis_spin, axis_prec, axis_rev = get_bolo_initial(bolo_params, del_beta)
+    u_view, axis_spin, axis_prec, axis_rev = get_bolo_initial(scan_params, bolo_params, del_beta)
 
-    if del_beta==0.0 and True:
+    if del_beta==0.0 and False:
         print "View direction :", u_view
         print "Spin axis :", axis_spin
         print "Precession axis :", axis_prec
@@ -53,9 +51,9 @@ def generate_pointing(scan_params, bolo_params, segment_group, t_start, del_beta
             return v_view
 
 
-def get_bolo_initial(bolo_params, del_beta):
-    alpha = np.deg2rad(bolo_params.alpha)
-    beta = np.deg2rad(bolo_params.beta)
+def get_bolo_initial(scan_params, bolo_params, del_beta):
+    alpha = np.deg2rad(scan_params.alpha)
+    beta = np.deg2rad(scan_params.beta)
     del_x = np.deg2rad(bolo_params.del_x/60.0)
     del_y = np.deg2rad(bolo_params.del_y/60.0)
     del_beta_rad = np.deg2rad(del_beta/60.0)
@@ -68,10 +66,19 @@ def get_bolo_initial(bolo_params, del_beta):
     return u_view, axis_spin, axis_prec, axis_rev
 
 
+def calculate_params():
+    if scan_params.mode is 1:
+        scan_params.t_spin = 360.0*60.0*np.sin(scan_params.beta)*scan_params.t_sampling/1000.0/scan_params.theta_co
+        scan_params.t_prec = 360.0*60.0*np.sin(scan_params.alpha)*scan_params.t_spin/scan_params.theta_cross
 
-def display_params(scan_params, bolo_params):
-    print "alpha : ", bolo_params.alpha, " degrees"
-    print "beta : ", bolo_params.beta, " degrees"
+    if scan_params.mode is 2:
+        scan_params.theta_cross = 360.0*60.0*np.sin(scan_params.alpha)*scan_params.t_spin/scan_params.t_prec
+        scan_params.theta_co = 360*60*np.sin(scan_params.beta)*scan_params.t_sampling/1000.0/scan_params.t_spin
+
+
+def display_params():
+    print "alpha : ", scan_params.alpha, " degrees"
+    print "beta : ", scan_params.beta, " degrees"
     print "T flight : ", scan_params.t_flight/60.0/60.0, "hours"
     print "T segment :", scan_params.t_segment/60.0/60.0, "hours"
     print "T precession : ", scan_params.t_prec/60.0/60.0, "hours"
@@ -91,9 +98,14 @@ def run_serial():
     
     root_file = h5py.File(os.path.join(out_dir, "data.hdf5"), libver="latest")
 
+    calculate_params()
+
+    if scan_params.display_params:
+        display_params()
+
     for bolo_name in scan_params.bolo_names:
         bolo_group = root_file.create_group(bolo_name)
-        bolo_params = importlib.import_module("simulation.timestream_simulation.bolo.bolo_params." + bolo_name).bolo_params
+        bolo_params = importlib.import_module("simulation.timestream_simulation.bolo_params." + bolo_name).bolo_params
         num_segments = int(scan_params.t_flight/scan_params.t_segment)
         print "Bolo Name :", bolo_name
         for segment in range(num_segments):
