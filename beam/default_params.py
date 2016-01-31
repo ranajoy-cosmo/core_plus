@@ -1,7 +1,7 @@
 import numpy as np
 import healpy as hp
 from simulation.lib.utilities import generic_class
-from simulation.settings.custom_settings import global_scanning
+from simulation.params.custom_params import global_scanning
 
 beam_params = generic_class.Generic()
 

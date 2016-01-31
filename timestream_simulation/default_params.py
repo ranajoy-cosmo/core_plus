@@ -2,7 +2,7 @@ import healpy as hp
 import os
 from simulation.lib.utilities.generic_class import Generic
 from simulation.lib.utilities.time_util import get_time_stamp
-from simulation.settings.custom_settings import global_paths, global_scanning, global_system
+from simulation.params.custom_params import global_paths, global_scanning, global_system
 from simulation.beam.default_params import beam_params
 
 scan_params = Generic()
@@ -49,3 +49,4 @@ scan_params.return_pointing = True
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 beam_params.do_pencil_beam = True
+beam_params.scan_radius = scan_params.beta

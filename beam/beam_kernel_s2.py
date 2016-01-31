@@ -9,32 +9,32 @@ from simulation.lib.plotting.my_imshow import new_imshow
 from simulation.lib.geometry.conversions import *
 
 
-def get_beam_pixel_weights(dim, settings):
-    del_theta = settings.beam_resolution/60.0
-    del_phi = np.full(dim, settings.beam_resolution)/60.0
-    thetas = np.arange(-dim/2+1, dim/2+1)*del_theta + settings.scan_radius
-    del_phi = del_phi*np.sin(np.radians(thetas))/np.sin(np.radians(settings.scan_radius))
+def get_beam_pixel_weights(beam_params, dim):
+    del_theta = beam_params.beam_resolution/60.0
+    del_phi = np.full(dim, del_theta)
+    thetas = np.arange(-dim/2+1, dim/2+1)*del_theta + beam_params.scan_radius
+    del_phi = del_phi*np.sin(np.radians(thetas))/np.sin(np.radians(beam_params.scan_radius))
     
     central_pixel_area = del_theta*del_phi[dim/2]
     beam_weight = (del_theta*del_phi*np.ones(dim**2).reshape((dim,dim))/central_pixel_area).T
 
     return beam_weight
 
-def gaussian_angular(settings, mesh):
+def gaussian_angular(beam_params, bolo_params, mesh):
     factor = 2*np.sqrt(2*np.log(2))
-    sigma = settings.fwhm_major/factor
+    sigma = bolo_params.fwhm_major/factor
     beam_kernel = np.exp(-mesh**2/(2*sigma**2))
     dim = mesh[0].size
-    beam_weights = get_beam_pixel_weights(dim, settings)
-    return beam_kernel*beam_weights, beam_weights
+    beam_weights = get_beam_pixel_weights(beam_params, dim)
+    return beam_kernel*beam_weights
 
-def get_mesh(settings):
-    size = settings.beam_cutoff*settings.fwhm_major                   #Half-width of the beam kernel in arcmin
-    dd = settings.beam_resolution                       #Beam pixel size in arcmin
+def get_mesh(beam_params, bolo_params):
+    size = beam_params.beam_cutoff*bolo_params.fwhm_major                   #Half-width of the beam kernel in arcmin
+    dd = beam_params.beam_resolution                       #Beam pixel size in arcmin
     n = int(size/dd/2)                                  #No. of pixels per half width
 
-    lat = settings.scan_radius + np.arange(-n, n+1)*am2deg(dd)
-    lon = np.arange(-n, n+1)*am2deg(dd)/np.sin(deg2rad(settings.scan_radius))
+    lat = beam_params.scan_radius + np.arange(-n, n+1)*am2deg(dd)
+    lon = np.arange(-n, n+1)*am2deg(dd)/np.sin(deg2rad(beam_params.scan_radius))
 
     llon, llat = np.meshgrid(lon, lat)
 
@@ -55,7 +55,7 @@ def get_ang_distance(mesh):
 
     return ang_dist
 
-def display_beam_settings(settings, mesh):
+def display_beam_settings(beam_params, bolo_params, mesh):
     if settings.do_pencil_beam:
         print "Pencil beam"
     else:
@@ -88,22 +88,23 @@ def plot_beam():
 
 
 if __name__=="__main__":
-    from custom_settings import settings
-    if settings.do_pencil_beam:
+    from custom_params import beam_params
+    from simulation.timestream_simulation.bolo_params.bolo_0001 import bolo_params
+    if beam_params.do_pencil_beam:
         beam_kernel = np.array([[1]])
         del_beta = np.array([0])
     else:
-        mesh, del_beta = get_mesh(settings)
+        mesh, del_beta = get_mesh(beam_params, bolo_params)
         ang_dist_mesh = get_ang_distance(mesh)
-        beam_kernel, beam_weights = gaussian_angular(settings, ang_dist_mesh)
+        beam_kernel = gaussian_angular(beam_params, bolo_params, ang_dist_mesh)
     beam_kernel/=np.max(beam_kernel)
 
-    hitmap, beam_healpix = get_hitmap(mesh, beam_kernel)
+    #hitmap, beam_healpix = get_hitmap(mesh, beam_kernel)
 
-    if settings.display_beam_settings:
+    if beam_params.display_beam_settings and False:
         display_beam_settings(settings, mesh)
 
-    if settings.plot_beam:
+    if beam_params.plot_beam:
         plot_beam()
 
 def get_beam(beam_params, bolo_params):
@@ -113,7 +114,7 @@ def get_beam(beam_params, bolo_params):
     else:
         mesh, del_beta = get_mesh(beam_params, bolo_params)
         ang_dist_mesh = get_ang_distance(mesh)
-        beam_kernel, beam_weights = gaussian_angular(settings, ang_dist_mesh)
+        beam_kernel = gaussian_angular(beam_params, bolo_params, ang_dist_mesh)
     beam_kernel/=np.max(beam_kernel)
 
     return beam_kernel, del_beta

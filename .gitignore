@@ -7,7 +7,7 @@
 *.npy
 *.png
 output
-custom_settings.py
+custom_params.py
 *.out
 maps/maps
 *test*

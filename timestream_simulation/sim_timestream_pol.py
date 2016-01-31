@@ -7,12 +7,14 @@ import sys
 import copy
 import os
 import importlib
-import h5py
-#from mpi4py import MPI
+#import h5py
+import time
+from mpi4py import MPI
 from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
-from simulation.beam.beam_kernel_cartesian import get_beam
+from simulation.beam.beam_kernel_s2 import get_beam
 import simulation.timestream_simulation.sim_pointing as gen_p
+from simulation.lib.utilities.time_util import get_time_stamp
 
 class Bolo:
 
@@ -25,6 +27,7 @@ class Bolo:
 
     def simulate_timestream(self, segment, sky_map, segment_group):
 
+        time_segment_start = time.time()
         #Getting the beam profile and the del_beta
         beam_kernel, del_beta = get_beam(beam_params, self.bolo_params)
 
@@ -49,7 +52,7 @@ class Bolo:
             if i is del_beta.size/2:
                 v_central = v[::scan_params.oversampling_rate]
             #Generating the time ordered signal
-            signal += np.convolve(P(sky_map.T), beam_kernel.T[i], mode = 'same')
+            signal += np.convolve(P(sky_map.T), beam_kernel[i], mode = 'same')
 
         beam_sum = np.sum(beam_kernel)
         signal/=beam_sum
@@ -57,7 +60,11 @@ class Bolo:
 
         hitmap = self.get_hitmap(v_central)
 
-        segment_group.create_dataset("ts_signal", data=signal)
+        #segment_group.create_dataset("ts_signal", data=signal)
+        np.save(os.path.join(segment_group, "ts_signal"), signal)
+
+        time_segment_end = time.time() 
+        print "Time taken for scanning segment :", (time_segment_end - time_segment_start), "seconds"
 
         return hitmap
 
@@ -118,7 +125,8 @@ def run_serial():
     sky_map = get_sky_map() 
     hitmap = np.zeros(hp.nside2npix(scan_params.nside))
 
-    out_dir = os.path.join(scan_params.global_output_dir, "scanning", scan_params.time_stamp)
+    time_stamp = get_time_stamp()
+    out_dir = os.path.join(scan_params.global_output_dir, "scanning", time_stamp)
     os.makedirs(out_dir)
     
     root_file = h5py.File(os.path.join(out_dir, "data.hdf5"), libver="latest")
@@ -142,30 +150,41 @@ def run_serial():
     hp.write_map(os.path.join(out_dir, "scanned_map.fits"), scanned_map)
     hp.write_map(os.path.join(out_dir, "hitmap_in.fits"), hitmap)
 
+def make_output_dirs(out_dir, bolo_names, num_segments):
+    os.makedirs(out_dir)
+    for bolo in bolo_names:
+        os.makedirs(os.path.join(out_dir, bolo))
+        for segment in range(num_segments):
+            segment_name = str(segment+1).zfill(4)
+            os.makedirs(os.path.join(out_dir, bolo, segment_name))
+            
+
 def run_mpi():
+    time_start = time.time()   
+
     comm = MPI.COMM_WORLD
     size = comm.Get_size()
     rank = comm.Get_rank()
 
     num_segments = int(scan_params.t_flight/scan_params.t_segment)
-    sky_map = get_sky_map(scan_params)
+    sky_map = get_sky_map()
 
     time_stamp = [None]
     if rank is 0:
         time_stamp[0] = get_time_stamp()
     time_stamp = comm.bcast(time_stamp, root=0)
-    scan_params.time_stamp = time_stamp[0]
-    scan_params.time_stamp = time_stamp[0]
 
-    out_dir = os.path.join(scan_params.global_output_dir, "scanning", scan_params.time_stamp)
+    out_dir = os.path.join(scan_params.global_output_dir, "scanning", time_stamp[0])
 
     if rank is 0:
-        os.makedirs(out_dir)
+        make_output_dirs(out_dir, scan_params.bolo_names, num_segments)
         hitmap = np.zeros(hp.nside2npix(scan_params.nside), dtype=np.float32)
     else:
         hitmap = None
 
-    root_file = h5py.File(os.path.join(out_dir, "data.hdf5"), libver="latest")
+    comm.Barrier()
+
+    #root_file = h5py.File(os.path.join(out_dir, "data.hdf5"), driver='mpio', libver="latest", comm=comm)
 
     calculate_params()
 
@@ -173,9 +192,10 @@ def run_mpi():
     for bolo_name in scan_params.bolo_names:
         for segment in range(num_segments):
             if count%size is rank:
-                bolo_group = root_file.require_group(bolo_name)
+                #bolo_group = root_file.require_group(bolo_name)
                 segment_name = str(segment+1).zfill(4)
-                segment_group = bolo_group.create_group(segment_name)
+                #segment_group = bolo_group.create_group(segment_name)
+                segment_group = os.path.join(out_dir, bolo_name, segment_name)
                 print "Doing Bolo : ", bolo_name, "Segment : ", segment, "Rank : ", rank, "Count :", count
                 bolo = Bolo(bolo_name)
                 hitmap_local = bolo.simulate_timestream(segment, sky_map, segment_group)
@@ -189,6 +209,12 @@ def run_mpi():
         hp.write_map(os.path.join(out_dir, "scanned_map.fits"), scanned_map)
         hp.write_map(os.path.join(out_dir, "hitmap_in.fits"), hitmap)
 
+    time_end = time.time() 
+    if rank is 0:
+        print "Total time taken :", (time_end- time_start), "seconds"
+        print "Scan time stamp :", time_stamp[0]
+
 if __name__=="__main__":
     from custom_params import scan_params, beam_params
-    run_serial()
+    run_mpi()
+
