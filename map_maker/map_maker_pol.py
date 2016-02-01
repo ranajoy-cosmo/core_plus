@@ -8,9 +8,11 @@ from pyoperators import DiagonalOperator, PackOperator, pcg, MPIDistributionIden
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 import os
+import sys
 
-def make_map_from_signal(signal, v, pol_ang, bolo_name, segment):
+def make_map_from_signal(signal, v, pol_ang):
 
+    sys.stdout.flush()
     hit_pix = hp.vec2pix(map_making_params.nside_out, v[...,0], v[...,1], v[...,2])
     nsamples = hit_pix.size
     npix = hp.nside2npix(map_making_params.nside_out)
@@ -25,7 +27,7 @@ def make_map_from_signal(signal, v, pol_ang, bolo_name, segment):
     P = ProjectionOperator(matrix)#, shapein = npix, shapeout = nsamples)
     D = MPIDistributionIdentityOperator()
     H = P*D
-    
+     
     hitmap = H.T(np.ones(nsamples, dtype=np.float32))[:, 0]*2
     mask = hitmap>0
 
@@ -80,10 +82,11 @@ def run_mpi():
 
     for bolo_name in map_making_params.bolo_names:
         for segment in range(num_segments): 
-            signal, v, pol_ang = get_signal(data_dir, bolo_name, segment)
             if count%size is rank:
+                signal, v, pol_ang = get_signal(data_dir, bolo_name, segment)
                 print "Doing Bolo : ", bolo_name, "Segment : ", segment, "Rank : ", rank, "Count : ", count 
-                sky_map, hitmap = make_map_from_signal(signal, v, pol_ang, bolo_name, segment)
+                print signal.size, v.shape, pol_ang.shape
+                sky_map, hitmap = make_map_from_signal(signal, v, pol_ang)
             count+=1
 
     if rank is 0:

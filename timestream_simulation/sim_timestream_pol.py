@@ -50,6 +50,8 @@ class Bolo:
             matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
             P.matrix = matrix
             if i is del_beta.size/2:
+                np.save(os.path.join(segment_group, "vector"), v)
+                np.save(os.path.join(segment_group, "pol_ang"), pol_ang)
                 v_central = v[::scan_params.oversampling_rate]
             #Generating the time ordered signal
             signal += np.convolve(P(sky_map.T), beam_kernel[i], mode = 'same')

@@ -37,8 +37,9 @@ def get_mesh(beam_params, bolo_params):
     lon = np.arange(-n, n+1)*am2deg(dd)/np.sin(deg2rad(beam_params.scan_radius))
 
     llon, llat = np.meshgrid(lon, lat)
+    del_beta = deg2am(lat - beam_params.scan_radius)
 
-    return  (llon, llat), lat
+    return  (llon, llat), del_beta
 
 def get_ang_distance(mesh):
     lon, lat = mesh
