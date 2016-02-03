@@ -6,7 +6,8 @@ from simulation.lib.utilities.generic_class import Generic
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 global_paths = Generic()
 
-global_paths.base_dir = os.path.abspath("../")
+#global_paths.base_dir = os.path.abspath("../")
+global_paths.base_dir = "/global/homes/b/banerji/simulation"
 
 global_paths.output_dir = os.path.join(global_paths.base_dir, 'output')
 global_paths.spectra_dir = os.path.join(global_paths.base_dir, 'spectra')

@@ -25,12 +25,10 @@ class Bolo:
 # Simulating the time-ordered data for any beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-    def simulate_timestream(self, comm, segment, sky_map):
+    def simulate_timestream(self, comm, segment, sky_map, segment_group):
         
         #Getting the beam profile and the del_beta
-        #beam_kernel, del_beta = get_beam(self.beam_params)
-        from simulation.beam.new_beam_kernel import beam_kernel
-        from simulation.beam.new_beam_kernel import del_betas as del_beta
+        from simulation.beam.beam_kernel_cartesian import beam_kernel, del_beta
         
         #Building the projection matrix P
         nsamples = int(1000.0*self.pointing_params.t_segment/self.pointing_params.t_sampling)*self.settings.oversampling_rate 
@@ -57,8 +55,7 @@ class Bolo:
 
         hitmap = self.get_hitmap(v_central)
 
-        if self.settings.write_signal:
-            self.write_ts(signal, self.bolo_params.bolo_name, segment)
+        segment_group.create_dataset("ts_signal", data=signal)
 
         return hitmap
 
@@ -76,39 +73,31 @@ class Bolo:
         return hitmap
 
 
-    def write_ts(self, signal, bolo_name, segment): 
-        out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp, bolo_name)
-        ts_file = "ts_" + str(segment+1).zfill(4)
-        np.save(os.path.join(out_dir, ts_file), signal)
-
 def get_scanned_map(sky_map, hitmap):
     valid = hitmap>0
     sky_map[~valid] = np.nan
     return sky_map
 
-def create_output_dirs(settings):
-    out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp)
-    for bolo_name in settings.bolo_names:
-        os.makedirs(os.path.join(out_dir, bolo_name))
-
 def run_serial(settings, pointing_params, beam_params):
     num_segments = int(pointing_params.t_flight/pointing_params.t_segment)
     sky_map = hp.read_map(settings.input_map)
     hitmap = np.zeros(sky_map.size)
-    bolo_num = 0
-    count = 0
+
+    out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp)
+    os.makedirs(out_dir)
+    
+    root_file = h5py.File(os.path.join(out_dir, "data.hdf5"), libver="latest")
 
     for bolo_name in settings.bolo_names:
         bolo = Bolo(settings, pointing_params, beam_params, bolo_name)
+        bolo_group = root_file.create_group(bolo_name)
         print "Doing Bolo : ", bolo_name
         for i in range(num_segments):
             print "Segment : ", i
-            print "Rank : ", count
-            hitmap += bolo.simulate_timestream(None, count, sky_map)
-            count += 1
-        bolo_num += 1
+            segment_name = str(segment+1).zfill(4)
+            segment_group = bolo_group.create_group(segment_name)
+            hitmap += bolo.simulate_timestream(None, i, sky_map, segment_group)
 
-    out_dir = os.path.join(settings.global_output_dir, "scanning", settings.time_stamp)
     if settings.write_scanned_map:
         scanned_map = get_scanned_map(sky_map, hitmap)
         hp.write_map(os.path.join(out_dir, "scanned_map.fits"), scanned_map)
