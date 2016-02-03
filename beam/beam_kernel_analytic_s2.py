@@ -5,7 +5,8 @@ import healpy as hp
 import matplotlib.pyplot as plt
 import sys
 from simulation.lib.plotting.my_imshow import new_imshow
-
+from custom_settings import settings
+from simulation.lib.geometry.conversions import *
 
 def gaussian_angular(settings, mesh):
     factor = 2*np.sqrt(2*np.log(2))
@@ -14,20 +15,14 @@ def gaussian_angular(settings, mesh):
     return beam_kernel
 
 def get_mesh(settings):
-    factor = 2*np.sqrt(2*np.log(2))                     #Factor for conversion between FWHM and sigma
-    sigma = settings.fwhm_major/factor                  #Corresponding sigma in arcmin
-    size = settings.beam_cutoff*sigma                   #Half-width of the beam kernel in arcmin
+    size = settings.beam_cutoff*settings.fwhm           #(arcmin)Full-width of the beam kernel in arcmin
     dd = settings.beam_resolution                       #Beam pixel size in arcmin
-    nxy = int(size/dd)                                  #No. of pixels per half width
+    n = int(size/dd)/2                                  #No. of pixels per half width
 
-    lat = settings.scan_radius + np.arange(-nxy, nxy+1)*dd/60.0
-    lon = np.arange(-nxy, nxy+1)*dd/60.0/np.sin(np.radians(settings.scan_radius))
-    #print lat
-    #print lon
+    lat = settings.scan_radius + np.arange(-n, n+1)*am2deg(dd)
+    lon = np.arange(-n, n+1)*am2deg(dd)/np.sin(deg2rad(settings.scan_radius))
 
     llon, llat = np.meshgrid(lon, lat)
-
-    #llon = llon/np.sin(np.radians(llat))
 
     return  (llon, llat), lat
 
@@ -36,13 +31,17 @@ def get_ang_distance(mesh):
     dim = lon[0].size
     ci = dim/2                 #Central index
 
-    centre = lon[ci, ci], lat[ci, ci]
-    ang_dist = np.empty((dim,dim))
+    centre = np.array([lon[ci, ci], lat[ci, ci]])
+    #ang_dist = np.empty((dim*dim))
 
-    for i in range(dim):
-        for j in range(dim):
-            point = lon[i, j], lat[i, j]
-            ang_dist[i][j] = np.degrees(hp.rotator.angdist(point, centre, lonlat=True))*60.0
+    #for i in range(dim):
+    #    for j in range(dim):
+    #        point = lon[i, j], lat[i, j]
+    #        ang_dist[i][j] = np.degrees(hp.rotator.angdist(point, centre, lonlat=True))*60.0
+
+    #ang_dist = hp.rotator.angdist(np.dstack((mesh[0], mesh[1])), centre, lonlat=True)
+    ang_dist = hp.rotator.angdist(zip(deg2rad*lon.flatten(), deg2rad*lat.flatten()), deg2rad*centre, lonlat=True)
+    ang_dist = rad2am(ang_dist).reshape((dim,dim))
 
     return ang_dist
 
@@ -79,7 +78,6 @@ def get_beam_pixel_weights(dim):
     central_pixel_area = del_theta*del_phi[dim/2]
     beam_weight = (del_theta*del_phi*np.ones(dim**2).reshape((dim,dim))/central_pixel_area).T
 
-    #print beam_weight
     return beam_weight
 
 def check_integration(map1, map2, mesh, beam_kernel):
@@ -89,7 +87,7 @@ def check_integration(map1, map2, mesh, beam_kernel):
 
     beam_weight = get_beam_pixel_weights(dim)
     convolution = hp.get_interp_val(map1, np.radians(mesh[1].flatten()), np.radians(mesh[0].flatten()))*beam_kernel.flatten()*beam_weight.flatten()
-    integral = np.sum(convolution)/np.sum(beam_kernel)
+    integral = np.sum(convolution)/np.sum(beam_kernel*beam_weight)
 
     output_nside = hp.get_nside(map2)
     input_nside = hp.get_nside(map1)
@@ -108,14 +106,11 @@ def plot_beam():
 
 
 if __name__=="__main__":
-    from custom_settings import settings
-    if settings.do_pencil_beam:
-        beam_kernel = np.array([[1]])
-        del_beta = np.array([0])
-    else:
-        mesh, del_beta = get_mesh(settings)
-        ang_dist_mesh = get_ang_distance(mesh)
-        beam_kernel = gaussian_angular(settings, ang_dist_mesh)
+
+    mesh, del_beta = get_mesh(settings)
+    ang_dist_mesh = get_ang_distance(mesh)
+    """
+    beam_kernel = gaussian_angular(settings, ang_dist_mesh)
     beam_kernel/=np.max(beam_kernel)
 
     hitmap, beam_healpix = get_hitmap(mesh, beam_kernel)
@@ -132,14 +127,4 @@ if __name__=="__main__":
     if settings.plot_beam:
         plot_beam()
         pass
-
-def get_beam(settings=None):
-    if settings is None:
-        from custom_settings import settings
-    if settings.do_pencil_beam:
-        beam_kernel = np.array([[1]])
-        del_beta = np.array([0])
-    else:
-        mesh, del_beta = get_mesh(settings)
-        beam_kernel = gaussian_2d(settings, mesh)
-    return beam_kernel, del_beta
+    """
