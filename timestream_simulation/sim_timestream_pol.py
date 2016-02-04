@@ -12,7 +12,7 @@ import time
 from mpi4py import MPI
 from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
-from simulation.beam.beam_kernel_s2 import get_beam
+from simulation.beam.beam_kernel_cartesian import get_beam
 import simulation.timestream_simulation.sim_pointing as gen_p
 from simulation.lib.utilities.time_util import get_time_stamp
 
@@ -198,7 +198,7 @@ def run_mpi():
                 segment_name = str(segment+1).zfill(4)
                 #segment_group = bolo_group.create_group(segment_name)
                 segment_group = os.path.join(out_dir, bolo_name, segment_name)
-                print "Doing Bolo : ", bolo_name, "Segment : ", segment, "Rank : ", rank, "Count :", count
+                print "Doing Bolo :", bolo_name, " Segment :", segment, " Rank :", rank, " Count :", count
                 bolo = Bolo(bolo_name)
                 hitmap_local = bolo.simulate_timestream(segment, sky_map, segment_group)
                 comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0)

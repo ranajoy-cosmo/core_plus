@@ -9,6 +9,7 @@ from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 import os
 import sys
+import time
 
 def make_map_from_signal(signal, v, pol_ang):
 
@@ -79,18 +80,21 @@ def run_mpi():
 
     data_dir = os.path.join(map_making_params.global_output_dir, "scanning", map_making_params.scanning_time_stamp)
     #data_root = h5py.File(os.path.join(out_dir, "data.hdf5"), "r")
+    start = time.time()
 
     for bolo_name in map_making_params.bolo_names:
         for segment in range(num_segments): 
             if count%size is rank:
                 signal, v, pol_ang = get_signal(data_dir, bolo_name, segment)
-                print "Doing Bolo : ", bolo_name, "Segment : ", segment, "Rank : ", rank, "Count : ", count 
+                print "Doing Bolo :", bolo_name, " Segment :", segment, " Rank :", rank, " Count :", count 
                 print signal.size, v.shape, pol_ang.shape
                 sky_map, hitmap = make_map_from_signal(signal, v, pol_ang)
             count+=1
 
+    stop = time.time()
     if rank is 0:
         write_map(sky_map, hitmap)
+        print "Total time taken :", (stop - start)
         
 if __name__=="__main__":
     from custom_params import map_making_params
