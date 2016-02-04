@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from simulation.lib.plotting.my_imshow import new_imshow
 import scipy as sp
 
-cmb_img = np.load("cmb_img.npy")
+#cmb_img = np.load("cmb_img.npy")
 
 beam_1 = ps.datautils.gaussian(shape = (20, 20), fwhm = (2, 2))
 beam_1 = beam_1/np.max(beam_1)
@@ -62,3 +62,4 @@ fig = plt.figure()
 draw_subplot(fig, (1,1), 1, img_conv_3)
 
 plt.show()
+"""
