@@ -8,9 +8,12 @@ from pyoperators import DiagonalOperator, PackOperator, pcg, MPIDistributionIden
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 import os
+import sys
+import time
 
-def make_map_from_signal(signal, v, pol_ang, bolo_name, segment):
+def make_map_from_signal(signal, v, pol_ang):
 
+    sys.stdout.flush()
     hit_pix = hp.vec2pix(map_making_params.nside_out, v[...,0], v[...,1], v[...,2])
     nsamples = hit_pix.size
     npix = hp.nside2npix(map_making_params.nside_out)
@@ -25,7 +28,7 @@ def make_map_from_signal(signal, v, pol_ang, bolo_name, segment):
     P = ProjectionOperator(matrix)#, shapein = npix, shapeout = nsamples)
     D = MPIDistributionIdentityOperator()
     H = P*D
-    
+     
     hitmap = H.T(np.ones(nsamples, dtype=np.float32))[:, 0]*2
     mask = hitmap>0
 
@@ -77,17 +80,21 @@ def run_mpi():
 
     data_dir = os.path.join(map_making_params.global_output_dir, "scanning", map_making_params.scanning_time_stamp)
     #data_root = h5py.File(os.path.join(out_dir, "data.hdf5"), "r")
+    start = time.time()
 
     for bolo_name in map_making_params.bolo_names:
         for segment in range(num_segments): 
-            signal, v, pol_ang = get_signal(data_dir, bolo_name, segment)
             if count%size is rank:
-                print "Doing Bolo : ", bolo_name, "Segment : ", segment, "Rank : ", rank, "Count : ", count 
-                sky_map, hitmap = make_map_from_signal(signal, v, pol_ang, bolo_name, segment)
+                signal, v, pol_ang = get_signal(data_dir, bolo_name, segment)
+                print "Doing Bolo :", bolo_name, " Segment :", segment, " Rank :", rank, " Count :", count 
+                print signal.size, v.shape, pol_ang.shape
+                sky_map, hitmap = make_map_from_signal(signal, v, pol_ang)
             count+=1
 
+    stop = time.time()
     if rank is 0:
         write_map(sky_map, hitmap)
+        print "Total time taken :", (stop - start)
         
 if __name__=="__main__":
     from custom_params import map_making_params

@@ -30,7 +30,7 @@ def make_maps():
         sky_map_beamed = hp.synfast(input_spectra, nside=map_params.nside, lmax=map_params.lmax, fwhm=am2rad(map_params.fwhm), new=True, pol=map_params.do_pol, pixwin=map_params.do_pixel_window)
         sky_map_beamed = np.array(sky_map_beamed, dtype=np.float32)
         if map_params.write_map:
-            map_file_name = map_params.map_file + str(map_params.nside) + '_' + str(int(map_params.fwhm_arcmin))
+            map_file_name = map_params.map_file + str(map_params.nside) + '_' + str(int(map_params.fwhm))
             if map_params.do_pixel_window:
                 map_file_name = map_file_name + '_pixwin'
             hp.write_map(map_file_name + '.fits', sky_map_beamed)
@@ -45,7 +45,7 @@ def make_maps():
         if map_params.do_beamed_map:
             sky_map_beamed_degraded = hp.ud_grade(sky_map_beamed, map_params.nside_deg)
             if map_params.write_map:
-                map_file_name = map_params.map_file + str(map_params.nside_deg) + '_' + str(int(map_params.fwhm_arcmin)) +"_deg.fits"
+                map_file_name = map_params.map_file + str(map_params.nside_deg) + '_' + str(int(map_params.fwhm)) +"_deg.fits"
                 hp.write_map(map_file_name, sky_map_beamed_degraded)
        
     

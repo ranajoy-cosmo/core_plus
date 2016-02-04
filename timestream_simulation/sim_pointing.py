@@ -35,16 +35,16 @@ def generate_pointing(scan_params, bolo_params, segment_group, t_start, del_beta
 
     v_view = quaternion.transform(r_total, u_view)
 
-    if del_beta==0.0:
+    #if del_beta==0.0:
         #segment_group.create_dataset("vector", data=v_view)
-        np.save(os.path.join(segment_group, "vector"), v_view)
+        #np.save(os.path.join(segment_group, "vector"), v_view)
 
     if scan_params.do_pol:
         pol_init = np.deg2rad(bolo_params.pol_ang)
         pol_ang = ((w_prec + w_spin)*t_steps + pol_init)%np.pi
-        if del_beta==0.0:
+        #if del_beta==0.0:
             #segment_group.create_dataset("pol_ang", data=pol_ang)
-            np.save(os.path.join(segment_group, "pol_ang"), pol_ang)
+            #np.save(os.path.join(segment_group, "pol_ang"), pol_ang)
 
     if scan_params.return_pointing:
         if scan_params.do_pol:
