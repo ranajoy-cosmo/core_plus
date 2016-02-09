@@ -9,8 +9,8 @@ from simulation.lib.plotting.my_imshow import new_imshow
 
 def gaussian_2d(beam_params, bolo_params, mesh):
     factor = 2*np.sqrt(2*np.log(2))
-    sigma_major = bolo_params.fwhm_major/factor
-    sigma_minor = bolo_params.fwhm_minor/factor
+    sigma_minor = bolo_params.fwhm/factor
+    sigma_major = sigma_minor/np.sqrt(1 - bolo_params.ellipticity**2)
     x0, y0 = bolo_params.del_x, 1*bolo_params.del_y
     theta = np.deg2rad(bolo_params.beam_angle)
     x,y = mesh
@@ -18,15 +18,12 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     b = 1*np.sin(2*theta)/(4*sigma_major**2) - np.sin(2*theta)/(4*sigma_minor**2)
     c = (np.sin(theta)**2)/(2*sigma_major**2) + (np.cos(theta)**2)/(2*sigma_minor**2)
     beam_kernel = np.exp(-1*(a*(x - x0)**2 + 2*b*(x - x0)*(y - y0) + c*(y - y0)**2)) 
+    normalisation_factor = 2*np.pi*sigma_major*sigma_minor
+    beam_kernel /= normalisation_factor
     return beam_kernel
 
 
 def check_normalisation(beam_params, bolo_params, beam_kernel):
-    factor = 2*np.sqrt(2*np.log(2))
-    sigma_major = bolo_params.fwhm_major/factor
-    sigma_minor = bolo_params.fwhm_minor/factor
-    norm = 2*np.pi*sigma_major*sigma_minor
-    beam_kernel /= norm
     dx = beam_params.beam_resolution
     dy = beam_params.beam_resolution
     integral = np.sum(beam_kernel)*dx*dy
@@ -36,7 +33,11 @@ def check_normalisation(beam_params, bolo_params, beam_kernel):
 
 def get_mesh(beam_params, bolo_params):
     offset_max = max(abs(bolo_params.del_x), abs(bolo_params.del_y))              #arc-mins
-    size = beam_params.beam_cutoff*bolo_params.fwhm_major + offset_max             #arc-mins
+    fwhm_minor = bolo_params.fwhm
+    print fwhm_minor
+    fwhm_major = fwhm_minor/np.sqrt(1 - bolo_params.ellipticity**2)
+    print fwhm_major
+    size = beam_params.beam_cutoff*fwhm_major + offset_max             #arc-mins
     dd = beam_params.beam_resolution                                            #arc-mins
     nxy = int(size/dd/2)
     x = np.arange(-nxy, nxy+1)*dd
@@ -49,14 +50,16 @@ def display_beam_settings(beam_params, bolo_params, mesh):
         print "Pencil beam"
     else:
         factor = 2*np.sqrt(2*np.log(2))
-        print "Major axis(FWHM) :", bolo_params.fwhm_major, "arcmins"
-        print "Minor axis(FWHM) :", bolo_params.fwhm_minor, "arcmins"
+        fwhm_minor = bolo_params.fwhm
+        fwhm_major = fwhm_minor/np.sqrt(1 - bolo_params.ellipticity**2)
+        print "Major axis(FWHM) :", fwhm_major, "arcmins" 
+        print "Minor axis(FWHM) :", fwhm_minor, "arcmins"
         print "Center :", bolo_params.del_x, bolo_params.del_y
         print "Tilt :", bolo_params.beam_angle, "degrees"
         print "Pixel size :", beam_params.beam_resolution, "arcmins" 
         print "Kernel width in FWHM of beam:", beam_params.beam_cutoff
-        print "# of pixels per FWHM (minor-axis) of beam :", bolo_params.fwhm_minor/beam_params.beam_resolution
-        print "Expected # of pixels in kernel cross-section :", int(beam_params.beam_cutoff*bolo_params.fwhm_major/beam_params.beam_resolution/2)*2 + 1 
+        print "# of pixels per FWHM (minor-axis) of beam :", fwhm_minor/beam_params.beam_resolution
+        print "Expected # of pixels in kernel cross-section :", int(beam_params.beam_cutoff*fwhm_major/beam_params.beam_resolution/2)*2 + 1 
         print "Actual # of pixels in kernel cross-section :", mesh[0][0].size 
 
 def plot_beam(beam_kernel):
@@ -83,7 +86,7 @@ if __name__=="__main__":
     if beam_params.display_beam_settings:
         display_beam_settings(beam_params, bolo_params, mesh)
 
-    beam_kernel/=np.max(beam_kernel)
+    #beam_kernel/=np.max(beam_kernel)
 
     if beam_params.plot_beam:
         plot_beam(beam_kernel)
