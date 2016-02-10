@@ -7,9 +7,9 @@ import scipy as sp
 
 #cmb_img = np.load("cmb_img.npy")
 
-beam_1 = ps.datautils.gaussian(shape = (25, 25), fwhm = (8, 8))
+beam_1 = ps.datautils.gaussian(shape = (37, 37), fwhm = (8.0, 8.0))
 beam_1 = beam_1/np.max(beam_1)
-beam_2 = ps.datautils.gaussian(shape = (25, 25), fwhm = (8, 8.4))
+beam_2 = ps.datautils.gaussian(shape = (37, 37), fwhm = (8.0, 8.01))
 beam_2 = beam_2/np.max(beam_2)
 
 fft_beam_1 = fftpack.fft2(beam_1)
