@@ -9,7 +9,7 @@ import os
 import importlib
 #import h5py
 import time
-from mpi4py import MPI
+#from mpi4py import MPI
 from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 from simulation.beam.beam_kernel_cartesian import get_beam
@@ -218,5 +218,8 @@ def run_mpi():
 
 if __name__=="__main__":
     from custom_params import scan_params, beam_params
-    run_mpi()
+    calculate_params()
+    display_params()
+    sys.exit()
+    run_serial()
 

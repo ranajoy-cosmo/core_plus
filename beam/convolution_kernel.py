@@ -86,6 +86,9 @@ if __name__=="__main__":
     else:
         mesh, del_beta = get_mesh(beam_params, bolo_params)
         beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
+        dim = del_beta.size
+        #del_beta = del_beta[dim/2 - 1 : dim/2 + 2]
+        #beam_kernel = beam_kernel[dim/2 - 1 : dim/2 + 2]
 
     if beam_params.check_normalisation:
         check_normalisation(beam_params, bolo_params, beam_kernel)
@@ -105,4 +108,7 @@ def get_beam(beam_params, bolo_params):
     else:
         mesh, del_beta = get_mesh(beam_params, bolo_params)
         beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
+        #dim = del_beta.size
+        #del_beta = del_beta[dim/2 - 1 : dim/2 + 1]
+        #beam_kernel = beam_kernel[dim/2 - 1 : dim/2 +1]
     return beam_kernel, del_beta
