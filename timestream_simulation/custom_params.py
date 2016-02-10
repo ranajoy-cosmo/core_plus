@@ -11,4 +11,4 @@ scan_params.input_map = os.path.join(global_paths.maps_dir, "sky_map_4096_0_pixw
 
 beam_params.do_pencil_beam = False
 
-scan_params.oversampling_rate = 2
+scan_params.oversampling_rate = 1 

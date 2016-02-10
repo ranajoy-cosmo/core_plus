@@ -12,6 +12,8 @@ bolo_params.del_y = 0.0         #arc-min
 bolo_params.pol_ang = 90.0       #degrees
 
 #The fwhm of the beam along two axes
+bolo_params.fwhm_major = 8.4           #arcmin
+bolo_params.fwhm_minor = 8.0              #arcmin
 bolo_params.fwhm = 8.0        #arcmin
 bolo_params.ellipticity = 0.05
 

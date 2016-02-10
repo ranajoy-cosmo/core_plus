@@ -13,6 +13,7 @@ from mpi4py import MPI
 from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 from simulation.beam.beam_kernel_cartesian import get_beam
+#from simulation.beam.convolution_kernel import get_beam
 import simulation.timestream_simulation.sim_pointing as gen_p
 from simulation.lib.utilities.time_util import get_time_stamp
 
@@ -27,6 +28,7 @@ class Bolo:
 
     def simulate_timestream(self, segment, sky_map, segment_group):
 
+        sys.stdout.flush()
         time_segment_start = time.time()
         #Getting the beam profile and the del_beta
         beam_kernel, del_beta = get_beam(beam_params, self.bolo_params)
@@ -49,21 +51,21 @@ class Bolo:
             matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol_ang)
             matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
             P.matrix = matrix
+            sys.stdout.flush()
             if i is del_beta.size/2:
-                np.save(os.path.join(segment_group, "vector"), v)
-                np.save(os.path.join(segment_group, "pol_ang"), pol_ang)
                 v_central = v[::scan_params.oversampling_rate]
+                np.save(os.path.join(segment_group, "vector"), v_central)
+                np.save(os.path.join(segment_group, "pol_ang"), pol_ang[::scan_params.oversampling_rate])
             #Generating the time ordered signal
             signal += np.convolve(P(sky_map.T), beam_kernel[i], mode = 'same')
 
         beam_sum = np.sum(beam_kernel)
-        signal/=beam_sum
-        signal = signal[::scan_params.oversampling_rate]
+        #signal/=beam_sum
 
         hitmap = self.get_hitmap(v_central)
 
         #segment_group.create_dataset("ts_signal", data=signal)
-        np.save(os.path.join(segment_group, "ts_signal"), signal)
+        np.save(os.path.join(segment_group, "ts_signal"), signal[::scan_params.oversampling_rate])
 
         time_segment_end = time.time() 
         print "Time taken for scanning segment :", (time_segment_end - time_segment_start), "seconds"
