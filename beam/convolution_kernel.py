@@ -15,11 +15,18 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     sigma = np.sqrt(sigma_major**2 - sigma_minor**2)
     theta = np.deg2rad(bolo_params.beam_angle)
     x,y = mesh
-    beam_kernel = np.exp(-x**2/(2*sigma**2))
-    dim = y[0].size
-    beam_kernel[:dim/2] = 0
-    beam_kernel[dim/2+1:] = 0
-    beam_kernel[dim/2, dim/2] = 0
+    if bolo_params.beam_angle is 0.0:
+        beam_kernel = np.exp(-x**2/(2*sigma**2))
+        dim = y[0].size
+        beam_kernel[:dim/2] = 0
+        beam_kernel[dim/2+1:] = 0
+        beam_kernel[dim/2, dim/2] = 0
+    if bolo_params.beam_angle is 90.0:
+        beam_kernel = np.exp(-y**2/(2*sigma**2))
+        dim = y[0].size
+        beam_kernel[...,:dim/2] = 0
+        beam_kernel[...,dim/2+1:] = 0
+        beam_kernel[dim/2, dim/2] = 0
     #beam_kernel = ndimage.interpolation.rotate(beam_kernel, angle=30.0)
     normalisation_factor = np.sqrt(2*np.pi*sigma**2)
     beam_kernel /= normalisation_factor

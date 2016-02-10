@@ -19,7 +19,8 @@ def generate_pointing(scan_params, bolo_params, segment_group, t_start, del_beta
         print "Spin axis :", axis_spin
         print "Precession axis :", axis_prec
         print "Revolution axis :", axis_rev
-
+    print del_beta
+    
     n_steps = int(scan_params.t_segment/(scan_params.t_sampling/1000.0))*scan_params.oversampling_rate
     t_steps = t_start + 0.001*(scan_params.t_sampling/scan_params.oversampling_rate)*np.arange(n_steps)
 
