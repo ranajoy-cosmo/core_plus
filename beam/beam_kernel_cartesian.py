@@ -9,8 +9,9 @@ from simulation.lib.plotting.my_imshow import new_imshow
 
 def gaussian_2d(beam_params, bolo_params, mesh):
     factor = 2*np.sqrt(2*np.log(2))
-    sigma_major = bolo_params.fwhm_major/factor
+    #sigma_major = bolo_params.fwhm_major/factor
     sigma_minor = bolo_params.fwhm_minor/factor
+    sigma_major = sigma_minor
     #sigma_minor = bolo_params.fwhm/factor
     #sigma_major = sigma_minor/np.sqrt(1 - bolo_params.ellipticity**2)
     x0, y0 = bolo_params.del_x, 1*bolo_params.del_y
