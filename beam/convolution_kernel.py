@@ -16,12 +16,12 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     theta = np.deg2rad(bolo_params.beam_angle)
     x,y = mesh
     normalisation_factor = np.sqrt(2*np.pi*sigma**2)
-    beam_kernel = np.exp(-x**2/(2*sigma**2))/normalisation_factor
+    convolution_kernel = np.exp(-x**2/(2*sigma**2))/normalisation_factor
     dim = y[0].size
-    beam_kernel[:dim/2] = 0
-    beam_kernel[dim/2+1:] = 0
-    beam_kernel = ndimage.interpolation.rotate(beam_kernel, angle=30.0)
-    return beam_kernel
+    convolution_kernel[:dim/2] = 0
+    convolution_kernel[dim/2+1:] = 0
+    convolution_kernel = ndimage.interpolation.rotate(convolution_kernel, angle=bolo_params.beam_angle)
+    return convolution_kernel
 
 
 def check_normalisation(beam_params, bolo_params, beam_kernel):
@@ -40,7 +40,7 @@ def get_mesh(beam_params, bolo_params):
     nxy = int(size/dd/2)
     x = np.arange(-nxy, nxy+1)*dd
     y = -1*np.arange(-nxy, nxy+1)*dd
-    return np.meshgrid(x,y), x 
+    return np.meshgrid(x,y) 
 
 
 def display_beam_settings(beam_params, bolo_params, mesh):
@@ -66,9 +66,8 @@ if __name__=="__main__":
     from custom_params import beam_params
     from simulation.timestream_simulation.bolo_params.bolo_0001 import bolo_params
 
-    mesh, del_beta = get_mesh(beam_params, bolo_params)
+    mesh = get_mesh(beam_params, bolo_params)
     beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
-    dim = del_beta.size
 
     if beam_params.check_normalisation:
         check_normalisation(beam_params, bolo_params, beam_kernel)
@@ -79,9 +78,6 @@ if __name__=="__main__":
 
 
 def get_beam(beam_params, bolo_params):
-    mesh, del_beta = get_mesh(beam_params, bolo_params)
-    beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
-    #dim = del_beta.size
-    #del_beta = del_beta[dim/2 - 1 : dim/2 + 1]
-    #beam_kernel = beam_kernel[dim/2 - 1 : dim/2 +1]
-    return beam_kernel, del_beta
+    mesh = get_mesh(beam_params, bolo_params)
+    convolution_kernel = gaussian_2d(beam_params, bolo_params, mesh)
+    return convolution_kernel
