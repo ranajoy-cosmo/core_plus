@@ -1,28 +1,18 @@
-#! /usr/bin/env python 
+#! /usr/bin/env python
 
 import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
 import sys
 from simulation.lib.plotting.my_imshow import new_imshow
+import convolution_kernel
 
-
-def gaussian_2d(beam_params, bolo_params, mesh):
+def gaussian_2d(beam_params, bolo_params, mesh, convolution_kernel):
     factor = 2*np.sqrt(2*np.log(2))
-    #sigma_major = bolo_params.fwhm_major/factor
-    sigma_minor = bolo_params.fwhm_minor/factor
-    sigma_major = sigma_minor
-    #sigma_minor = bolo_params.fwhm/factor
-    #sigma_major = sigma_minor/np.sqrt(1 - bolo_params.ellipticity**2)
-    x0, y0 = bolo_params.del_x, 1*bolo_params.del_y
-    theta = np.deg2rad(bolo_params.beam_angle)
+    sigma = bolo_params.fwhm/factor
     x,y = mesh
-    a = (np.cos(theta)**2)/(2*sigma_major**2) + (np.sin(theta)**2)/(2*sigma_minor**2)
-    b = 1*np.sin(2*theta)/(4*sigma_major**2) - np.sin(2*theta)/(4*sigma_minor**2)
-    c = (np.sin(theta)**2)/(2*sigma_major**2) + (np.cos(theta)**2)/(2*sigma_minor**2)
-    beam_kernel = np.exp(-1*(a*(x - x0)**2 + 2*b*(x - x0)*(y - y0) + c*(y - y0)**2)) 
-    normalisation_factor = 2*np.pi*sigma_major*sigma_minor
-    beam_kernel /= normalisation_factor
+    normalisation_factor = 2*np.pi*sigma**2
+    beam_kernel = np.exp(-(x**2/(2*sigma**2) + y**2/(2*sigma**2)))/normalisation_factor
     return beam_kernel
 
 
@@ -36,9 +26,8 @@ def check_normalisation(beam_params, bolo_params, beam_kernel):
 
 def get_mesh(beam_params, bolo_params):
     offset_max = max(abs(bolo_params.del_x), abs(bolo_params.del_y))              #arc-mins
-    fwhm_major = bolo_params.fwhm_major
-    #fwhm_minor = bolo_params.fwhm
-    #fwhm_major = fwhm_minor/np.sqrt(1 - bolo_params.ellipticity**2)
+    fwhm_minor = bolo_params.fwhm
+    fwhm_major = (1+bolo_params.ellipticity)*fwhm_minor
     size = beam_params.beam_cutoff*fwhm_major + offset_max             #arc-mins
     dd = beam_params.beam_resolution                                            #arc-mins
     nxy = int(size/dd/2)
@@ -52,10 +41,8 @@ def display_beam_settings(beam_params, bolo_params, mesh):
         print "Pencil beam"
     else:
         factor = 2*np.sqrt(2*np.log(2))
-        fwhm_major = bolo_params.fwhm_major
-        fwhm_minor = bolo_params.fwhm_minor
-        #fwhm_minor = bolo_params.fwhm
-        #fwhm_major = fwhm_minor/np.sqrt(1 - bolo_params.ellipticity**2)
+        fwhm_minor = bolo_params.fwhm
+        fwhm_major = (1+bolo_params.ellipticity)*fwhm_minor
         print "Major axis(FWHM) :", fwhm_major, "arcmins" 
         print "Minor axis(FWHM) :", fwhm_minor, "arcmins"
         print "Center :", bolo_params.del_x, bolo_params.del_y
@@ -83,15 +70,13 @@ if __name__=="__main__":
         del_beta = np.array([0])
     else:
         mesh, del_beta = get_mesh(beam_params, bolo_params)
-        beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
+        convolution_kernel = convolution_kernel.get_beam(beam_params, bolo_params)
+        beam_kernel = gaussian_2d(beam_params, bolo_params, mesh, convolution_kernel)
 
     if beam_params.check_normalisation:
         check_normalisation(beam_params, bolo_params, beam_kernel)
     if beam_params.display_beam_settings:
         display_beam_settings(beam_params, bolo_params, mesh)
-
-    #beam_kernel/=np.max(beam_kernel)
-
     if beam_params.plot_beam:
         plot_beam(beam_kernel)
 
@@ -102,5 +87,6 @@ def get_beam(beam_params, bolo_params):
         del_beta = np.array([0])
     else:
         mesh, del_beta = get_mesh(beam_params, bolo_params)
-        beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
+        convolution_kernel = convolution_kernel.get_beam(beam_params, bolo_params)
+        beam_kernel = gaussian_2d(beam_params, bolo_params, mesh, convolution_kernel)
     return beam_kernel, del_beta
