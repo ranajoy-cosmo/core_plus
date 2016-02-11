@@ -5,6 +5,7 @@ import healpy as hp
 import matplotlib.pyplot as plt
 import sys
 from simulation.lib.plotting.my_imshow import new_imshow
+from scipy.signal import convolve2d
 import convolution_kernel
 
 def gaussian_2d(beam_params, bolo_params, mesh, convolution_kernel):
@@ -13,7 +14,11 @@ def gaussian_2d(beam_params, bolo_params, mesh, convolution_kernel):
     x,y = mesh
     normalisation_factor = 2*np.pi*sigma**2
     beam_kernel = np.exp(-(x**2/(2*sigma**2) + y**2/(2*sigma**2)))/normalisation_factor
-    return beam_kernel
+    if bolo_params.ellipticity == 0.0:
+        beam_kernel_convolved = beam_kernel
+    else:
+        beam_kernel_convolved = convolve2d(beam_kernel, convolution_kernel, mode="same")*beam_params.beam_resolution
+    return beam_kernel_convolved
 
 
 def check_normalisation(beam_params, bolo_params, beam_kernel):
