@@ -8,16 +8,19 @@ from simulation.lib.plotting.my_imshow import new_imshow
 from scipy.signal import convolve2d
 import convolution_kernel
 
-def gaussian_2d(beam_params, bolo_params, mesh, convolution_kernel):
+def gaussian_2d(beam_params, bolo_params, mesh, convolve_kernel):
     factor = 2*np.sqrt(2*np.log(2))
     sigma = bolo_params.fwhm/factor
     x,y = mesh
-    normalisation_factor = 2*np.pi*sigma**2
-    beam_kernel = np.exp(-(x**2/(2*sigma**2) + y**2/(2*sigma**2)))/normalisation_factor
+    dx = beam_params.beam_resolution
+    beam_kernel = np.exp(-(x**2/(2*sigma**2) + y**2/(2*sigma**2)))
+    integral = np.sum(beam_kernel)*dx**2
+    beam_kernel /= integral
     if bolo_params.ellipticity == 0.0:
         beam_kernel_convolved = beam_kernel
     else:
-        beam_kernel_convolved = convolve2d(beam_kernel, convolution_kernel, mode="same")*beam_params.beam_resolution
+        beam_kernel_convolved = convolve2d(beam_kernel, convolve_kernel, mode="same")#*beam_params.beam_resolution
+        beam_kernel_convolved /= np.sum(beam_kernel_convolved)*dx**2
     return beam_kernel_convolved
 
 
@@ -68,7 +71,7 @@ def plot_beam(beam_kernel):
 if __name__=="__main__":
 
     from custom_params import beam_params
-    from simulation.timestream_simulation.bolo_params.bolo_0004 import bolo_params
+    from simulation.timestream_simulation.bolo_params.bolo_0001 import bolo_params
 
     if beam_params.do_pencil_beam:
         beam_kernel = np.array([[1]])
@@ -92,6 +95,6 @@ def get_beam(beam_params, bolo_params):
         del_beta = np.array([0])
     else:
         mesh, del_beta = get_mesh(beam_params, bolo_params)
-        convolution_kernel = convolution_kernel.get_beam(beam_params, bolo_params)
-        beam_kernel = gaussian_2d(beam_params, bolo_params, mesh, convolution_kernel)
+        convolve_kernel = convolution_kernel.get_beam(beam_params, bolo_params)
+        beam_kernel = gaussian_2d(beam_params, bolo_params, mesh, convolve_kernel)
     return beam_kernel, del_beta
