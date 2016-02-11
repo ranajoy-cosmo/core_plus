@@ -68,7 +68,7 @@ def plot_beam(beam_kernel):
 if __name__=="__main__":
 
     from custom_params import beam_params
-    from simulation.timestream_simulation.bolo_params.bolo_0001 import bolo_params
+    from simulation.timestream_simulation.bolo_params.bolo_0004 import bolo_params
 
     if beam_params.do_pencil_beam:
         beam_kernel = np.array([[1]])
