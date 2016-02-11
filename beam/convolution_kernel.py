@@ -15,13 +15,13 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     sigma = np.sqrt(sigma_major**2 - sigma_minor**2)
     theta = np.deg2rad(bolo_params.beam_angle)
     x,y = mesh
-    if bolo_params.beam_angle is 0.0:
+    if bolo_params.beam_angle == 0.0:
         beam_kernel = np.exp(-x**2/(2*sigma**2))
         dim = y[0].size
         beam_kernel[:dim/2] = 0
         beam_kernel[dim/2+1:] = 0
         beam_kernel[dim/2, dim/2] = 0
-    if bolo_params.beam_angle is 90.0:
+    if bolo_params.beam_angle == 90.0:
         beam_kernel = np.exp(-y**2/(2*sigma**2))
         dim = y[0].size
         beam_kernel[...,:dim/2] = 0

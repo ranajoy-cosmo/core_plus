@@ -13,7 +13,7 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     sigma_minor = bolo_params.fwhm_minor/factor
     #sigma_minor = bolo_params.fwhm/factor
     #sigma_major = sigma_minor/np.sqrt(1 - bolo_params.ellipticity**2)
-    x0, y0 = bolo_params.del_x, 1*bolo_params.del_y
+    x0, y0 = bolo_params.del_x, bolo_params.del_y
     theta = np.deg2rad(bolo_params.beam_angle)
     x,y = mesh
     a = (np.cos(theta)**2)/(2*sigma_major**2) + (np.sin(theta)**2)/(2*sigma_minor**2)
