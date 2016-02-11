@@ -9,11 +9,9 @@ from simulation.lib.plotting.my_imshow import new_imshow
 
 def gaussian_2d(beam_params, bolo_params, mesh):
     factor = 2*np.sqrt(2*np.log(2))
-    sigma_major = bolo_params.fwhm_major/factor
-    sigma_minor = bolo_params.fwhm_minor/factor
-    #sigma_minor = bolo_params.fwhm/factor
-    #sigma_major = sigma_minor/np.sqrt(1 - bolo_params.ellipticity**2)
-    x0, y0 = bolo_params.del_x, bolo_params.del_y
+    sigma_minor = bolo_params.fwhm/factor
+    sigma_major = (1+bolo_params.ellipticity)*sigma_minor
+    x0, y0 = bolo_params.del_x, 1*bolo_params.del_y
     theta = np.deg2rad(bolo_params.beam_angle)
     x,y = mesh
     a = (np.cos(theta)**2)/(2*sigma_major**2) + (np.sin(theta)**2)/(2*sigma_minor**2)
@@ -35,9 +33,8 @@ def check_normalisation(beam_params, bolo_params, beam_kernel):
 
 def get_mesh(beam_params, bolo_params):
     offset_max = max(abs(bolo_params.del_x), abs(bolo_params.del_y))              #arc-mins
-    fwhm_major = bolo_params.fwhm_major
-    #fwhm_minor = bolo_params.fwhm
-    #fwhm_major = fwhm_minor/np.sqrt(1 - bolo_params.ellipticity**2)
+    fwhm_minor = bolo_params.fwhm
+    fwhm_major = (1+bolo_params.ellipticity)*fwhm_minor
     size = beam_params.beam_cutoff*fwhm_major + offset_max             #arc-mins
     dd = beam_params.beam_resolution                                            #arc-mins
     nxy = int(size/dd/2)
@@ -51,10 +48,8 @@ def display_beam_settings(beam_params, bolo_params, mesh):
         print "Pencil beam"
     else:
         factor = 2*np.sqrt(2*np.log(2))
-        fwhm_major = bolo_params.fwhm_major
-        fwhm_minor = bolo_params.fwhm_minor
-        #fwhm_minor = bolo_params.fwhm
-        #fwhm_major = fwhm_minor/np.sqrt(1 - bolo_params.ellipticity**2)
+        fwhm_minor = bolo_params.fwhm
+        fwhm_major = (1+bolo_params.ellipticity)*fwhm_minor
         print "Major axis(FWHM) :", fwhm_major, "arcmins" 
         print "Minor axis(FWHM) :", fwhm_minor, "arcmins"
         print "Center :", bolo_params.del_x, bolo_params.del_y
@@ -88,9 +83,6 @@ if __name__=="__main__":
         check_normalisation(beam_params, bolo_params, beam_kernel)
     if beam_params.display_beam_settings:
         display_beam_settings(beam_params, bolo_params, mesh)
-
-    #beam_kernel/=np.max(beam_kernel)
-
     if beam_params.plot_beam:
         plot_beam(beam_kernel)
 
