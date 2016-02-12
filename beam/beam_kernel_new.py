@@ -17,7 +17,10 @@ def gaussian_2d(beam_params, bolo_params, mesh, convolution_kernel):
     if bolo_params.ellipticity == 0.0:
         beam_kernel_convolved = beam_kernel
     else:
-        beam_kernel_convolved = convolve2d(beam_kernel, convolution_kernel, mode="same")*beam_params.beam_resolution
+        beam_kernel_convolved = convolve2d(beam_kernel, convolution_kernel, mode="same")
+        beam_kernel_convolved = beam_kernel_convolved*beam_params.beam_resolution#*np.cos(np.deg2rad(bolo_params.beam_angle))
+        #dx = beam_params.beam_resolution
+        #beam_kernel_convolved /= np.sum(beam_kernel_convolved)*dx*dx
     return beam_kernel_convolved
 
 
@@ -68,7 +71,7 @@ def plot_beam(beam_kernel):
 if __name__=="__main__":
 
     from custom_params import beam_params
-    from simulation.timestream_simulation.bolo_params.bolo_0004 import bolo_params
+    from simulation.timestream_simulation.bolo_params.bolo_0001 import bolo_params
 
     if beam_params.do_pencil_beam:
         beam_kernel = np.array([[1]])
@@ -83,6 +86,7 @@ if __name__=="__main__":
     if beam_params.display_beam_settings:
         display_beam_settings(beam_params, bolo_params, mesh)
     if beam_params.plot_beam:
+        plot_beam(convolution_kernel)
         plot_beam(beam_kernel)
 
 

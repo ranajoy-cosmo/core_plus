@@ -17,3 +17,4 @@ bolo_params.ellipticity = 0.05
 
 #The angle the beam major axis of the bolometer with the W-E axis measured anti-clockwise
 bolo_params.beam_angle = 45.0    #degrees
+#bolo_params.beam_angle = 90.0    #degrees

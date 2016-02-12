@@ -15,13 +15,14 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     sigma = np.sqrt(sigma_major**2 - sigma_minor**2)
     theta = np.deg2rad(bolo_params.beam_angle)
     x,y = mesh
-    normalisation_factor = np.sqrt(2*np.pi*sigma**2)
-    convolution_kernel = np.exp(-x**2/(2*sigma**2))/normalisation_factor
+    #normalisation_factor = np.sqrt(2*np.pi*sigma**2)
+    convolution_kernel = np.exp(-x**2/(2*sigma**2))#/normalisation_factor
     dim = y[0].size
     convolution_kernel[:dim/2] = 0
     convolution_kernel[dim/2+1:] = 0
     convolution_kernel = ndimage.interpolation.rotate(convolution_kernel, angle=bolo_params.beam_angle)
-    return convolution_kernel
+    integral = np.sum(convolution_kernel)*beam_params.beam_resolution
+    return convolution_kernel/integral
 
 
 def check_normalisation(beam_params, bolo_params, beam_kernel):
@@ -43,7 +44,7 @@ def get_mesh(beam_params, bolo_params):
     return np.meshgrid(x,y) 
 
 
-def display_beam_settings(beam_params, bolo_params, mesh):
+def display_beam_settings(beam_params, bolo_params, beam_kernel):
     fwhm_minor = bolo_params.fwhm
     fwhm_major = (1+bolo_params.ellipticity)*fwhm_minor 
     fwhm_conv = np.sqrt(fwhm_major**2 - fwhm_minor**2)
@@ -52,7 +53,7 @@ def display_beam_settings(beam_params, bolo_params, mesh):
     print "Convolution function FWHM :", fwhm_conv, "arcmins"
     print "Tilt :", bolo_params.beam_angle, "degrees"
     print "Pixel size :", beam_params.beam_resolution, "arcmins" 
-    print "Actual # of pixels in kernel cross-section :", mesh[0][0].size 
+    print "Actual # of pixels in kernel cross-section :", beam_kernel[0].size 
 
 def plot_beam(beam_kernel):
     fig, ax = plt.subplots()
@@ -64,7 +65,7 @@ def plot_beam(beam_kernel):
 if __name__=="__main__":
 
     from custom_params import beam_params
-    from simulation.timestream_simulation.bolo_params.bolo_0001 import bolo_params
+    from simulation.timestream_simulation.bolo_params.bolo_0004 import bolo_params
 
     mesh = get_mesh(beam_params, bolo_params)
     beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
@@ -72,7 +73,7 @@ if __name__=="__main__":
     if beam_params.check_normalisation:
         check_normalisation(beam_params, bolo_params, beam_kernel)
     if beam_params.display_beam_settings:
-        display_beam_settings(beam_params, bolo_params, mesh)
+        display_beam_settings(beam_params, bolo_params, beam_kernel)
     if beam_params.plot_beam:
         plot_beam(beam_kernel)
 
