@@ -8,19 +8,20 @@ from simulation.lib.plotting.my_imshow import new_imshow
 from scipy.signal import convolve2d
 import convolution_kernel
 
-def gaussian_2d(beam_params, bolo_params, mesh, convolution_kernel):
+def gaussian_2d(beam_params, bolo_params, mesh):
     factor = 2*np.sqrt(2*np.log(2))
     sigma = bolo_params.fwhm/factor
     x,y = mesh
-    normalisation_factor = 2*np.pi*sigma**2
-    beam_kernel = np.exp(-(x**2/(2*sigma**2) + y**2/(2*sigma**2)))/normalisation_factor
+    dx = beam_params.beam_resolution
+    beam_kernel = np.exp(-(x**2/(2*sigma**2) + y**2/(2*sigma**2)))
+    integral = np.sum(beam_kernel)*dx**2
+    beam_kernel /= integral
     if bolo_params.ellipticity == 0.0:
         beam_kernel_convolved = beam_kernel
     else:
-        beam_kernel_convolved = convolve2d(beam_kernel, convolution_kernel, mode="same")
-        beam_kernel_convolved = beam_kernel_convolved*beam_params.beam_resolution#*np.cos(np.deg2rad(bolo_params.beam_angle))
-        #dx = beam_params.beam_resolution
-        #beam_kernel_convolved /= np.sum(beam_kernel_convolved)*dx*dx
+        convolve_kernel = convolution_kernel.get_beam(beam_params, bolo_params)
+        beam_kernel_convolved = convolve2d(beam_kernel, convolve_kernel, mode="same")
+        beam_kernel_convolved /= np.sum(beam_kernel_convolved)*dx**2
     return beam_kernel_convolved
 
 
@@ -78,8 +79,7 @@ if __name__=="__main__":
         del_beta = np.array([0])
     else:
         mesh, del_beta = get_mesh(beam_params, bolo_params)
-        convolution_kernel = convolution_kernel.get_beam(beam_params, bolo_params)
-        beam_kernel = gaussian_2d(beam_params, bolo_params, mesh, convolution_kernel)
+        beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
 
     if beam_params.check_normalisation:
         check_normalisation(beam_params, bolo_params, beam_kernel)
@@ -96,6 +96,5 @@ def get_beam(beam_params, bolo_params):
         del_beta = np.array([0])
     else:
         mesh, del_beta = get_mesh(beam_params, bolo_params)
-        convolution_kernel = convolution_kernel.get_beam(beam_params, bolo_params)
-        beam_kernel = gaussian_2d(beam_params, bolo_params, mesh, convolution_kernel)
+        beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
     return beam_kernel, del_beta

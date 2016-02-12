@@ -15,8 +15,7 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     sigma = np.sqrt(sigma_major**2 - sigma_minor**2)
     theta = np.deg2rad(bolo_params.beam_angle)
     x,y = mesh
-    #normalisation_factor = np.sqrt(2*np.pi*sigma**2)
-    convolution_kernel = np.exp(-x**2/(2*sigma**2))#/normalisation_factor
+    convolution_kernel = np.exp(-x**2/(2*sigma**2))
     dim = y[0].size
     convolution_kernel[:dim/2] = 0
     convolution_kernel[dim/2+1:] = 0
