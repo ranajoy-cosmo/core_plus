@@ -62,7 +62,9 @@ def display_beam_settings(beam_params, bolo_params, mesh):
 
 def plot_beam(beam_kernel):
     fig, ax = plt.subplots()
-    im = new_imshow(ax, beam_kernel)
+    n = beam_kernel[0].size/2
+    extent = np.arange(-n, n+1)*beam_params.beam_resolution
+    im = new_imshow(ax, beam_kernel, x=extent, y=extent, interpolation="nearest")
     fig.colorbar(im, ax=ax)
     plt.show()
 

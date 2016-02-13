@@ -19,10 +19,10 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     if bolo_params.ellipticity == 0.0:
         beam_kernel_convolved = beam_kernel
     else:
-        convolve_kernel = convolution_kernel.get_beam(beam_params, bolo_params)
+        convolve_kernel, del_x = convolution_kernel.get_beam(beam_params, bolo_params)
         beam_kernel_convolved = convolve2d(beam_kernel, convolve_kernel, mode="same")
         beam_kernel_convolved /= np.sum(beam_kernel_convolved)*dx**2
-    return beam_kernel_convolved
+    return beam_kernel_convolved, convolve_kernel
 
 
 def check_normalisation(beam_params, bolo_params, beam_kernel):
@@ -39,9 +39,9 @@ def get_mesh(beam_params, bolo_params):
     fwhm_major = (1+bolo_params.ellipticity)*fwhm_minor
     size = beam_params.beam_cutoff*fwhm_major + offset_max             #arc-mins
     dd = beam_params.beam_resolution                                            #arc-mins
-    nxy = int(size/dd/2)
-    x = np.arange(-nxy, nxy+1)*dd
-    y = -1*np.arange(-nxy, nxy+1)*dd
+    n = int(size/dd/2)
+    x = np.arange(-n, n+1)*dd
+    y = -1*np.arange(-n, n+1)*dd
     return np.meshgrid(x,y), x 
 
 
@@ -64,7 +64,9 @@ def display_beam_settings(beam_params, bolo_params, mesh):
 
 def plot_beam(beam_kernel):
     fig, ax = plt.subplots()
-    im = new_imshow(ax, beam_kernel)
+    n = beam_kernel[0].size/2
+    extent = np.arange(-n, n+1)*beam_params.beam_resolution
+    im = new_imshow(ax, beam_kernel, x=extent, y=extent, interpolation="nearest")
     fig.colorbar(im, ax=ax)
     plt.show()
 
@@ -79,14 +81,14 @@ if __name__=="__main__":
         del_beta = np.array([0])
     else:
         mesh, del_beta = get_mesh(beam_params, bolo_params)
-        beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
+        beam_kernel, convolve_kernel = gaussian_2d(beam_params, bolo_params, mesh)
 
     if beam_params.check_normalisation:
         check_normalisation(beam_params, bolo_params, beam_kernel)
     if beam_params.display_beam_settings:
         display_beam_settings(beam_params, bolo_params, mesh)
     if beam_params.plot_beam:
-        plot_beam(convolution_kernel)
+        plot_beam(convolve_kernel)
         plot_beam(beam_kernel)
 
 
@@ -96,5 +98,5 @@ def get_beam(beam_params, bolo_params):
         del_beta = np.array([0])
     else:
         mesh, del_beta = get_mesh(beam_params, bolo_params)
-        beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
+        beam_kernel, convolve_kernel = gaussian_2d(beam_params, bolo_params, mesh)
     return beam_kernel, del_beta

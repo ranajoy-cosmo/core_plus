@@ -11,12 +11,14 @@ class imshow_show_z:
         self.z  = z
         self.dx = self.x[1] - self.x[0]
         self.dy = self.y[1] - self.y[0]
+        self.x0 = x[0]
+        self.y0 = y[0]
         self.numrows, self.numcols = self.z.shape
         self.ax.format_coord = self.format_coord
         
     def format_coord(self, x, y):
-        col = int(x/self.dx)#+0.5)
-        row = int(y/self.dy)#+0.5)
+        row = int((-y-self.y0)/self.dy+0.5)
+        col = int((x-self.x0)/self.dx+0.5)
         #print "Nx, Nf = ", len(self.x), len(self.y), "    x, y =", x, y, "    dx, dy =", self.dx, self.dy, "    col, row =", col, row
         xyz_str = ''
         if ((col>=0) and (col<self.numcols) and (row>=0) and (row<self.numrows)):
@@ -56,6 +58,6 @@ def new_imshow(ax, z, x=None, y=None, *args, **kwargs):
     #extent = (x[0]-dx/2.0, x[-1]+dx/2.0, y[0]-dy/2.0, y[-1]+dy/2.0)
     im = ax.imshow(zabs, extent = extent, *args, **kwargs)
     imshow_show_z(ax, z, x, y)
-    ax.set_xlim((x[0], x[-1]))
-    ax.set_ylim((y[0], y[-1]))
+    #ax.set_xlim((x[0], x[-1]))
+    #ax.set_ylim((y[0], y[-1]))
     return im

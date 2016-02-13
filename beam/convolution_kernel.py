@@ -19,7 +19,7 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     dim = y[0].size
     convolution_kernel[:dim/2] = 0
     convolution_kernel[dim/2+1:] = 0
-    convolution_kernel = ndimage.interpolation.rotate(convolution_kernel, angle=bolo_params.beam_angle)
+    convolution_kernel = ndimage.interpolation.rotate(convolution_kernel, angle=bolo_params.beam_angle, reshape=False)
     integral = np.sum(convolution_kernel)*beam_params.beam_resolution
     return convolution_kernel/integral
 
@@ -37,10 +37,10 @@ def get_mesh(beam_params, bolo_params):
     fwhm = np.sqrt(fwhm_major**2 - fwhm_minor**2)
     size = beam_params.beam_cutoff*fwhm                                      #arc-mins
     dd = beam_params.beam_resolution                                            #arc-mins
-    nxy = int(size/dd/2)
-    x = np.arange(-nxy, nxy+1)*dd
-    y = -1*np.arange(-nxy, nxy+1)*dd
-    return np.meshgrid(x,y) 
+    n = int(size/dd/2)
+    x = np.arange(-n, n+1)*dd
+    y = -1*np.arange(-n, n+1)*dd
+    return np.meshgrid(x,y), x 
 
 
 def display_beam_settings(beam_params, bolo_params, beam_kernel):
@@ -56,7 +56,9 @@ def display_beam_settings(beam_params, bolo_params, beam_kernel):
 
 def plot_beam(beam_kernel):
     fig, ax = plt.subplots()
-    im = new_imshow(ax, beam_kernel)
+    n = beam_kernel[0].size/2
+    extent = np.arange(-n, n+1)*beam_params.beam_resolution
+    im = new_imshow(ax, beam_kernel, x=extent, y=extent, interpolation="nearest")
     fig.colorbar(im, ax=ax)
     plt.show()
 
@@ -64,9 +66,9 @@ def plot_beam(beam_kernel):
 if __name__=="__main__":
 
     from custom_params import beam_params
-    from simulation.timestream_simulation.bolo_params.bolo_0004 import bolo_params
+    from simulation.timestream_simulation.bolo_params.bolo_0001 import bolo_params
 
-    mesh = get_mesh(beam_params, bolo_params)
+    mesh, del_beta = get_mesh(beam_params, bolo_params)
     beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
 
     if beam_params.check_normalisation:
@@ -78,6 +80,6 @@ if __name__=="__main__":
 
 
 def get_beam(beam_params, bolo_params):
-    mesh = get_mesh(beam_params, bolo_params)
+    mesh, del_beta = get_mesh(beam_params, bolo_params)
     convolution_kernel = gaussian_2d(beam_params, bolo_params, mesh)
-    return convolution_kernel
+    return convolution_kernel, del_beta
