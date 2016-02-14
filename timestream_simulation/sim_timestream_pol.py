@@ -61,7 +61,7 @@ class Bolo:
             signal += np.convolve(P(sky_map.T), beam_kernel[i], mode = 'same')
 
         beam_sum = np.sum(beam_kernel)
-        #signal/=beam_sum
+        signal/=beam_sum
 
         hitmap = self.get_hitmap(v_central)
 
