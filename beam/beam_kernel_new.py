@@ -12,16 +12,15 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     factor = 2*np.sqrt(2*np.log(2))
     sigma = bolo_params.fwhm/factor
     x,y = mesh
-    dx = beam_params.beam_resolution
     beam_kernel = np.exp(-(x**2/(2*sigma**2) + y**2/(2*sigma**2)))
-    integral = np.sum(beam_kernel)*dx**2
+    integral = np.sum(beam_kernel)*beam_params.beam_resolution**2
     beam_kernel /= integral
     if bolo_params.ellipticity == 0.0:
         beam_kernel_convolved = beam_kernel
+        convolve_kernel = None
     else:
         convolve_kernel, del_x = convolution_kernel.get_beam(beam_params, bolo_params)
-        beam_kernel_convolved = convolve2d(beam_kernel, convolve_kernel, mode="same")
-        beam_kernel_convolved /= np.sum(beam_kernel_convolved)*dx**2
+        beam_kernel_convolved = convolve2d(beam_kernel, convolve_kernel, mode="same")*beam_params.beam_resolution
     return beam_kernel_convolved, convolve_kernel
 
 
@@ -62,7 +61,7 @@ def display_beam_settings(beam_params, bolo_params, mesh):
         print "Expected # of pixels in kernel cross-section :", int(beam_params.beam_cutoff*fwhm_major/beam_params.beam_resolution/2)*2 + 1 
         print "Actual # of pixels in kernel cross-section :", mesh[0][0].size 
 
-def plot_beam(beam_kernel):
+def plot_beam(beam_kernel, beam_params):
     fig, ax = plt.subplots()
     n = beam_kernel[0].size/2
     extent = np.arange(-n, n+1)*beam_params.beam_resolution
@@ -77,8 +76,9 @@ if __name__=="__main__":
     from simulation.timestream_simulation.bolo_params.bolo_0001 import bolo_params
 
     if beam_params.do_pencil_beam:
-        beam_kernel = np.array([[1]])
+        beam_kernel = np.array([[1]])/beam_params.beam_resolution**2
         del_beta = np.array([0])
+        beam_;arams.plot_beam = False
     else:
         mesh, del_beta = get_mesh(beam_params, bolo_params)
         beam_kernel, convolve_kernel = gaussian_2d(beam_params, bolo_params, mesh)
@@ -88,8 +88,9 @@ if __name__=="__main__":
     if beam_params.display_beam_settings:
         display_beam_settings(beam_params, bolo_params, mesh)
     if beam_params.plot_beam:
-        plot_beam(convolve_kernel)
-        plot_beam(beam_kernel)
+        plot_beam(beam_kernel, beam_params)
+        if bolo_params.ellipticity != 0.0:
+            plot_beam(convolve_kernel, beam_params)
 
 
 def get_beam(beam_params, bolo_params):

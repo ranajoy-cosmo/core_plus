@@ -18,17 +18,13 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     b = 1*np.sin(2*theta)/(4*sigma_major**2) - np.sin(2*theta)/(4*sigma_minor**2)
     c = (np.sin(theta)**2)/(2*sigma_major**2) + (np.cos(theta)**2)/(2*sigma_minor**2)
     beam_kernel = np.exp(-1*(a*(x - x0)**2 + 2*b*(x - x0)*(y - y0) + c*(y - y0)**2)) 
-    #normalisation_factor = 2*np.pi*sigma_major*sigma_minor
-    dx = beam_params.beam_resolution
-    normalisation_factor = np.sum(beam_kernel)*dx**2
-    beam_kernel /= normalisation_factor
+    integral = np.sum(beam_kernel)*beam_params.beam_resolution**2
+    beam_kernel /= integral 
     return beam_kernel
 
 
 def check_normalisation(beam_params, bolo_params, beam_kernel):
-    dx = beam_params.beam_resolution
-    dy = beam_params.beam_resolution
-    integral = np.sum(beam_kernel)*dx*dy
+    integral = np.sum(beam_kernel)*beam_params.beam_resolution**2
     print "The integral of the beam is :", integral
     print "Percentage difference with unity :", 100*(1-integral)
 
@@ -62,7 +58,7 @@ def display_beam_settings(beam_params, bolo_params, mesh):
         print "Expected # of pixels in kernel cross-section :", int(beam_params.beam_cutoff*fwhm_major/beam_params.beam_resolution/2)*2 + 1 
         print "Actual # of pixels in kernel cross-section :", mesh[0][0].size 
 
-def plot_beam(beam_kernel):
+def plot_beam(beam_kernel, beam_params):
     fig, ax = plt.subplots()
     n = beam_kernel[0].size/2
     extent = np.arange(-n, n+1)*beam_params.beam_resolution
@@ -77,8 +73,9 @@ if __name__=="__main__":
     from simulation.timestream_simulation.bolo_params.bolo_0001 import bolo_params
 
     if beam_params.do_pencil_beam:
-        beam_kernel = np.array([[1]])
+        beam_kernel = np.array([[1]])/beam_params.beam_resolution**2
         del_beta = np.array([0])
+        beam_params.plot_beam = False
     else:
         mesh, del_beta = get_mesh(beam_params, bolo_params)
         beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
@@ -88,7 +85,7 @@ if __name__=="__main__":
     if beam_params.display_beam_settings:
         display_beam_settings(beam_params, bolo_params, mesh)
     if beam_params.plot_beam:
-        plot_beam(beam_kernel)
+        plot_beam(beam_kernel, beam_params)
 
 
 def get_beam(beam_params, bolo_params):

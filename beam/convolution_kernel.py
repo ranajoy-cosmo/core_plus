@@ -25,8 +25,7 @@ def gaussian_2d(beam_params, bolo_params, mesh):
 
 
 def check_normalisation(beam_params, bolo_params, beam_kernel):
-    dx = beam_params.beam_resolution
-    integral = np.sum(beam_kernel)*dx
+    integral = np.sum(beam_kernel)*beam_params.beam_resolution
     print "The integral of the beam is :", integral
     print "Percentage difference with unity :", 100*(1-integral)
 
@@ -54,7 +53,7 @@ def display_beam_settings(beam_params, bolo_params, beam_kernel):
     print "Pixel size :", beam_params.beam_resolution, "arcmins" 
     print "Actual # of pixels in kernel cross-section :", beam_kernel[0].size 
 
-def plot_beam(beam_kernel):
+def plot_beam(beam_kernel, beam_params):
     fig, ax = plt.subplots()
     n = beam_kernel[0].size/2
     extent = np.arange(-n, n+1)*beam_params.beam_resolution
@@ -66,17 +65,22 @@ def plot_beam(beam_kernel):
 if __name__=="__main__":
 
     from custom_params import beam_params
-    from simulation.timestream_simulation.bolo_params.bolo_0001 import bolo_params
+    from simulation.timestream_simulation.bolo_params.bolo_0002 import bolo_params
 
-    mesh, del_beta = get_mesh(beam_params, bolo_params)
-    beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
+    if bolo_params.ellipticity == 0.0:
+        beam_kernel = np.array([[1]])/beam_params.beam_resolution
+        del_beta = np.array([0])
+        beam_params.plot_beam=False
+    else:
+        mesh, del_beta = get_mesh(beam_params, bolo_params)
+        beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
 
     if beam_params.check_normalisation:
         check_normalisation(beam_params, bolo_params, beam_kernel)
     if beam_params.display_beam_settings:
         display_beam_settings(beam_params, bolo_params, beam_kernel)
     if beam_params.plot_beam:
-        plot_beam(beam_kernel)
+        plot_beam(beam_kernel, beam_params)
 
 
 def get_beam(beam_params, bolo_params):
