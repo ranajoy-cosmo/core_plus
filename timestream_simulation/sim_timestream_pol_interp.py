@@ -36,32 +36,27 @@ class Bolo:
 
         #Building the projection matrix P
         nsamples = int(1000.0*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate
-        npix = hp.nside2npix(scan_params.nside)
-        matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
-        P = ProjectionOperator(matrix)
 
         signal = np.zeros(nsamples)
-        matrix.data.value[:, 0, 0, 0] = 0.5
 
         t_start = scan_params.t_segment*segment
 
         for i in range(del_beta.size):
             v, pol_ang = gen_p.generate_pointing(scan_params, self.bolo_params, segment_group, t_start, del_beta[i])
-            hit_pix = hp.vec2pix(scan_params.nside, v[...,0], v[...,1], v[...,2])
-            matrix.data.index[:, 0] = hit_pix
-            matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol_ang)
-            matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
-            P.matrix = matrix
+            theta, phi = hp.vec2ang(v)
             sys.stdout.flush()
             if i is del_beta.size/2:
                 v_central = v[::scan_params.oversampling_rate]
                 np.save(os.path.join(segment_group, "vector"), v_central)
                 np.save(os.path.join(segment_group, "pol_ang"), pol_ang[::scan_params.oversampling_rate])
             #Generating the time ordered signal
-            signal += np.convolve(P(sky_map.T), beam_kernel[i], mode = 'same')
+            signal_T = 0.5*hp.get_interp_val(sky_map[0], theta, phi)
+            signal_Q = 0.5*hp.get_interp_val(sky_map[1], theta, phi)*np.cos(pol_ang)
+            signal_U = 0.5*hp.get_interp_val(sky_map[2], theta, phi)*np.sin(pol_ang)
+            signal += np.convolve(signal_T + signal_Q + signal_U, beam_kernel[i], mode = 'same')
 
         beam_sum = np.sum(beam_kernel)
-        #signal/=beam_sum
+        signal/=beam_sum
 
         hitmap = self.get_hitmap(v_central)
 
@@ -123,14 +118,6 @@ def get_sky_map():
         sky_map[1:,...] = 0.0
     return sky_map
 
-def make_output_dirs(out_dir, bolo_names, num_segments):
-    os.makedirs(out_dir)
-    for bolo in bolo_names:
-        os.makedirs(os.path.join(out_dir, bolo))
-        for segment in range(num_segments):
-            segment_name = str(segment+1).zfill(4)
-            os.makedirs(os.path.join(out_dir, bolo, segment_name))
-            
 
 def run_serial():
 
@@ -163,6 +150,14 @@ def run_serial():
     hp.write_map(os.path.join(out_dir, "scanned_map.fits"), scanned_map)
     hp.write_map(os.path.join(out_dir, "hitmap_in.fits"), hitmap)
 
+def make_output_dirs(out_dir, bolo_names, num_segments):
+    os.makedirs(out_dir)
+    for bolo in bolo_names:
+        os.makedirs(os.path.join(out_dir, bolo))
+        for segment in range(num_segments):
+            segment_name = str(segment+1).zfill(4)
+            os.makedirs(os.path.join(out_dir, bolo, segment_name))
+            
 
 def run_mpi():
     time_start = time.time()   

@@ -18,7 +18,9 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     b = 1*np.sin(2*theta)/(4*sigma_major**2) - np.sin(2*theta)/(4*sigma_minor**2)
     c = (np.sin(theta)**2)/(2*sigma_major**2) + (np.cos(theta)**2)/(2*sigma_minor**2)
     beam_kernel = np.exp(-1*(a*(x - x0)**2 + 2*b*(x - x0)*(y - y0) + c*(y - y0)**2)) 
-    normalisation_factor = 2*np.pi*sigma_major*sigma_minor
+    #normalisation_factor = 2*np.pi*sigma_major*sigma_minor
+    dx = beam_params.beam_resolution
+    normalisation_factor = np.sum(beam_kernel)*dx**2
     beam_kernel /= normalisation_factor
     return beam_kernel
 
