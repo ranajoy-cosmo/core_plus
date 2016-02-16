@@ -12,7 +12,6 @@ scan_params = Generic()
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 scan_params.bolo_names = ['bolo_0001']
-scan_params.nside = global_scanning.nside_in
 scan_params.do_only_T = False
 scan_params.oversampling_rate = 1
 
@@ -49,4 +48,3 @@ scan_params.return_pointing = True
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 beam_params.do_pencil_beam = True
-beam_params.scan_radius = scan_params.beta

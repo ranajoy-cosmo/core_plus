@@ -71,12 +71,14 @@ def get_bolo_initial(scan_params, bolo_params, del_beta):
 
 def calculate_params():
     if scan_params.mode is 1:
-        scan_params.t_spin = 360.0*60.0*np.sin(scan_params.beta)*scan_params.t_sampling/1000.0/scan_params.theta_co
-        scan_params.t_prec = 360.0*60.0*np.sin(scan_params.alpha)*scan_params.t_spin/scan_params.theta_cross
+        scan_params.t_spin = 360.0*60.0*np.sin(np.radians(scan_params.beta))*scan_params.t_sampling/1000.0/scan_params.theta_co
+        scan_params.t_prec = 360.0*60.0*np.sin(np.radians(scan_params.alpha))*scan_params.t_spin/scan_params.theta_cross
 
     if scan_params.mode is 2:
-        scan_params.theta_cross = 360.0*60.0*np.sin(scan_params.alpha)*scan_params.t_spin/scan_params.t_prec
-        scan_params.theta_co = 360*60*np.sin(scan_params.beta)*scan_params.t_sampling/1000.0/scan_params.t_spin
+        scan_params.theta_cross = 360.0*60.0*np.sin(np.radians(scan_params.alpha))*scan_params.t_spin/scan_params.t_prec
+        scan_params.theta_co = 360*60*np.sin(np.radians(scan_params.beta))*scan_params.t_sampling/1000.0/scan_params.t_spin
+
+    beam_params.beam_resolution = scan_params.theta_co/scan_params.oversampling_rate
 
 
 def display_params():
@@ -90,6 +92,9 @@ def display_params():
     print "Scan frequency : ", 1000.0/scan_params.t_sampling, "Hz"
     print "Theta co : ", scan_params.theta_co, " arcmin"
     print "Theta cross : ", scan_params.theta_cross, " arcmin"
+    print "Scan resolution for beam integration :", scan_params.theta_co/scan_params.oversampling_rate, "arcmin"
+    print "Beam resolution :", beam_params.beam_resolution, "arcmin"
+    print "Pixel size for NSIDE =", scan_params.nside, ":", hp.nside2resol(scan_params.nside, arcmin=True), "arcmin"
     n_steps = int(1000*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate
     print "#Samples per segment : ", n_steps
     print "Estimated use of memory : ", 15*n_steps*8.0/1024/1024, "MB"
@@ -97,14 +102,16 @@ def display_params():
 def run_serial():
 
     out_dir = os.path.join(scan_params.global_output_dir, "scanning", scan_params.time_stamp)
-    os.makedirs(out_dir)
+    #os.makedirs(out_dir)
     
-    root_file = h5py.File(os.path.join(out_dir, "data.hdf5"), libver="latest")
+    #root_file = h5py.File(os.path.join(out_dir, "data.hdf5"), libver="latest")
 
     calculate_params()
 
     if scan_params.display_params:
         display_params()
+
+    sys.exit()
 
     for bolo_name in scan_params.bolo_names:
         bolo_group = root_file.create_group(bolo_name)
@@ -120,7 +127,7 @@ def run_serial():
 
 
 if __name__ == "__main__":
-    from custom_params import scan_params
+    from custom_params import scan_params, beam_params
     run_serial()
     #bolo_params = importlib.import_module("simulation.bolo.bolo_params." + "0001").bolo_params
     #scan_params = calculate_params(scan_params, bolo_params)

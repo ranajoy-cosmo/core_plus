@@ -12,9 +12,9 @@ import time
 from mpi4py import MPI
 from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
-from simulation.beam.beam_kernel import get_beam
-#from simulation.beam.beam_kernel_new import get_beam
 #from simulation.beam.convolution_kernel import get_beam
+from simulation.beam.beam_kernel_new import get_beam
+#from simulation.beam.beam_kernel import get_beam
 import simulation.timestream_simulation.sim_pointing as gen_p
 from simulation.lib.utilities.time_util import get_time_stamp
 
@@ -88,18 +88,20 @@ class Bolo:
 
 def calculate_params():
     if scan_params.mode is 1:
-        scan_params.t_spin = 360.0*60.0*np.sin(scan_params.beta)*scan_params.t_sampling/1000.0/scan_params.theta_co
-        scan_params.t_prec = 360.0*60.0*np.sin(scan_params.alpha)*scan_params.t_spin/scan_params.theta_cross
+        scan_params.t_spin = 360.0*60.0*np.sin(np.radians(scan_params.beta))*scan_params.t_sampling/1000.0/scan_params.theta_co
+        scan_params.t_prec = 360.0*60.0*np.sin(np.radians(scan_params.alpha))*scan_params.t_spin/scan_params.theta_cross
 
     if scan_params.mode is 2:
-        scan_params.theta_cross = 360.0*60.0*np.sin(scan_params.alpha)*scan_params.t_spin/scan_params.t_prec
-        scan_params.theta_co = 360*60*np.sin(scan_params.beta)*scan_params.t_sampling/1000.0/scan_params.t_spin
+        scan_params.theta_cross = 360.0*60.0*np.sin(np.radians(scan_params.alpha))*scan_params.t_spin/scan_params.t_prec
+        scan_params.theta_co = 360*60*np.sin(np.radians(scan_params.beta))*scan_params.t_sampling/1000.0/scan_params.t_spin
 
     beam_params.beam_resolution = scan_params.theta_co/scan_params.oversampling_rate
+    scan_params.scan_resolution = scan_params.theta_co/scan_params.oversampling_rate
 
 def display_params():
     print "alpha : ", scan_params.alpha, " degrees"
     print "beta : ", scan_params.beta, " degrees"
+    print "Mode :", scan_params.mode
     print "T flight : ", scan_params.t_flight/60.0/60.0, "hours"
     print "T segment :", scan_params.t_segment/60.0/60.0, "hours"
     print "T precession : ", scan_params.t_prec/60.0/60.0, "hours"
@@ -108,6 +110,9 @@ def display_params():
     print "Scan frequency : ", 1000.0/scan_params.t_sampling, "Hz"
     print "Theta co : ", scan_params.theta_co, " arcmin"
     print "Theta cross : ", scan_params.theta_cross, " arcmin"
+    print "Scan resolution for beam integration :", scan_params.scan_resolution, "arcmin"
+    print "Beam resolution :", beam_params.beam_resolution, "arcmin"
+    print "Pixel size for NSIDE =", scan_params.nside, ":", hp.nside2resol(scan_params.nside, arcmin=True), "arcmin"
     n_steps = int(1000*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate
     print "#Samples per segment : ", n_steps
     print "Estimated use of memory : ", 15*n_steps*8.0/1024/1024, "MB"
@@ -121,6 +126,7 @@ def get_sky_map():
     sky_map = np.array(hp.read_map(scan_params.input_map, field=(0,1,2)))
     if scan_params.do_only_T:
         sky_map[1:,...] = 0.0
+    scan_params.nside = hp.get_nside(sky_map)
     return sky_map
 
 def make_output_dirs(out_dir, bolo_names, num_segments):
@@ -181,7 +187,10 @@ def run_mpi():
 
     out_dir = os.path.join(scan_params.global_output_dir, "scanning", time_stamp[0])
 
+    calculate_params()
+
     if rank is 0:
+        display_params()
         make_output_dirs(out_dir, scan_params.bolo_names, num_segments)
         hitmap = np.zeros(hp.nside2npix(scan_params.nside), dtype=np.float32)
     else:
@@ -190,8 +199,6 @@ def run_mpi():
     comm.Barrier()
 
     #root_file = h5py.File(os.path.join(out_dir, "data.hdf5"), driver='mpio', libver="latest", comm=comm)
-
-    calculate_params()
 
     count = 0
     for bolo_name in scan_params.bolo_names:
@@ -208,15 +215,13 @@ def run_mpi():
             count += 1
 
     if rank is 0:
-        #out_dir = os.path.join(scan_params.global_output_dir, "scanning", scan_params.time_stamp)
-        #print out_dir
         scanned_map = get_scanned_map(sky_map, hitmap)
         hp.write_map(os.path.join(out_dir, "scanned_map.fits"), scanned_map)
         hp.write_map(os.path.join(out_dir, "hitmap_in.fits"), hitmap)
 
     time_end = time.time() 
     if rank is 0:
-        print "Total time taken :", (time_end- time_start), "seconds"
+        print "Total time taken :", (time_end - time_start), "seconds"
         print "Scan time stamp :", time_stamp[0]
 
 if __name__=="__main__":
