@@ -7,10 +7,12 @@ from mpi4py import MPI
 from pyoperators import DiagonalOperator, PackOperator, pcg, MPIDistributionIdentityOperator
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
+from memory_profiler import profile
 import os
 import sys
 import time
 
+#@profile
 def make_map_from_signal(signal, v, pol_ang):
 
     sys.stdout.flush()
@@ -70,6 +72,7 @@ def write_map(sky_map, hitmap):
     hp.write_map(os.path.join(out_dir, "reconstructed_map.fits"), sky_map)
     hp.write_map(os.path.join(out_dir, "hitmap_out.fits"), hitmap)
 
+#@profile
 def run_mpi():
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()

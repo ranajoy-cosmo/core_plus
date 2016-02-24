@@ -28,7 +28,7 @@ map_params.do_pol = True
 # Read/Write Settings 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 map_params.tag = 'sky'
-spectra_file_name = "test_4000.npy"
+spectra_file_name = "spectra_pure_E.npy"
 map_params.spectra_file = os.path.join(global_paths.spectra_dir, spectra_file_name) 
 
 map_file_name = map_params.tag + '_map_'

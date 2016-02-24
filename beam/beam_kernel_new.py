@@ -91,6 +91,7 @@ if __name__=="__main__":
         plot_beam(beam_kernel, beam_params)
         if bolo_params.ellipticity != 0.0:
             plot_beam(convolve_kernel, beam_params)
+    print del_beta
 
 
 def get_beam(beam_params, bolo_params):

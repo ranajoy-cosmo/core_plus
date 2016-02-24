@@ -17,9 +17,11 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     a = (np.cos(theta)**2)/(2*sigma_major**2) + (np.sin(theta)**2)/(2*sigma_minor**2)
     b = 1*np.sin(2*theta)/(4*sigma_major**2) - np.sin(2*theta)/(4*sigma_minor**2)
     c = (np.sin(theta)**2)/(2*sigma_major**2) + (np.cos(theta)**2)/(2*sigma_minor**2)
+    norm_factor = 2*np.pi*sigma_major*sigma_minor
     beam_kernel = np.exp(-1*(a*(x - x0)**2 + 2*b*(x - x0)*(y - y0) + c*(y - y0)**2)) 
-    integral = np.sum(beam_kernel)*beam_params.beam_resolution**2
-    beam_kernel /= integral 
+    beam_kernel /= norm_factor
+    #integral = np.sum(beam_kernel)*beam_params.beam_resolution**2
+    #beam_kernel /= integral 
     return beam_kernel
 
 
@@ -79,6 +81,8 @@ if __name__=="__main__":
     else:
         mesh, del_beta = get_mesh(beam_params, bolo_params)
         beam_kernel = gaussian_2d(beam_params, bolo_params, mesh)
+
+    print del_beta
 
     if beam_params.check_normalisation:
         check_normalisation(beam_params, bolo_params, beam_kernel)

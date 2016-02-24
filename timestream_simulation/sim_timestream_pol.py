@@ -7,8 +7,9 @@ import sys
 import copy
 import os
 import importlib
-#import h5py
 import time
+from memory_profiler import profile
+from simulation.lib.quaternion import quaternion
 from mpi4py import MPI
 from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
@@ -17,62 +18,82 @@ from simulation.beam.beam_kernel_new import get_beam
 #from simulation.beam.beam_kernel import get_beam
 import simulation.timestream_simulation.sim_pointing as gen_p
 from simulation.lib.utilities.time_util import get_time_stamp
+import simulation.lib.numericals.filters as filters
 
 class Bolo:
 
     def __init__(self, bolo_name):
-            self.bolo_params = importlib.import_module("simulation.timestream_simulation.bolo_params." + bolo_name).bolo_params
+        self.bolo_params = importlib.import_module("simulation.timestream_simulation.bolo_params." + bolo_name).bolo_params
+        #Getting the beam profile and the del_beta
+        self.beam_kernel, self.del_beta = get_beam(beam_params, self.bolo_params)
+        self.axis_spin, self.axis_prec, self.axis_rev = self.get_initial_axes()
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Simulating the time-ordered data for a given bolo with any beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-    def simulate_timestream(self, segment, sky_map, segment_group):
+    #@profile
+    def simulate_timestream(self, segment, sky_map, out_dir):
 
         sys.stdout.flush()
         time_segment_start = time.time()
-        #Getting the beam profile and the del_beta
-        beam_kernel, del_beta = get_beam(beam_params, self.bolo_params)
-
-        #Building the projection matrix P
-        nsamples = int(1000.0*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate
-        npix = hp.nside2npix(scan_params.nside)
-        matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
-        P = ProjectionOperator(matrix)
-
-        signal = np.zeros(nsamples)
-        matrix.data.value[:, 0, 0, 0] = 0.5
 
         t_start = scan_params.t_segment*segment
+        rot_qt, pol_ang = self.generate_quaternion(t_start)
 
-        for i in range(del_beta.size):
-            v, pol_ang = gen_p.generate_pointing(scan_params, self.bolo_params, segment_group, t_start, del_beta[i])
+        pad = self.del_beta.size/2
+        #Building the projection matrix P
+        nsamples = int(1000.0*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate + 2*pad
+        npix = hp.nside2npix(scan_params.nside)
+
+        matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
+        matrix.data.value[:, 0, 0, 0] = 0.5
+        matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol_ang)
+        matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
+
+        P = ProjectionOperator(matrix)
+
+        signal = np.zeros(nsamples - 2*pad)
+
+        for i in range(self.del_beta.size):
+            v_init = self.get_initial_vec(self.del_beta[i])
+            v = quaternion.transform(rot_qt, v_init)
             hit_pix = hp.vec2pix(scan_params.nside, v[...,0], v[...,1], v[...,2])
-            matrix.data.index[:, 0] = hit_pix
-            matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol_ang)
-            matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
-            P.matrix = matrix
+            P.matrix.data.index[:, 0] = hit_pix
+            #P.matrix = matrix
+            print self.del_beta[i]
             sys.stdout.flush()
-            if i is del_beta.size/2:
-                v_central = v[::scan_params.oversampling_rate]
-                np.save(os.path.join(segment_group, "vector"), v_central)
-                np.save(os.path.join(segment_group, "pol_ang"), pol_ang[::scan_params.oversampling_rate])
+            if i is self.del_beta.size/2:
+                if beam_params.do_pencil_beam:
+                    v_central = v[::scan_params.oversampling_rate]
+                else:
+                    v_central = v[pad:-pad][::scan_params.oversampling_rate]
             #Generating the time ordered signal
-            signal += np.convolve(P(sky_map.T), beam_kernel[i], mode = 'same')
+            signal_int = P(sky_map.T)
+            if scan_params.do_filtering:
+                signal_int = filters.filter_butter(signal_int, 1000.0/scan_params.t_sampling, 150.0)
+            signal += np.convolve(signal_int, self.beam_kernel[i], mode = 'valid')
 
-        beam_sum = np.sum(beam_kernel)
+        del P
+
+        beam_sum = np.sum(self.beam_kernel)
         signal/=beam_sum
 
         hitmap = self.get_hitmap(v_central)
 
-        #segment_group.create_dataset("ts_signal", data=signal)
-        np.save(os.path.join(segment_group, "ts_signal"), signal[::scan_params.oversampling_rate])
+        if beam_params.do_pencil_beam:
+            np.save(os.path.join(out_dir, "pol_ang"), pol_ang[::scan_params.oversampling_rate])
+        else:
+            np.save(os.path.join(out_dir, "pol_ang"), pol_ang[pad:-pad][::scan_params.oversampling_rate])
+        np.save(os.path.join(out_dir, "vector"), v_central)
+        np.save(os.path.join(out_dir, "ts_signal"), signal[::scan_params.oversampling_rate])
 
         time_segment_end = time.time() 
         print "Time taken for scanning segment :", (time_segment_end - time_segment_start), "seconds"
 
         return hitmap
 
+    #@profile
     def get_hitmap(self, v):
         nsamples = v.shape[0]
         npix = hp.nside2npix(scan_params.nside)
@@ -83,7 +104,52 @@ class Bolo:
         matrix.data.index = hit_pix[..., None]
         P.matrix = matrix
         hitmap = P.T(np.ones(nsamples, dtype=np.float32))
+
         return hitmap
+    
+    #@profile
+    def generate_quaternion(self, t_start):
+
+        pad = self.del_beta.size/2
+        n_steps = int(1000.0*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate + 2*pad
+        t_steps = t_start + 0.001*(scan_params.t_sampling/scan_params.oversampling_rate)*np.arange(-pad, n_steps-pad)
+
+        w_spin = 2*np.pi/scan_params.t_spin
+        w_prec = 2*np.pi/scan_params.t_prec
+        w_rev = 2*np.pi/scan_params.t_year
+
+        r_spin = quaternion.make_quaternion(w_spin*t_steps, self.axis_spin)
+        r_prec = quaternion.make_quaternion(w_prec*t_steps, self.axis_prec)
+        r_rev = quaternion.make_quaternion(w_rev*t_steps, self.axis_rev)
+
+        r_total = quaternion.multiply(r_rev, quaternion.multiply(r_prec, r_spin))
+
+        pol_init = np.deg2rad(self.bolo_params.pol_ang)
+        pol_ang = ((w_prec + w_spin)*t_steps + pol_init)%np.pi
+
+        return r_total, pol_ang
+
+
+    def get_initial_vec(self, del_beta):
+        alpha = np.deg2rad(scan_params.alpha)
+        beta = np.deg2rad(scan_params.beta)
+        del_x = np.deg2rad(self.bolo_params.del_x/60.0)
+        del_y = np.deg2rad(self.bolo_params.del_y/60.0)
+        del_beta_rad = np.deg2rad(del_beta/60.0)
+
+        u_view = np.array([np.cos(alpha + beta + del_beta_rad), 0.0, np.sin(alpha + beta + del_beta_rad)])
+
+        return u_view
+
+    def get_initial_axes(self):
+        alpha = np.deg2rad(scan_params.alpha)
+        beta = np.deg2rad(scan_params.beta)
+
+        axis_spin = np.array([np.cos(alpha), 0.0, np.sin(alpha)])
+        axis_prec = np.array([1.0, 0.0, 0.0])
+        axis_rev = np.array([0.0, 0.0, 1.0])
+
+        return axis_spin, axis_prec, axis_rev
 
 
 def calculate_params():
@@ -198,19 +264,15 @@ def run_mpi():
 
     comm.Barrier()
 
-    #root_file = h5py.File(os.path.join(out_dir, "data.hdf5"), driver='mpio', libver="latest", comm=comm)
 
     count = 0
     for bolo_name in scan_params.bolo_names:
         for segment in range(num_segments):
             if count%size is rank:
-                #bolo_group = root_file.require_group(bolo_name)
-                segment_name = str(segment+1).zfill(4)
-                #segment_group = bolo_group.create_group(segment_name)
-                segment_group = os.path.join(out_dir, bolo_name, segment_name)
-                print "Doing Bolo :", bolo_name, " Segment :", segment, " Rank :", rank, " Count :", count
                 bolo = Bolo(bolo_name)
-                hitmap_local = bolo.simulate_timestream(segment, sky_map, segment_group)
+                out_dir_local = os.path.join(out_dir, bolo_name, str(segment+1).zfill(4))
+                print "Doing Bolo :", bolo_name, " Segment :", segment, " Rank :", rank, " Count :", count
+                hitmap_local = bolo.simulate_timestream(segment, sky_map, out_dir_local)
                 comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0)
             count += 1
 

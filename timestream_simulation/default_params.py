@@ -31,6 +31,8 @@ scan_params.theta_cross = hp.nside2resol(scan_params.nside, arcmin=True)        
 scan_params.theta_co = hp.nside2resol(scan_params.nside, arcmin=True)                             #arcmin
 
 scan_params.do_pol = True
+
+scan_params.do_filtering = True
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read/Write Settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*

@@ -10,8 +10,9 @@ import importlib
 #import h5py
 from simulation.lib.quaternion import quaternion
 
-def generate_pointing(scan_params, bolo_params, segment_group, t_start, del_beta=0.0):
+def generate_pointing(scan_params, bolo_params, segment_group, t_start, i, del_betas):
 
+    del_beta = del_betas[i]
     u_view, axis_spin, axis_prec, axis_rev = get_bolo_initial(scan_params, bolo_params, del_beta)
 
     if del_beta==0.0 and False:
@@ -21,8 +22,9 @@ def generate_pointing(scan_params, bolo_params, segment_group, t_start, del_beta
         print "Revolution axis :", axis_rev
     print del_beta
     
-    n_steps = int(scan_params.t_segment/(scan_params.t_sampling/1000.0))*scan_params.oversampling_rate
-    t_steps = t_start + 0.001*(scan_params.t_sampling/scan_params.oversampling_rate)*np.arange(n_steps)
+    pad = del_betas.size/2
+    n_steps = int(scan_params.t_segment/(scan_params.t_sampling/1000.0))*scan_params.oversampling_rate + 2*pad
+    t_steps = t_start + 0.001*(scan_params.t_sampling/scan_params.oversampling_rate)*np.arange(-pad, n_steps-pad)
 
     w_spin = 2*np.pi/scan_params.t_spin
     w_prec = 2*np.pi/scan_params.t_prec
