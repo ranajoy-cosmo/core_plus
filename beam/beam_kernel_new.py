@@ -78,7 +78,7 @@ if __name__=="__main__":
     if beam_params.do_pencil_beam:
         beam_kernel = np.array([[1]])/beam_params.beam_resolution**2
         del_beta = np.array([0])
-        beam_;arams.plot_beam = False
+        beam_params.plot_beam = False
     else:
         mesh, del_beta = get_mesh(beam_params, bolo_params)
         beam_kernel, convolve_kernel = gaussian_2d(beam_params, bolo_params, mesh)

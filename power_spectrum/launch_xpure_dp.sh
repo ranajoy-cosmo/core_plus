@@ -7,13 +7,14 @@
 # If the match is folder, the script will interpret the files therein as maps 
 # and will compute all the cross spectra between them 
 ################################################################################
-export map_expr='../full_sky/*map*'
+export map_dir="/global/homes/b/banerji/simulation/output/reconstructing/2016_02_24__13_47_36/"
+export map_expr=$map_dir+"reconstructed_map.fits"
 
 ################################################################################
 # Parameters identified by the tag variable
 ################################################################################
-export tag=ap30
-export nside=2048
+export tag='sky'
+export nside=4096
 export apodized_length=30
 export rundir="."
 export bin_file=~/pb/files_pb/bin2_80_100_300_pb400.fits
@@ -43,8 +44,8 @@ then
 	proc_per_node=32
 fi
 export nproc=$(( proc_per_node * n_nodes ))
-export walltime="01:00:00"
-export queue="regular"
+export walltime="00:30:00"
+export queue="debug"
 n_jobs=2
 
 ################################################################################
