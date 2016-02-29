@@ -10,11 +10,10 @@ import importlib
 import time
 from memory_profiler import profile
 from simulation.lib.quaternion import quaternion
-from mpi4py import MPI
 from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
-from simulation.beam.convolution_kernel import get_beam
-#from simulation.beam.beam_kernel_new import get_beam
+#from simulation.beam.convolution_kernel import get_beam
+from simulation.beam.beam_kernel_new import get_beam
 import simulation.timestream_simulation.sim_pointing as gen_p
 from simulation.lib.utilities.time_util import get_time_stamp
 import simulation.lib.numericals.filters as filters
@@ -31,7 +30,7 @@ class Bolo:
 # Simulating the time-ordered data for a given bolo with any beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-    #@profile
+    @profile
     def simulate_timestream(self, segment, sky_map, out_dir):
 
         sys.stdout.flush()
@@ -71,9 +70,14 @@ class Bolo:
             signal_int = P(sky_map.T)
             if scan_params.do_filtering:
                 signal_int = filters.filter_butter(signal_int, 1000.0/scan_params.t_sampling, 150.0)
-            signal += np.convolve(signal_int, self.beam_kernel[i], mode = 'valid')
+            else:
+                pass
 
-        del P
+            if beam_params.do_pencil_beam:
+                signal += signal_int
+            else:
+                signal += np.convolve(signal_int, self.beam_kernel[i], mode = 'valid')
+
 
         beam_sum = np.sum(self.beam_kernel)
         signal/=beam_sum
@@ -86,6 +90,15 @@ class Bolo:
             np.save(os.path.join(out_dir, "pol_ang"), pol_ang[pad:-pad][::scan_params.oversampling_rate])
         np.save(os.path.join(out_dir, "vector"), v_central)
         np.save(os.path.join(out_dir, "ts_signal"), signal[::scan_params.oversampling_rate])
+        del pol_ang
+        del v_central
+        del signal
+        del signal_int
+        del v
+        del hit_pix
+        del rot_qt 
+        del matrix
+        del P
 
         time_segment_end = time.time() 
         print "Time taken for scanning segment :", (time_segment_end - time_segment_start), "seconds"
@@ -106,7 +119,7 @@ class Bolo:
 
         return hitmap
     
-    #@profile
+    @profile
     def generate_quaternion(self, t_start):
 
         pad = self.del_beta.size/2
@@ -117,11 +130,11 @@ class Bolo:
         w_prec = 2*np.pi/scan_params.t_prec
         w_rev = 2*np.pi/scan_params.t_year
 
-        r_spin = quaternion.make_quaternion(w_spin*t_steps, self.axis_spin)
-        r_prec = quaternion.make_quaternion(w_prec*t_steps, self.axis_prec)
-        r_rev = quaternion.make_quaternion(w_rev*t_steps, self.axis_rev)
+        #r_spin = quaternion.make_quaternion(w_spin*t_steps, self.axis_spin)
+        #r_prec = quaternion.make_quaternion(w_prec*t_steps, self.axis_prec)
+        #r_rev = quaternion.make_quaternion(w_rev*t_steps, self.axis_rev)
 
-        r_total = quaternion.multiply(r_rev, quaternion.multiply(r_prec, r_spin))
+        r_total = quaternion.multiply(quaternion.make_quaternion(w_rev*t_steps, self.axis_rev), quaternion.multiply(quaternion.make_quaternion(w_prec*t_steps, self.axis_prec), quaternion.make_quaternion(w_spin*t_steps, self.axis_spin)))
 
         pol_init = np.deg2rad(self.bolo_params.pol_ang)
         pol_ang = ((w_prec + w_spin)*t_steps + pol_init)%np.pi
@@ -167,8 +180,8 @@ def display_params():
     print "alpha : ", scan_params.alpha, " degrees"
     print "beta : ", scan_params.beta, " degrees"
     print "Mode :", scan_params.mode
-    print "T flight : ", scan_params.t_flight/60.0/60.0, "hours"
-    print "T segment :", scan_params.t_segment/60.0/60.0, "hours"
+    print "T flight : ", scan_params.t_flight/60.0/60.0, "hours /", scan_params.t_flight/60.0/60.0/24, "days"
+    print "T segment :", scan_params.t_segment/60.0/60.0, "hours /", scan_params.t_segment/60.0/60.0/24, "days"
     print "T precession : ", scan_params.t_prec/60.0/60.0, "hours"
     print "T spin : ", scan_params.t_spin, " seconds"
     print "T sampling : ", scan_params.t_sampling, " milli-seconds"
@@ -180,6 +193,7 @@ def display_params():
     print "Pixel size for NSIDE =", scan_params.nside, ":", hp.nside2resol(scan_params.nside, arcmin=True), "arcmin"
     n_steps = int(1000*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate
     print "#Samples per segment : ", n_steps
+    print "Size of signal array : ", n_steps*8.0/1024/1024, "MB"
     print "Estimated use of memory : ", 15*n_steps*8.0/1024/1024, "MB"
 
 def get_scanned_map(sky_map, hitmap):
@@ -272,7 +286,9 @@ def run_mpi():
                 out_dir_local = os.path.join(out_dir, bolo_name, str(segment+1).zfill(4))
                 print "Doing Bolo :", bolo_name, " Segment :", segment, " Rank :", rank, " Count :", count
                 hitmap_local = bolo.simulate_timestream(segment, sky_map, out_dir_local)
+                del bolo
                 comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0)
+                del hitmap_local
             count += 1
 
     if rank is 0:
@@ -287,5 +303,15 @@ def run_mpi():
 
 if __name__=="__main__":
     from custom_params import scan_params, beam_params
-    run_mpi()
+    action = sys.argv[1]
 
+    if action=='display_params':
+        calculate_params()
+        display_params()
+
+    if action=='run_mpi':
+        from mpi4py import MPI
+        run_mpi()
+
+    if action=='run_serial':
+        run_serial()
