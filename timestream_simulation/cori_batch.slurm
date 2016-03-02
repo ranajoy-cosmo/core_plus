@@ -10,4 +10,4 @@ export KMP_DUPLICATE_LIB_OK=TRUE
 export OMP_NUM_THREADS=1
 export PYOPERATORS_NO_MPI=0
 
-srun -n 8 -c 3 ./sim_timestream_T.py run_mpi
+srun -n 8 -c 4 ./sim_timestream_T.py run_mpi
