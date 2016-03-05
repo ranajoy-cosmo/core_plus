@@ -10,4 +10,4 @@ export KMP_DUPLICATE_LIB_OK=TRUE
 export OMP_NUM_THREADS=1
 export PYOPERATORS_NO_MPI=0
 
-srun -n 8 -c 3 ./sim_timestream_T.py run_mpi
+srun -n 16 --ntasks-per-socket 8 -c 2 ./sim_timestream_pol.py run_mpi

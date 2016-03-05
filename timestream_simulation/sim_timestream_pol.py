@@ -14,7 +14,6 @@ from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 #from simulation.beam.convolution_kernel import get_beam
 from simulation.beam.beam_kernel_new import get_beam
-import simulation.timestream_simulation.sim_pointing as gen_p
 from simulation.lib.utilities.time_util import get_time_stamp
 import simulation.lib.numericals.filters as filters
 
@@ -38,6 +37,7 @@ class Bolo:
 
         t_start = scan_params.t_segment*segment
         rot_qt, pol_ang = self.generate_quaternion(t_start)
+        sys.stdout.flush()
 
         pad = self.del_beta.size/2
         #Building the projection matrix P
@@ -90,15 +90,6 @@ class Bolo:
             np.save(os.path.join(out_dir, "pol_ang"), pol_ang[pad:-pad][::scan_params.oversampling_rate])
         np.save(os.path.join(out_dir, "vector"), v_central)
         np.save(os.path.join(out_dir, "ts_signal"), signal[::scan_params.oversampling_rate])
-        del pol_ang
-        del v_central
-        del signal
-        del signal_int
-        del v
-        del hit_pix
-        del rot_qt 
-        del matrix
-        del P
 
         time_segment_end = time.time() 
         print "Time taken for scanning segment :", (time_segment_end - time_segment_start), "seconds"
@@ -119,7 +110,7 @@ class Bolo:
 
         return hitmap
     
-    @profile
+    #@profile
     def generate_quaternion(self, t_start):
 
         pad = self.del_beta.size/2
@@ -225,24 +216,20 @@ def run_serial():
 
     time_stamp = get_time_stamp()
     out_dir = os.path.join(scan_params.global_output_dir, "scanning", time_stamp)
-    os.makedirs(out_dir)
+    make_output_dirs(out_dir, scan_params.bolo_names, num_segments)
     
-    root_file = h5py.File(os.path.join(out_dir, "data.hdf5"), libver="latest")
-
     calculate_params()
 
-    if scan_params.display_params:
-        display_params()
+    display_params()
 
     for bolo_name in scan_params.bolo_names:
         bolo = Bolo(bolo_name)
-        bolo_group = root_file.create_group(bolo_name)
         print "Doing Bolo : ", bolo_name
         for segment in range(num_segments):
+            out_dir_local = os.path.join(out_dir, bolo_name, str(segment+1).zfill(4))
             segment_name = str(segment+1).zfill(4)
-            segment_group = bolo_group.create_group(segment_name)
             print "Segment : ", segment_name
-            hitmap += bolo.simulate_timestream(segment, sky_map, segment_group)
+            hitmap += bolo.simulate_timestream(segment, sky_map, out_dir_local)
 
     scanned_map = get_scanned_map(sky_map, hitmap)
     hp.write_map(os.path.join(out_dir, "scanned_map.fits"), scanned_map)

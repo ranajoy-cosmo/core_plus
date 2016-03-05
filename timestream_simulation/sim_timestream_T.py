@@ -103,7 +103,7 @@ class Bolo:
 
         return hitmap
     
-    @profile
+    #@profile
     def generate_quaternion(self, t_start):
 
         pad = self.del_beta.size/2
@@ -229,6 +229,7 @@ def run_mpi():
     num_segments = int(scan_params.t_flight/scan_params.t_segment)
 
     sky_map = hp.read_map(scan_params.input_map)
+    scan_params.nside = hp.get_nside(sky_map)
 
     time_stamp = [None]
     if rank is 0:

@@ -14,7 +14,6 @@ scan_params = Generic()
 scan_params.bolo_names = ['bolo_0001']
 scan_params.do_only_T = False
 scan_params.oversampling_rate = 1
-scan_params.nside = global_scanning.nside_in
 
 scan_params.mode = 2 
 scan_params.t_year = 365*24*60*60.0                    #seconds
@@ -26,9 +25,6 @@ scan_params.t_spin = 60.0                             #seconds
 
 scan_params.alpha = 45.0                                #degrees
 scan_params.beta = 45.0                                #degrees
-
-scan_params.theta_cross = hp.nside2resol(scan_params.nside, arcmin=True)                          #arcmin
-scan_params.theta_co = hp.nside2resol(scan_params.nside, arcmin=True)                             #arcmin
 
 scan_params.do_pol = True
 
