@@ -9,7 +9,7 @@ global_system = Generic()
 hosts = ["edison", "cori", "apcmc"] 
 global_system.host = filter(lambda h : h in os.environ["HOST"], hosts)[0]
 
-if global_system.host is "apcms":
+if global_system.host is "apcmc":
     global_system.n_available_nodes = 1
     global_system.n_cores_per_node = 2
     global_system.memory_per_node = 8                   #Giga-bytes
@@ -31,13 +31,12 @@ else:
 # Global path settings
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 global_paths = Generic()
-
 global_paths.home_dir = os.environ["HOME"]
-if global_system.host is "apcms":
+if global_system.host is "apcmc":
     global_paths.base_dir = os.path.join(global_paths.home_dir, "CORE+/simulation")
     global_paths.output_dir = os.path.join(global_paths.base_dir, 'output')
     global_paths.maps_dir = os.path.join(global_paths.base_dir, 'maps', 'maps')
-elif global_system.host is "edison" or "cori":
+elif global_system.host in ["edison", "cori"]:
     global_paths.base_dir = os.path.join(global_paths.home_dir, "simulation")
     scratch_dir = os.environ["SCRATCH"]
     global_paths.output_dir = os.path.join(scratch_dir, 'core_output')

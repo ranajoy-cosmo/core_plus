@@ -117,13 +117,9 @@ class Bolo:
         n_steps = int(1000.0*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate + 2*pad
         t_steps = t_start + 0.001*(scan_params.t_sampling/scan_params.oversampling_rate)*np.arange(-pad, n_steps-pad)
 
-        w_spin = 2*np.pi/scan_params.t_spin
-        w_prec = 2*np.pi/scan_params.t_prec
-        w_rev = 2*np.pi/scan_params.t_year
-
-        #r_spin = quaternion.make_quaternion(w_spin*t_steps, self.axis_spin)
-        #r_prec = quaternion.make_quaternion(w_prec*t_steps, self.axis_prec)
-        #r_rev = quaternion.make_quaternion(w_rev*t_steps, self.axis_rev)
+        w_spin = -2*np.pi/scan_params.t_spin
+        w_prec = -2*np.pi/scan_params.t_prec
+        w_rev = -2*np.pi/scan_params.t_year
 
         r_total = quaternion.multiply(quaternion.make_quaternion(w_rev*t_steps, self.axis_rev), quaternion.multiply(quaternion.make_quaternion(w_prec*t_steps, self.axis_prec), quaternion.make_quaternion(w_spin*t_steps, self.axis_spin)))
 

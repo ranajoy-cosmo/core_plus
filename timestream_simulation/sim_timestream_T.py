@@ -29,7 +29,7 @@ class Bolo:
 # Simulating the time-ordered data for a given bolo with any beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-    @profile
+    #@profile
     def simulate_timestream(self, segment, sky_map, out_dir):
 
         sys.stdout.flush()
@@ -46,7 +46,6 @@ class Bolo:
         matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
         matrix.data.value = 1
 
-        #P = ProjectionOperator(matrix)
         P = ProjectionOperator(matrix, shapein=npix, shapeout=nsamples)        
 
         signal = np.zeros(nsamples - 2*pad)
@@ -64,9 +63,6 @@ class Bolo:
                     v_central = v[pad:-pad][::scan_params.oversampling_rate]
             #Generating the time ordered signal
             signal_int = P(sky_map.T)
-            print signal_int.shape
-            print signal.shape
-            print matrix.data.shape
             if scan_params.do_filtering:
                 signal_int = filters.filter_butter(signal_int, 1000.0/scan_params.t_sampling, 150.0)
 
@@ -110,9 +106,9 @@ class Bolo:
         n_steps = int(1000.0*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate + 2*pad
         t_steps = t_start + 0.001*(scan_params.t_sampling/scan_params.oversampling_rate)*np.arange(-pad, n_steps-pad)
 
-        w_spin = 2*np.pi/scan_params.t_spin
-        w_prec = 2*np.pi/scan_params.t_prec
-        w_rev = 2*np.pi/scan_params.t_year
+        w_spin = -2*np.pi/scan_params.t_spin
+        w_prec = -2*np.pi/scan_params.t_prec
+        w_rev = -2*np.pi/scan_params.t_year
 
         r_total = quaternion.multiply(quaternion.make_quaternion(w_rev*t_steps, self.axis_rev), quaternion.multiply(quaternion.make_quaternion(w_prec*t_steps, self.axis_prec), quaternion.make_quaternion(w_spin*t_steps, self.axis_spin)))
 
@@ -188,31 +184,26 @@ def make_output_dirs(out_dir, bolo_names, num_segments):
             
 
 def run_serial():
-
     num_segments = int(scan_params.t_flight/scan_params.t_segment)
-    sky_map = hp.read_map(scan_params.input_map)
+    sky_map = hp.read_map(scan_params.input_map) 
     hitmap = np.zeros(hp.nside2npix(scan_params.nside))
 
     time_stamp = get_time_stamp()
     out_dir = os.path.join(scan_params.global_output_dir, "scanning", time_stamp)
-    os.makedirs(out_dir)
+    make_output_dirs(out_dir, scan_params.bolo_names, num_segments)
     
-    root_file = h5py.File(os.path.join(out_dir, "data.hdf5"), libver="latest")
-
     calculate_params()
 
-    if scan_params.display_params:
-        display_params()
+    display_params()
 
     for bolo_name in scan_params.bolo_names:
         bolo = Bolo(bolo_name)
-        bolo_group = root_file.create_group(bolo_name)
         print "Doing Bolo : ", bolo_name
         for segment in range(num_segments):
+            out_dir_local = os.path.join(out_dir, bolo_name, str(segment+1).zfill(4))
             segment_name = str(segment+1).zfill(4)
-            segment_group = bolo_group.create_group(segment_name)
             print "Segment : ", segment_name
-            hitmap += bolo.simulate_timestream(segment, sky_map, segment_group)
+            hitmap += bolo.simulate_timestream(segment, sky_map, out_dir_local)
 
     scanned_map = get_scanned_map(sky_map, hitmap)
     hp.write_map(os.path.join(out_dir, "scanned_map.fits"), scanned_map)

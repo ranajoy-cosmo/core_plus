@@ -15,12 +15,14 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     sigma = np.sqrt(sigma_major**2 - sigma_minor**2)
     theta = np.deg2rad(bolo_params.beam_angle)
     x,y = mesh
-    convolution_kernel = np.exp(-x**2/(2*sigma**2))
+    convolution_kernel = np.exp(-y**2/(2*sigma**2))
     dim = y[0].size
-    convolution_kernel[:dim/2] = 0
-    convolution_kernel[dim/2+1:] = 0
+    convolution_kernel[...,:dim/2] = 0
+    convolution_kernel[...,dim/2+1:] = 0
     convolution_kernel = ndimage.interpolation.rotate(convolution_kernel, angle=bolo_params.beam_angle, reshape=False)
-    integral = np.sum(convolution_kernel)*beam_params.beam_resolution
+    convolution_kernel[convolution_kernel<0] = 0
+    #integral = np.sum(convolution_kernel)*beam_params.beam_resolution
+    integral = np.sqrt(2*np.pi)*sigma
     return convolution_kernel/integral
 
 
@@ -65,7 +67,7 @@ def plot_beam(beam_kernel, beam_params):
 if __name__=="__main__":
 
     from custom_params import beam_params
-    from simulation.timestream_simulation.bolo_params.bolo_0002 import bolo_params
+    from simulation.timestream_simulation.bolo_params.bolo_0001 import bolo_params
 
     if bolo_params.ellipticity == 0.0:
         beam_kernel = np.array([[1]])/beam_params.beam_resolution
