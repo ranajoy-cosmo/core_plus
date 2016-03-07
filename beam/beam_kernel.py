@@ -14,6 +14,7 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     x,y = mesh
     beam_kernel = np.exp(-(x**2/(2*sigma**2) + y**2/(2*sigma**2)))
     integral = np.sum(beam_kernel)*beam_params.beam_resolution**2
+    #integral = 2*np.pi*sigma**2
     beam_kernel /= integral
     if bolo_params.ellipticity == 0.0:
         beam_kernel_convolved = beam_kernel
@@ -73,7 +74,8 @@ def plot_beam(beam_kernel, beam_params):
 if __name__=="__main__":
 
     from custom_params import beam_params
-    from simulation.timestream_simulation.bolo_params.bolo_0001 import bolo_params
+    from simulation.timestream_simulation.bolo_params.bolo_0002 import bolo_params
+    #bolo_params.ellipticity=0
 
     if beam_params.do_pencil_beam:
         beam_kernel = np.array([[1]])/beam_params.beam_resolution**2

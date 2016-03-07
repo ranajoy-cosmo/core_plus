@@ -1,61 +1,67 @@
 #!/bin/bash
 
 ################################################################################
-# Preprocessing of the explicit mapmaker map
+# Input maps
+# xpure will be run on each of the match of the following regular expression.
+# If the match is a fits map, an auto spectrum will be computed.
+# If the match is folder, the script will interpret the files therein as maps 
+# and will compute all the cross spectra between them 
 ################################################################################
-input_maps_dir=
-nhits_map=${input_maps_dir}/spectrum/nhits.fits
-binary_mask_map=${input_maps_dir}/spectrum/binary_mask.fits
-pol_weight_map=${input_maps_dir}/spectrum/pol_weight.fits
-hdf5_maps=/scratch2/scratchdirs/dpoletti/explicit_mapmaking/full_season_ra23/files/map_wn_sprng*hdf5
-nside=2048
-
-#python ~/pb/cmb/src/expinv/em_power_spectrum.py --maps $hdf5_maps --nhits $nhits_map --binary $binary_mask_map --weight $pol_weight_map --nside $nside --opath $input_maps_dir/spectrum/ --vec_map /scratch2/scratchdirs/dpoletti/explicit_mapmaking/full_season_ra23/files/map_full_ra23.hdf5
-#python ~/pb/cmb/src/expinv/em_power_spectrum.py --maps $hdf5_maps --nside $nside --opath $input_maps_dir/spectrum/maps/wn_sprng/ --vec_map /scratch2/scratchdirs/dpoletti/explicit_mapmaking/full_season_ra23/files/map_full_ra23.hdf5
-
-################################################################################
-# Maps
-################################################################################
-export map_expr='/global/scratch2/sd/dpoletti/explicit_mapmaking/full_season_ra23/spectrum/maps/wn_sprng/*.fits' #regular expression identifying the fits maps
 
 ################################################################################
 # Parameters identified by the tag variable
 ################################################################################
-export tag=ipp_ra23_ap30
-export nside=$nside
-export apodized_length=30
-export rundir=$input_maps_dir/spectrum/ # directory where all the folders and files will be created
-export bin_file=~/pb/files_pb/binpb400_alt.fits # bin of the power spectrum
-export beam_file=~/pb/files_pb/beam_RA23.fits # the power spectrum will be corrected for this beam
+export tag=input_scan
+export map_dir=/global/homes/b/banerji/leap/output/2016-03-05--09-18-58_simulated_timestreams
+export map_expr=$map_dir/scanned_map_250.fits
+export rundir=$map_dir/xpure_out
+mkdir $rundir
 
-# Input maps, masks
-export nhit=$nhits_map
+
+export nside=2048
+export lmax=2000
+export apodized_length=30
+export fwhm=8.0
+python make_prelims.py $map_dir $map_expr $lmax $fwhm
+export bin_file=$map_dir/bins.fits
+export beam_file=$map_dir/beam.fits # the power spectrum will be corrected for this beam
 
 ## Intensity  
-export binary_mask_I1=$binary_mask_map
-export weight_I1=$nhits_map
+export binary_mask_I1=$map_dir/binary_mask.fits
+export weight_I1=$map_dir/weight_map.fits
 
 ## Polarization
-export binary_mask_P1=$binary_mask_map
-export weight_P1=$pol_weight_map
+export binary_mask_P1=$binary_mask_I1
+export weight_P1=$weight_I1
 
 # Xpure mode: 0=xpol 1=pure 2=hybrid
-export xpure_mode=1
+export xpure_mode=0
 
 ################################################################################
 # Job parameters
 ################################################################################
-export nproc=240
+n_nodes=1
+if [ "$NERSC_HOST" == "edison" ]
+then
+	proc_per_node=24
+fi
+if [ "$NERSC_HOST" == "cori" ]
+then
+	proc_per_node=32
+fi
+export nproc=$(( proc_per_node * n_nodes ))
 export walltime="00:30:00"
 export queue="debug"
+n_jobs=2
 
 ################################################################################
 # Xpure job
 ################################################################################
-qsub ~/workspace/xpure/xpure.pbs -q $queue -V -l mppwidth=$nproc -l walltime=$walltime -N $tag -e ${rundir}/$tag.err -o ${rundir}/$tag.out
+
+#sbatch -p $queue --export=ALL -N $n_nodes -t $walltime -e $tag.err -o $tag.out xpure.sl
+sbatch -p $queue --export=ALL -N $n_nodes -t $walltime -e ${rundir}/$tag.err -o ${rundir}/$tag.out xpure.sl
 
 ################################################################################
 # Deleting the variables
 ################################################################################
 unset map_files map_tags tag nproc nside apodized_length rundir bin_file beam_file nhit binary_mask_I1 weight_I1 binary_mask_P1 weight_P1 xpure_mode
-
