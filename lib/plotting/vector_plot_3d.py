@@ -18,15 +18,15 @@ class Arrow3D(FancyArrowPatch):
 
     
 def draw_vector(v, ax, color = 'r'):    
-    a = Arrow3D([0,v[0]],[0,v[1]],[0,v[2]], mutation_scale=20, lw=1, arrowstyle="-|>", color=color)
+    a = Arrow3D([0,v[0]],[0,v[1]],[0,v[2]], mutation_scale=10, lw=1, arrowstyle="-|>", color=color)
     ax.add_artist(a)               
 
 def draw_axes(ax, color = 'k', length = 1):
-    x = Arrow3D([0, length], [0, 0], [0, 0], mutation_scale=20, lw=1, arrowstyle="-|>", color=color)
+    x = Arrow3D([0, length], [0, 0], [0, 0], mutation_scale=10, lw=1, arrowstyle="-|>", color=color)
     ax.add_artist(x)               
-    y = Arrow3D([0, 0], [0, length], [0, 0], mutation_scale=20, lw=1, arrowstyle="-|>", color=color)
+    y = Arrow3D([0, 0], [0, length], [0, 0], mutation_scale=10, lw=1, arrowstyle="-|>", color=color)
     ax.add_artist(y)               
-    z = Arrow3D([0, 0], [0, 0], [0, length], mutation_scale=20, lw=1, arrowstyle="-|>", color=color)
+    z = Arrow3D([0, 0], [0, 0], [0, length], mutation_scale=10, lw=1, arrowstyle="-|>", color=color)
     ax.add_artist(z)               
     ax.text(length, 0, 0, 'X', color = color)
     ax.text(0, length, 0, 'Y', color = color)
