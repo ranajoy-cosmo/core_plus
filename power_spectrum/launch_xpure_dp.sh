@@ -7,17 +7,16 @@
 # If the match is folder, the script will interpret the files therein as maps 
 # and will compute all the cross spectra between them 
 ################################################################################
-export map_dir="/global/homes/b/banerji/simulation/output/reconstructing/2016_02_24__13_47_36/"
-export map_expr=$map_dir+"reconstructed_map.fits"
+export map_expr='../full_sky/*map*'
 
 ################################################################################
 # Parameters identified by the tag variable
 ################################################################################
-export tag='sky'
-export nside=4096
+export tag=ap30
+export nside=2048
 export apodized_length=30
 export rundir="."
-export bin_file=$map_dir/bin.fits
+export bin_file=~/pb/files_pb/bin2_80_100_300_pb400.fits
 export beam_file=~/pb/files_pb/beam_ziggy_2013.fits # the power spectrum will be corrected for this beam
 
 ## Intensity  
@@ -44,8 +43,8 @@ then
 	proc_per_node=32
 fi
 export nproc=$(( proc_per_node * n_nodes ))
-export walltime="00:30:00"
-export queue="debug"
+export walltime="01:00:00"
+export queue="regular"
 n_jobs=2
 
 ################################################################################

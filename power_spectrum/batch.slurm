@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH -p debug
 #SBATCH -N 1
-#SBATCH -t 00:30:00
+#SBATCH -t 00:10:00
 #SBATCH -J core_power_spectrum_estimation
 #SBATCH -o core_power_spectrum_estimation_%j.out
 
