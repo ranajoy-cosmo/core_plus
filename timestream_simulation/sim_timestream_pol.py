@@ -69,7 +69,7 @@ class Bolo:
             #Generating the time ordered signal
             signal_int = P(sky_map.T)
             if scan_params.do_filtering:
-                signal_int = filters.filter_butter(signal_int, 1000.0/scan_params.t_sampling, 150.0)
+                signal_int = filters.filter_butter(signal_int, 1000.0/scan_params.t_sampling, scan_params.filter_cutoff)
             else:
                 pass
 
@@ -162,6 +162,9 @@ def calculate_params():
 
     beam_params.beam_resolution = scan_params.theta_co/scan_params.oversampling_rate
     scan_params.scan_resolution = scan_params.theta_co/scan_params.oversampling_rate
+    pix_width = np.degrees(hp.nside2resol(scan_params.nside))
+    scan_speed = 360.0*np.sin(np.radians(scan_params.beta))/scan_params.t_spin
+    scan_params.filter_cutoff = scan_speed/pix_width
 
 def display_params():
     print "alpha : ", scan_params.alpha, " degrees"
@@ -178,6 +181,7 @@ def display_params():
     print "Scan resolution for beam integration :", scan_params.scan_resolution, "arcmin"
     print "Beam resolution :", beam_params.beam_resolution, "arcmin"
     print "Pixel size for NSIDE =", scan_params.nside, ":", hp.nside2resol(scan_params.nside, arcmin=True), "arcmin"
+    print "Filter cutoff :", scan_params.filter_cutoff
     n_steps = int(1000*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate
     print "#Samples per segment : ", n_steps
     print "Size of signal array : ", n_steps*8.0/1024/1024, "MB"
@@ -190,9 +194,12 @@ def get_scanned_map(sky_map, hitmap):
 
 def get_sky_map():
     sky_map = np.array(hp.read_map(scan_params.input_map, field=(0,1,2)))
+    nside = hp.get_nside(sky_map)
+    if scan_params.nside != nside:
+        print "NSIDE of map does not match with given NSIDE. Running with map NSIDE"
+        scan_params.nside = nside
     if scan_params.do_only_T:
         sky_map[1:,...] = 0.0
-    scan_params.nside = hp.get_nside(sky_map)
     return sky_map
 
 def make_output_dirs(out_dir, bolo_names, num_segments):

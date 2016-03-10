@@ -19,7 +19,7 @@ scan_params.mode = 2
 scan_params.t_year = 365*24*60*60.0                    #seconds
 scan_params.t_flight = 4*24*60*60.0                       #seconds
 scan_params.t_segment = 12*60*60.0
-scan_params.t_sampling = 5.0                           #milli-seconds
+scan_params.sampling_rate = 200                         #Hz
 scan_params.t_prec = 4*24*60*60.0                     #seconds
 scan_params.t_spin = 60.0                             #seconds
 
@@ -27,7 +27,7 @@ scan_params.alpha = 45.0                                #degrees
 scan_params.beta = 45.0                                #degrees
 
 scan_params.do_pol = True
-
+scan_params.nside = 1024
 scan_params.do_filtering = True
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read/Write Settings
@@ -38,9 +38,6 @@ scan_params.base_dir = global_paths.base_dir
 scan_params.global_output_dir = global_paths.output_dir
 scan_params.input_map = os.path.join(global_paths.maps_dir, "sky_map_1024_0_pixwin.fits")
 scan_params.bolo_param_dir = os.path.join(global_paths.base_dir, "bolo", "bolo_params")
-scan_params.time_stamp = get_time_stamp()
-scan_params.display_params = True
-scan_params.return_pointing = True
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Beam Parameters

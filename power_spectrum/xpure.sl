@@ -325,3 +325,5 @@ _EOF_
 	(( n_map_actually_run++ ))
 done
 wait
+
+mv $bin_file $beam_file $binary_mask_I1 $weight_I1 $rundir 

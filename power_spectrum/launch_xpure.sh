@@ -12,16 +12,16 @@
 # Parameters identified by the tag variable
 ################################################################################
 export tag=input_scan
-export map_dir=/global/homes/b/banerji/leap/output/2016-03-05--09-18-58_simulated_timestreams
-export map_expr=$map_dir/scanned_map_250.fits
+export map_dir=$SCRATCH/core_output/scanning/2016_03_06__19_17_46
+export map_expr=$map_dir/scanned_map.fits
 export rundir=$map_dir/xpure_out
 mkdir $rundir
 
 
-export nside=2048
+export nside=4096
 export lmax=2000
 export apodized_length=30
-export fwhm=8.0
+export fwhm=0.0
 python make_prelims.py $map_dir $map_expr $lmax $fwhm
 export bin_file=$map_dir/bins.fits
 export beam_file=$map_dir/beam.fits # the power spectrum will be corrected for this beam
@@ -40,7 +40,7 @@ export xpure_mode=0
 ################################################################################
 # Job parameters
 ################################################################################
-n_nodes=1
+n_nodes=2
 if [ "$NERSC_HOST" == "edison" ]
 then
 	proc_per_node=24
@@ -58,7 +58,6 @@ n_jobs=2
 # Xpure job
 ################################################################################
 
-#sbatch -p $queue --export=ALL -N $n_nodes -t $walltime -e $tag.err -o $tag.out xpure.sl
 sbatch -p $queue --export=ALL -N $n_nodes -t $walltime -e ${rundir}/$tag.err -o ${rundir}/$tag.out xpure.sl
 
 ################################################################################
