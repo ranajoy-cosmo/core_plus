@@ -10,6 +10,7 @@ from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 from memory_profiler import profile
 import os
 import sys
+import shutil
 import time
 
 #@profile
@@ -45,9 +46,11 @@ def make_map_from_signal(signal, v, pol_ang):
     solution = pcg(A, b, M=M, disp=True, tol=1e-4, maxiter=200)
     x = pack.T*solution['x']
     x[hitmap == 0] = np.nan
-    sky_map = x.T
+    del solution
+    del mask
+    #sky_map = x.T
 
-    return sky_map, hitmap
+    return x.T, hitmap
 
 """
 def get_signal(bolo_name, segment, data_root):
@@ -68,7 +71,12 @@ def get_signal(out_dir, bolo_name, segment):
 
 def write_map(sky_map, hitmap):
     out_dir = os.path.join(map_making_params.global_output_dir, "reconstructing", map_making_params.time_stamp)
+    param_dir = os.path.join(out_dir, "params")
     os.makedirs(out_dir)
+    os.makedirs(param_dir)
+    shutil.copy("default_params.py", param_dir)
+    shutil.copy("custom_params.py", param_dir)
+    shutil.copy("map_maker_pol.py", out_dir)
     hp.write_map(os.path.join(out_dir, "reconstructed_map.fits"), sky_map)
     hp.write_map(os.path.join(out_dir, "hitmap_out.fits"), hitmap)
 

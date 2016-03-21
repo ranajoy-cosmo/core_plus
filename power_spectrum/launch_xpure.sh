@@ -11,24 +11,26 @@
 ################################################################################
 # Parameters identified by the tag variable
 ################################################################################
-export tag=input_scan
-export map_dir=$SCRATCH/core_output/scanning/2016_03_06__19_17_46
+export tag=test1
+export map_dir=$SCRATCH/core_output/scanning/2016_03_13__18_50_42
 export map_expr=$map_dir/scanned_map.fits
 export rundir=$map_dir/xpure_out
-mkdir $rundir
+if [ ! -d "$rundir" ];then
+    mkdir $rundir
+fi
 
 
-export nside=4096
+export nside=1024
 export lmax=2000
 export apodized_length=30
 export fwhm=0.0
-python make_prelims.py $map_dir $map_expr $lmax $fwhm
-export bin_file=$map_dir/bins.fits
-export beam_file=$map_dir/beam.fits # the power spectrum will be corrected for this beam
+python make_prelims.py $tag $map_dir $map_expr $lmax $fwhm
+export bin_file=$map_dir/$tag"_bins.fits"
+export beam_file=$map_dir/$tag"_beam.fits" # the power spectrum will be corrected for this beam
 
 ## Intensity  
-export binary_mask_I1=$map_dir/binary_mask.fits
-export weight_I1=$map_dir/weight_map.fits
+export binary_mask_I1=$map_dir/$tag"_binary_mask.fits"
+export weight_I1=$map_dir/$tag"_weight_map.fits"
 
 ## Polarization
 export binary_mask_P1=$binary_mask_I1
@@ -40,7 +42,7 @@ export xpure_mode=0
 ################################################################################
 # Job parameters
 ################################################################################
-n_nodes=2
+n_nodes=6
 if [ "$NERSC_HOST" == "edison" ]
 then
 	proc_per_node=24
@@ -52,15 +54,14 @@ fi
 export nproc=$(( proc_per_node * n_nodes ))
 export walltime="00:30:00"
 export queue="debug"
-n_jobs=2
 
 ################################################################################
 # Xpure job
 ################################################################################
-
-sbatch -p $queue --export=ALL -N $n_nodes -t $walltime -e ${rundir}/$tag.err -o ${rundir}/$tag.out xpure.sl
+export time_stamp="$(date "+%Y_%m_%d__%H_%M_%S")"
+sbatch -p $queue --export=ALL -N $n_nodes -t $walltime -e ${rundir}/%j.err -o ${rundir}/%j.out xpure.sl
 
 ################################################################################
 # Deleting the variables
 ################################################################################
-unset map_files map_tags tag nproc nside apodized_length rundir bin_file beam_file nhit binary_mask_I1 weight_I1 binary_mask_P1 weight_P1 xpure_mode
+unset map_files map_tags tag nproc nside apodized_length rundir bin_file beam_file nhit binary_mask_I1 weight_I1 binary_mask_P1 weight_P1 xpure_mode time_stamp lmax nside

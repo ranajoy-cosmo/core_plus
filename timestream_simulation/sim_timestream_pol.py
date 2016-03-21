@@ -6,14 +6,15 @@ import matplotlib.pyplot as plt
 import sys
 import copy
 import os
+import shutil
 import importlib
 import time
 from memory_profiler import profile
 from simulation.lib.quaternion import quaternion
 from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
-#from simulation.beam.convolution_kernel import get_beam
-from simulation.beam.beam_kernel import get_beam
+from simulation.beam.convolution_kernel import get_beam
+#from simulation.beam.beam_kernel import get_beam
 from simulation.lib.utilities.time_util import get_time_stamp
 import simulation.lib.numericals.filters as filters
 
@@ -29,11 +30,10 @@ class Bolo:
 # Simulating the time-ordered data for a given bolo with any beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-    @profile
+    #@profile
     def simulate_timestream(self, segment, sky_map, out_dir):
 
         sys.stdout.flush()
-        time_segment_start = time.time()
 
         t_start = scan_params.t_segment*segment
         rot_qt, pol_ang = self.generate_quaternion(t_start)
@@ -53,36 +53,47 @@ class Bolo:
 
         signal = np.zeros(nsamples - 2*pad)
 
+        time_segment_start = time.time()
         for i in range(self.del_beta.size):
             v_init = self.get_initial_vec(self.del_beta[i])
             v = quaternion.transform(rot_qt, v_init)
-            hit_pix = hp.vec2pix(scan_params.nside, v[...,0], v[...,1], v[...,2])
-            P.matrix.data.index[:, 0] = hit_pix
-            #P.matrix = matrix
-            print self.del_beta[i]
-            sys.stdout.flush()
             if i is self.del_beta.size/2:
                 if beam_params.do_pencil_beam:
                     v_central = v[::scan_params.oversampling_rate]
                 else:
                     v_central = v[pad:-pad][::scan_params.oversampling_rate]
+            hit_pix = hp.vec2pix(scan_params.nside, v[...,0], v[...,1], v[...,2])
+            del v
+            P.matrix.data.index[:, 0] = hit_pix
+            #P.matrix = matrix
+            print self.del_beta[i]
+            sys.stdout.flush()
             #Generating the time ordered signal
-            signal_int = P(sky_map.T)
+            #signal_int = P(sky_map.T)
+            #print "Got intermediate signal"
+            sys.stdout.flush()
             if scan_params.do_filtering:
                 signal_int = filters.filter_butter(signal_int, 1000.0/scan_params.t_sampling, scan_params.filter_cutoff)
+                print "Done filtering"
             else:
                 pass
+            #sys.stdout.flush()
 
             if beam_params.do_pencil_beam:
-                signal += signal_int
+                #signal += signal_int
+                signal += P(sky_map.T)
             else:
-                signal += np.convolve(signal_int, self.beam_kernel[i], mode = 'valid')
+                #signal += np.convolve(signal_int, self.beam_kernel[i], mode = 'valid')
+                signal += np.convolve(P(sky_map.T), self.beam_kernel[i], mode = 'valid')
 
+
+        time_segment_end = time.time() 
+        print "Got full signal"
+        sys.stdout.flush()
 
         beam_sum = np.sum(self.beam_kernel)
         signal/=beam_sum
-
-        hitmap = self.get_hitmap(v_central)
+        #signal *= scan_params.beam_resolution**2
 
         if beam_params.do_pencil_beam:
             np.save(os.path.join(out_dir, "pol_ang"), pol_ang[::scan_params.oversampling_rate])
@@ -91,8 +102,15 @@ class Bolo:
         np.save(os.path.join(out_dir, "vector"), v_central)
         np.save(os.path.join(out_dir, "ts_signal"), signal[::scan_params.oversampling_rate])
 
-        time_segment_end = time.time() 
+        print "Done saving"
+        sys.stdout.flush()
         print "Time taken for scanning segment :", (time_segment_end - time_segment_start), "seconds"
+
+        del signal
+        del pol_ang
+        del rot_qt
+
+        hitmap = self.get_hitmap(v_central)
 
         return hitmap
 
@@ -204,8 +222,16 @@ def get_sky_map():
 
 def make_output_dirs(out_dir, bolo_names, num_segments):
     os.makedirs(out_dir)
+    param_dir = os.path.join(out_dir, "params")
+    bolo_param_dir = os.path.join(param_dir, "bolo_params")
+    os.makedirs(param_dir)
+    os.makedirs(bolo_param_dir)
+    shutil.copy("default_params.py", param_dir)
+    shutil.copy("custom_params.py", param_dir)
+    shutil.copy("sim_timestream_pol.py", out_dir)
     for bolo in bolo_names:
         os.makedirs(os.path.join(out_dir, bolo))
+        shutil.copy("bolo_params/"+bolo+".py", bolo_param_dir)
         for segment in range(num_segments):
             segment_name = str(segment+1).zfill(4)
             os.makedirs(os.path.join(out_dir, bolo, segment_name))
@@ -274,10 +300,13 @@ def run_mpi():
             if count%size is rank:
                 bolo = Bolo(bolo_name)
                 out_dir_local = os.path.join(out_dir, bolo_name, str(segment+1).zfill(4))
-                print "Doing Bolo :", bolo_name, " Segment :", segment, " Rank :", rank, " Count :", count
+                print "Doing Bolo :", bolo_name, " Segment :", segment+1, " Rank :", rank, " Count :", count+1
                 hitmap_local = bolo.simulate_timestream(segment, sky_map, out_dir_local)
+                print "Got local hitmap. Rank :", rank
+                sys.stdout.flush()
                 del bolo
                 comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0)
+                print "Reduced hitmap"
                 del hitmap_local
             count += 1
 
