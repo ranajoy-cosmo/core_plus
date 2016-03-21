@@ -67,7 +67,7 @@ def plot_beam(beam_kernel, beam_params):
 if __name__=="__main__":
 
     from custom_params import beam_params
-    from simulation.timestream_simulation.bolo_params.bolo_0002 import bolo_params
+    from simulation.timestream_simulation.bolo_params.bolo_0001 import bolo_params
 
     if bolo_params.ellipticity == 0.0:
         beam_kernel = np.array([[1]])/beam_params.beam_resolution
