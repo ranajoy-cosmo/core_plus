@@ -1,7 +1,5 @@
 #!/bin/bash
 
-module switch PrgEnv-gnu PrgEnv-intel
-
 ####################################################
 # Setting variables and creating directories
 ####################################################
@@ -23,6 +21,7 @@ nmask=1
 # Mask
 apodized_mask_I1=${maskdir}/apodized_mask_I_${tag}.fits
 apodized_mask_P1=${maskdir}/apodized_mask_P_${tag}.fits
+#apodized_mask_P1=$apodized_mask_I1
 
 # Spin maps
 ## Intensity
@@ -117,29 +116,32 @@ fi
 
     wait
 fi
-
+echo "Flag 1"
 #########################################################################################
 # X2PURE Mode-mode mixing matrix
 #########################################################################################
+echo "Flag 1.5"
 if [ -f ${mlldir}/mll_TT_TT_BinMask1.fits ] ; then 
     echo ${mlldir}/mll_TT_TT_BinMask1.fits found. Skipping the mixing matrix computation
+    echo "Flag 2"
 else
     echo "*** Mode mixing matrix ***"
     cat > ${pardir}/createMll.par << EOF
 
-######### MODE #############
-# 0 : Standard formalism
-# 1 : Pure formalism
-# 2 : Hybrid formalism
-############################
-mode = $xpure_mode
+        ######### MODE #############
+        # 0 : Standard formalism
+        # 1 : Pure formalism
+        # 2 : Hybrid formalism
+        ############################
+        mode = $xpure_mode
 
-############ SETUP #########
-nside = $nside
-lmax = $lmax
-nmask = $nmask
+        ############ SETUP #########
+        nside = $nside
+        lmax = $lmax
+        nmask = $nmask
 
-EOF
+    EOF
+    echo "Flag 3"
 
     spinI[0]=${output_spin0_I1}
 
@@ -147,45 +149,48 @@ EOF
     spinP1[0]=${output_spin1_P1}
     spinP2[0]=${output_spin2_P1}
 
-    for(( i=1; i<=$nmask; i++)); do
+        for(( i=1; i<=$nmask; i++)); do
             ind=$(($i - 1))
             cat >> ${pardir}/createMll.par << EOF
 
-maskfile${i}_T  = ${spinI[${ind}]}
+                maskfile${i}_T  = ${spinI[${ind}]}
 
-maskfile${i}_E_spin0 = ${spinP0[${ind}]}
-maskfile${i}_E_spin1 = ${spinP1[${ind}]}
-maskfile${i}_E_spin2 = ${spinP2[${ind}]} 
+                maskfile${i}_E_spin0 = ${spinP0[${ind}]}
+                maskfile${i}_E_spin1 = ${spinP1[${ind}]}
+                maskfile${i}_E_spin2 = ${spinP2[${ind}]} 
 
-maskfile${i}_B_spin0 = ${spinP0[${ind}]}
-maskfile${i}_B_spin1 = ${spinP1[${ind}]}
-maskfile${i}_B_spin2 = ${spinP2[${ind}]}
+                maskfile${i}_B_spin0 = ${spinP0[${ind}]}
+                maskfile${i}_B_spin1 = ${spinP1[${ind}]}
+                maskfile${i}_B_spin2 = ${spinP2[${ind}]}
 
-mllfile_TT_TT_${i} = ${mlldir}/mll_TT_TT_BinMask${i}.fits
+                mllfile_TT_TT_${i} = ${mlldir}/mll_TT_TT_BinMask${i}.fits
 
-mllfile_EE_EE_${i} = ${mlldir}/mll_spinEE_EE_${i}.fits
-mllfile_EE_BB_${i} = ${mlldir}/mll_spinEE_BB_${i}.fits
-mllfile_EE_EB_${i} = ${mlldir}/mll_spinEE_EB_${i}.fits
-mllfile_BB_BB_${i} = ${mlldir}/mll_spinBB_BB_${i}.fits
-mllfile_BB_EE_${i} = ${mlldir}/mll_spinBB_EE_${i}.fits
-mllfile_BB_EB_${i} = ${mlldir}/mll_spinBB_EB_${i}.fits
+                mllfile_EE_EE_${i} = ${mlldir}/mll_spinEE_EE_${i}.fits
+                mllfile_EE_BB_${i} = ${mlldir}/mll_spinEE_BB_${i}.fits
+                mllfile_EE_EB_${i} = ${mlldir}/mll_spinEE_EB_${i}.fits
+                mllfile_BB_BB_${i} = ${mlldir}/mll_spinBB_BB_${i}.fits
+                mllfile_BB_EE_${i} = ${mlldir}/mll_spinBB_EE_${i}.fits
+                mllfile_BB_EB_${i} = ${mlldir}/mll_spinBB_EB_${i}.fits
 
-mllfile_TE_TE_${i} = ${mlldir}/mll_spinTE_TE_${i}.fits
-mllfile_TE_TB_${i} = ${mlldir}/mll_spinTE_TB_${i}.fits
-mllfile_TB_TE_${i} = ${mlldir}/mll_spinTB_TE_${i}.fits
-mllfile_TB_TB_${i} = ${mlldir}/mll_spinTB_TB_${i}.fits
+                mllfile_TE_TE_${i} = ${mlldir}/mll_spinTE_TE_${i}.fits
+                mllfile_TE_TB_${i} = ${mlldir}/mll_spinTE_TB_${i}.fits
+                mllfile_TB_TE_${i} = ${mlldir}/mll_spinTB_TE_${i}.fits
+                mllfile_TB_TB_${i} = ${mlldir}/mll_spinTB_TB_${i}.fits
 
-mllfile_EB_EB_${i} = ${mlldir}/mll_spinEB_EB_${i}.fits
-mllfile_EB_EE_${i} = ${mlldir}/mll_spinEB_EE_${i}.fits
-mllfile_EB_BB_${i} = ${mlldir}/mll_spinEB_BB_${i}.fits
+                mllfile_EB_EB_${i} = ${mlldir}/mll_spinEB_EB_${i}.fits
+                mllfile_EB_EE_${i} = ${mlldir}/mll_spinEB_EE_${i}.fits
+                mllfile_EB_BB_${i} = ${mlldir}/mll_spinEB_BB_${i}.fits
 
-EOF
+            EOF
 
     done
+    echo "Flag 4"
 
     time srun -n $n_cpus ${bindir}/x2pure_create_mll ${pardir}/createMll.par
+
 fi
 
+echo "Flag 5"
 #########################################################################################
 # XPURE spectrum computation
 #########################################################################################
@@ -199,6 +204,7 @@ n_spectra=${#spectrum_dir_or_files[@]}
 echo Number of spectra to be computed is $n_spectra
 n_spectra_actually_run=0
 for ((num=0; num<${n_spectra}; num++)); do
+    echo "Flag 6"
 	spectrum_dir_or_file=${spectrum_dir_or_files[$num]}
 	map_tag=${spectrum_dir_or_file##*/}
 	map_tag=${map_tag%.*}  # Assumes no dot in in the name other than the extension
@@ -217,29 +223,34 @@ for ((num=0; num<${n_spectra}; num++)); do
 		fi
 	fi
 	echo "************************ Spectrum ${map_tag} ************************"
-	cat > ${pardir}/xpure_${map_tag}.par << _EOF_
-
-mode = ${xpure_mode}
-
-nside = ${nside}
-nmaps = $nmaps
-nmasks = $nmask
+    echo "Flag 7"
 
 
-nhitfileT=$nhit
-nhitfileP=$nhit
-sigmaT1 = $noise_for_T ##in muK/pix, = noise polar/sqrt(2)
-sigmaP1 = $noise_for_P
-
-#inpBellfile = ${beam_file}
-
-#CHOICE OF INPUT SPECTRUM
-#inpCellfile = ${cl_input}
+    cat > ${pardir}/xpure_${map_tag}.par << _EOF_
 
 
-lmaxSim = ${lmax}
+        mode = ${xpure_mode}
 
-_EOF_
+        nside = ${nside}
+        nmaps = $nmaps
+        nmasks = $nmask
+
+
+        nhitfileT=$nhit
+        nhitfileP=$nhit
+        sigmaT1 = $noise_for_T ##in muK/pix, = noise polar/sqrt(2)
+        sigmaP1 = $noise_for_P
+
+        #inpBellfile = ${beam_file}
+
+        #CHOICE OF INPUT SPECTRUM
+        #inpCellfile = ${cl_input}
+
+
+        lmaxSim = ${lmax}
+
+    _EOF_
+    echo "Flag 8"
 
 
 	for ((i_map=1; i_map<=nmaps; i_map++)); do
@@ -250,10 +261,10 @@ _EOF_
 		fi
 		cat >> ${pardir}/xpure_${map_tag}.par << _EOF_ 
 
-bellfile${i_map} = ${beam_file}
-mapfile${i_map} = ${map_file}
+            bellfile${i_map} = ${beam_file}
+            mapfile${i_map} = ${map_file}
 
-_EOF_
+        _EOF_
 
 	done
 
@@ -264,45 +275,46 @@ _EOF_
 	ind=$(($i - 1))
 	cat >> ${pardir}/xpure_${map_tag}.par << _EOF_
 
-maskfile${i}_T  = $output_spin0_I1
+        maskfile${i}_T  = $output_spin0_I1
 
-maskfile${i}_E_spin0 = $output_spin0_P1
-maskfile${i}_E_spin1 = $output_spin1_P1
-maskfile${i}_E_spin2 = $output_spin2_P1
+        maskfile${i}_E_spin0 = $output_spin0_P1
+        maskfile${i}_E_spin1 = $output_spin1_P1
+        maskfile${i}_E_spin2 = $output_spin2_P1
 
-maskfile${i}_B_spin0 = $output_spin0_P1
-maskfile${i}_B_spin1 = $output_spin1_P1
-maskfile${i}_B_spin2 = $output_spin2_P1
+        maskfile${i}_B_spin0 = $output_spin0_P1
+        maskfile${i}_B_spin1 = $output_spin1_P1
+        maskfile${i}_B_spin2 = $output_spin2_P1
 
-mllfile_TT_TT_${i} = ${mlldir}/mll_TT_TT_BinMask${i}.fits
+        mllfile_TT_TT_${i} = ${mlldir}/mll_TT_TT_BinMask${i}.fits
 
-mllfile_EE_EE_${i} = ${mlldir}/mll_spinEE_EE_${i}.fits
-mllfile_EE_BB_${i} = ${mlldir}/mll_spinEE_BB_${i}.fits
-mllfile_EE_EB_${i} = ${mlldir}/mll_spinEE_EB_${i}.fits
-mllfile_BB_BB_${i} = ${mlldir}/mll_spinBB_BB_${i}.fits
-mllfile_BB_EE_${i} = ${mlldir}/mll_spinBB_EE_${i}.fits
-mllfile_BB_EB_${i} = ${mlldir}/mll_spinBB_EB_${i}.fits
+        mllfile_EE_EE_${i} = ${mlldir}/mll_spinEE_EE_${i}.fits
+        mllfile_EE_BB_${i} = ${mlldir}/mll_spinEE_BB_${i}.fits
+        mllfile_EE_EB_${i} = ${mlldir}/mll_spinEE_EB_${i}.fits
+        mllfile_BB_BB_${i} = ${mlldir}/mll_spinBB_BB_${i}.fits
+        mllfile_BB_EE_${i} = ${mlldir}/mll_spinBB_EE_${i}.fits
+        mllfile_BB_EB_${i} = ${mlldir}/mll_spinBB_EB_${i}.fits
 
-mllfile_TE_TE_${i} = ${mlldir}/mll_spinTE_TE_${i}.fits
-mllfile_TE_TB_${i} = ${mlldir}/mll_spinTE_TB_${i}.fits
-mllfile_TB_TE_${i} = ${mlldir}/mll_spinTB_TE_${i}.fits
-mllfile_TB_TB_${i} = ${mlldir}/mll_spinTB_TB_${i}.fits
+        mllfile_TE_TE_${i} = ${mlldir}/mll_spinTE_TE_${i}.fits
+        mllfile_TE_TB_${i} = ${mlldir}/mll_spinTE_TB_${i}.fits
+        mllfile_TB_TE_${i} = ${mlldir}/mll_spinTB_TE_${i}.fits
+        mllfile_TB_TB_${i} = ${mlldir}/mll_spinTB_TB_${i}.fits
 
-mllfile_EB_EB_${i} = ${mlldir}/mll_spinEB_EB_${i}.fits
-mllfile_EB_EE_${i} = ${mlldir}/mll_spinEB_EE_${i}.fits
-mllfile_EB_BB_${i} = ${mlldir}/mll_spinEB_BB_${i}.fits
+        mllfile_EB_EB_${i} = ${mlldir}/mll_spinEB_EB_${i}.fits
+        mllfile_EB_EE_${i} = ${mlldir}/mll_spinEB_EE_${i}.fits
+        mllfile_EB_BB_${i} = ${mlldir}/mll_spinEB_BB_${i}.fits
 
-noise_biasT_1 = 0.0
-noise_biasP_1 = 0.0 
- 
-bintab = ${bin_file}
+        noise_biasT_1 = 0.0
+        noise_biasP_1 = 0.0 
+         
+        bintab = ${bin_file}
 
-#pseudofile = ${outputdir}/${map_tag}/pseudopure_${map_tag}
-cellfile = ${outputdir}/${map_tag}/cellpure_${map_tag}
+        #pseudofile = ${outputdir}/${map_tag}/pseudopure_${map_tag}
+        cellfile = ${outputdir}/${map_tag}/cellpure_${map_tag}
 
-lmax = ${lmax}
+        lmax = ${lmax}
 
-_EOF_
+    _EOF_
+    echo "Flag 9"
 
 	#RUN
 	#if (( n_nodes > (n_maps - num % n_nodes) )); then 
@@ -324,7 +336,7 @@ _EOF_
 	>&2 jobs
 	time srun -n $n_cpus_xpure --nodes $n_nodes_per_xpure ${bindir}/x2pure ${pardir}/xpure_${map_tag}.par &
 	>&2 echo $!
-	(( n_map_spectra_run++ ))
+	(( n_spectra_actually_run++ ))
 done
 wait
 
