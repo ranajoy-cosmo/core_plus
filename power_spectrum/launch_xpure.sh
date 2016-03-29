@@ -12,8 +12,8 @@
 # Parameters identified by the tag variable
 ################################################################################
 export tag=test1
-export map_dir=$SCRATCH/core_output/scanning/2016_03_13__18_50_42
-export map_expr=$map_dir/scanned_map.fits
+export map_dir=$SCRATCH/core_long_term_output/reconstruction/first_set/2016_02_01__20_33_59
+export map_expr=$map_dir/reconstructed_map.fits
 export rundir=$map_dir/xpure_out
 if [ ! -d "$rundir" ];then
     mkdir $rundir
@@ -37,7 +37,7 @@ export binary_mask_P1=$binary_mask_I1
 export weight_P1=$weight_I1
 
 # Xpure mode: 0=xpol 1=pure 2=hybrid
-export xpure_mode=0
+export xpure_mode=1
 
 ################################################################################
 # Job parameters
