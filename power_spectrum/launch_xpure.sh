@@ -12,7 +12,6 @@
 # Parameters identified by the tag variable
 ################################################################################
 export tag=test1
-#export map_dir=$SCRATCH/core_output/scanning/2016_03_15__20_49_04
 export map_dir=$SCRATCH/core_long_term_output/reconstruction/first_set/2016_02_01__20_33_59
 export map_expr=$map_dir/reconstructed_map.fits
 export rundir=$map_dir/xpure_out
