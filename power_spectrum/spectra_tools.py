@@ -41,44 +41,28 @@ def plot_theoretical_bb(r=['01', '001', '0001'], lmax=2000):
         spectra = np.load("../spectra/" + r_value + "/unlensed_cls.py")[2, 2:lmax+1]
         loglog(ell, ell*(ell+1)*spectra/2/np.pi)
 
-def deconvolve_alm(alm, fwhm):
+def deconvolve_alm(alms, fwhm, pol=True):
     if fwhm == 0:
         return alm
 
     retalm = []
     sigma = fwhm/(2.0*np.sqrt(2.0*np.log(2.0)))
     
-    for ialm, alm in enumerate(alm):
-        lmax = hp.Alm.getlmax(len(alm), None)
+    if pol:
+        for ialm, alm in enumerate(alms):
+            lmax = hp.Alm.getlmax(len(alm), None)
+            ell = np.arange(lmax + 1)
+            if ialm >= 1:
+                s = 2
+            else:
+                s = 0
+            fact = np.exp(0.5*(ell*(ell + 1) - s**2)*sigma**2)
+            res = hp.almxfl(alm, fact)
+            retalm.append(res)
+    else:
+        lmax = hp.Alm.getlmax(len(alms), None)
         ell = np.arange(lmax + 1)
-        if ialm >= 1:
-            s = 2
-        else:
-            s = 0
-        fact = np.exp(0.5*(ell*(ell + 1) - s**2)*sigma**2)
-        res = hp.almxfl(alm, fact)
-        retalm.append(res)
+        fact = np.exp(0.5*(ell*(ell + 1))*sigma**2)
+        return hp.almxfl(alms, fact)
 
     return retalm
-
-#comm = MPI.COMM_WORLD
-#rank = comm.Get_rank()
-
-#dir = global_paths.maps_dir
-#map_dirs = ["2016_03_16__00_32_24", "2016_03_16__10_30_53", "2016_03_16__11_41_40", "2016_03_16__12_28_20"]#, "2016_03_16__12_40_51"]
-map_dirs = "fourth_set/2016_02_24__21_24_47"
-
-#dir = os.path.join(global_paths.output_dir, "reconstructing", map_dirs[rank])
-dir = os.path.join("/scratch1/scratchdirs/banerji/core_long_term_output/reconstruction", map_dirs)#[rank])
-
-map_file = os.path.join(dir, "leakage_subtracted.fits")
-spectra_file = os.path.join(dir, "power_spectra_sub")
-
-sky = hp.read_map(map_file, field=(0,1,2))
-binary_mask = np.logical_not(np.isnan(sky[0]))
-
-sky_masked = mask_map(sky, binary_mask)
-
-spectra = estimate_power_spectrum(sky_masked, binary_mask, lmax=2000, fwhm=8.0)
-
-np.save(spectra_file, spectra)
