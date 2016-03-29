@@ -6,7 +6,10 @@ from simulation.params.custom_params import global_paths
 import os
 #from mpi4py import MPI
 
-def mask_map(sky_map, binary_mask):
+def mask_map(sky_map, binary_mask=None):
+    if binary_mask==None:
+        binary_mask = np.logical_not(np.isnan(sky_map[0]))
+
     sky_map_masked = hp.ma(sky_map)
 
     sky_map_masked[0].mask = np.logical_not(binary_mask)
@@ -33,6 +36,11 @@ def estimate_alm(sky_map, lmax=2000):
     sky_map_masked = mask_map(sky_map, binary_mask)
     alm = hp.map2alm((sky_map_masked[0].filled(), sky_map_masked[1].filled(), sky_map_masked[2].filled()), lmax=lmax)
 
+def plot_theoretical_bb(r=['01', '001', '0001'], lmax=2000):
+    ell = np.arange(2, lmax+1)
+    for r_value in r:
+        spectra = np.load("../spectra/" + r_value + "/unlensed_cls.py")[2, 2:lmax+1]
+        loglog(ell, ell*(ell+1)*spectra/2/np.pi)
 
 #comm = MPI.COMM_WORLD
 #rank = comm.Get_rank()

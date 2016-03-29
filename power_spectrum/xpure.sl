@@ -226,8 +226,8 @@ nmaps = $nmaps
 nmasks = $nmask
 
 
-nhitfileT=$nhit
-nhitfileP=$nhit
+#nhitfileT=$nhit
+#nhitfileP=$nhit
 sigmaT1 = $noise_for_T ##in muK/pix, = noise polar/sqrt(2)
 sigmaP1 = $noise_for_P
 
@@ -297,7 +297,7 @@ noise_biasP_1 = 0.0
  
 bintab = ${bin_file}
 
-#pseudofile = ${outputdir}/${map_tag}/pseudopure_${map_tag}
+pseudofile = ${outputdir}/${map_tag}/pseudopure_${map_tag}
 cellfile = ${outputdir}/${map_tag}/cellpure_${map_tag}
 
 lmax = ${lmax}
@@ -328,4 +328,4 @@ _EOF_
 done
 wait
 
-mv $bin_file $beam_file $binary_mask_I1 $weight_I1 $rundir 
+#mv $bin_file $beam_file $binary_mask_I1 $weight_I1 $rundir 
