@@ -4,7 +4,6 @@ import numpy as np
 import healpy as hp
 from simulation.params.custom_params import global_paths
 import os
-#from mpi4py import MPI
 
 def mask_map(sky_map, binary_mask=None):
     if binary_mask==None:
@@ -41,6 +40,26 @@ def plot_theoretical_bb(r=['01', '001', '0001'], lmax=2000):
     for r_value in r:
         spectra = np.load("../spectra/" + r_value + "/unlensed_cls.py")[2, 2:lmax+1]
         loglog(ell, ell*(ell+1)*spectra/2/np.pi)
+
+def deconvolve_alm(alm, fwhm):
+    if fwhm == 0:
+        return alm
+
+    retalm = []
+    sigma = fwhm/(2.0*np.sqrt(2.0*np.log(2.0)))
+    
+    for ialm, alm in enumerate(alm):
+        lmax = hp.Alm.getlmax(len(alm), None)
+        ell = np.arange(lmax + 1)
+        if ialm >= 1:
+            s = 2
+        else:
+            s = 0
+        fact = np.exp(0.5*(ell*(ell + 1) - s**2)*sigma**2)
+        res = hp.almxfl(alm, fact)
+        retalm.append(res)
+
+    return retalm
 
 #comm = MPI.COMM_WORLD
 #rank = comm.Get_rank()
