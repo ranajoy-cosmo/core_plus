@@ -7,6 +7,5 @@
 
 export KMP_DUPLICATE_LIB_OK=TRUE
 export PYOPERATORS_NO_MPI=0
-#module switch PrgEnv-gnu/5.2.56 PrgEnv-intel
 
 srun -n 88 python map_maker_pol.py

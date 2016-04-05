@@ -13,8 +13,7 @@ bolo_params.pol_ang = 0.0       #degrees
 
 #The fwhm of the beam along two axes
 bolo_params.fwhm = 8.0        #arcmin
-bolo_params.ellipticity = 0.0
-#bolo_params.ellipticity = 0.1
+bolo_params.conv_fwhm = 2.56124969497314
 
 #The angle the beam major axis of the bolometer with the W-E axis measured anti-clockwise
 bolo_params.beam_angle = 45.0    #degrees

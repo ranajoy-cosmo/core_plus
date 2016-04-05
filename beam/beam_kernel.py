@@ -16,13 +16,13 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     integral = np.sum(beam_kernel)*beam_params.beam_resolution**2
     #integral = 2*np.pi*sigma**2
     beam_kernel /= integral
-    if bolo_params.ellipticity == 0.0:
-        beam_kernel_convolved = beam_kernel
-        convolve_kernel = None
+    if bolo_params.conv_fwhm == 0.0:
+        return beam_kernel, None
+        #return <beam_kernel>, <conv_kernel>
     else:
-        convolve_kernel, del_x = convolution_kernel.get_beam(beam_params, bolo_params)
-        beam_kernel_convolved = convolve2d(beam_kernel, convolve_kernel, mode="same")*beam_params.beam_resolution
-    return beam_kernel_convolved, convolve_kernel
+        conv_kernel, del_x = convolution_kernel.get_beam(beam_params, bolo_params)
+        beam_kernel = convolve2d(beam_kernel, conv_kernel, mode="same")*beam_params.beam_resolution
+    return beam_kernel, conv_kernel
 
 
 def check_normalisation(beam_params, bolo_params, beam_kernel):
@@ -35,9 +35,10 @@ def check_normalisation(beam_params, bolo_params, beam_kernel):
 
 def get_mesh(beam_params, bolo_params):
     offset_max = max(abs(bolo_params.del_x), abs(bolo_params.del_y))              #arc-mins
-    fwhm_minor = bolo_params.fwhm
-    fwhm_major = (1+bolo_params.ellipticity)*fwhm_minor
-    size = beam_params.beam_cutoff*fwhm_major + offset_max             #arc-mins
+    #fwhm_minor = bolo_params.fwhm
+    #fwhm_major = (1+bolo_params.ellipticity)*fwhm_minor
+    #size = beam_params.beam_cutoff*fwhm_major + offset_max             #arc-mins
+    size = beam_params.beam_cutoff*bolo_params.fwhm + offset_max             #arc-mins
     dd = beam_params.beam_resolution                                            #arc-mins
     n = int(size/dd/2)
     x = np.arange(-n, n+1)*dd
@@ -51,9 +52,11 @@ def display_beam_settings(beam_params, bolo_params, mesh):
     else:
         factor = 2*np.sqrt(2*np.log(2))
         fwhm_minor = bolo_params.fwhm
-        fwhm_major = (1+bolo_params.ellipticity)*fwhm_minor
+        fwhm_major = np.sqrt(fwhm_minor**2 + bolo_params.conv_fwhm**2)
+        ellipticity = 100*(fwhm_major - fwhm_minor)/fwhm_minor
         print "Major axis(FWHM) :", fwhm_major, "arcmins" 
         print "Minor axis(FWHM) :", fwhm_minor, "arcmins"
+        print "Ellipticity :", ellipticity, "%"
         print "Center :", bolo_params.del_x, bolo_params.del_y
         print "Tilt :", bolo_params.beam_angle, "degrees"
         print "Pixel size :", beam_params.beam_resolution, "arcmins" 

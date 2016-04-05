@@ -13,8 +13,8 @@ from memory_profiler import profile
 from simulation.lib.quaternion import quaternion
 from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
-from simulation.beam.convolution_kernel import get_beam
-#from simulation.beam.beam_kernel import get_beam
+#from simulation.beam.convolution_kernel import get_beam
+from simulation.beam.beam_kernel import get_beam
 from simulation.lib.utilities.time_util import get_time_stamp
 import simulation.lib.numericals.filters as filters
 

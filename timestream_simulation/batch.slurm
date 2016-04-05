@@ -6,7 +6,6 @@
 #SBATCH -o core_ts_sim_%j.out
 
 export KMP_DUPLICATE_LIB_OK=TRUE
-#module switch PrgEnv-gnu/5.2.56 PrgEnv-intel
 #export OMP_NUM_THREADS=1
 export PYOPERATORS_NO_MPI=0
 
