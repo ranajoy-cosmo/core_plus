@@ -2,8 +2,8 @@
 
 import numpy as np
 
-input_file = "r_001/test_totCls.dat"
-out_file = "r_001/unlensed_cls"
+input_file = "r_0001/test_lensedCls.dat"
+out_file = "r_0001/lensed_cls"
 
 read_spectra = np.loadtxt(input_file).T
 

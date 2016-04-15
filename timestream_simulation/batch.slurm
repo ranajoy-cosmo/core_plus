@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH -p debug
 #SBATCH -N 22
-#SBATCH -t 00:30:00
+#SBATCH -t 00:20:00
 #SBATCH -J core_ts_sim
 #SBATCH -o core_ts_sim_%j.out
 

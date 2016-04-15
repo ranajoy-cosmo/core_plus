@@ -185,25 +185,26 @@ def calculate_params():
     scan_params.filter_cutoff = scan_speed/pix_width
 
 def display_params():
-    print "alpha : ", scan_params.alpha, " degrees"
-    print "beta : ", scan_params.beta, " degrees"
+    print "alpha :", scan_params.alpha, " degrees"
+    print "beta :", scan_params.beta, " degrees"
     print "Mode :", scan_params.mode
-    print "T flight : ", scan_params.t_flight/60.0/60.0, "hours /", scan_params.t_flight/60.0/60.0/24, "days"
+    print "T flight :", scan_params.t_flight/60.0/60.0, "hours /", scan_params.t_flight/60.0/60.0/24, "days"
     print "T segment :", scan_params.t_segment/60.0/60.0, "hours /", scan_params.t_segment/60.0/60.0/24, "days"
-    print "T precession : ", scan_params.t_prec/60.0/60.0, "hours"
-    print "T spin : ", scan_params.t_spin, " seconds"
-    print "T sampling : ", scan_params.t_sampling, " milli-seconds"
-    print "Scan frequency : ", 1000.0/scan_params.t_sampling, "Hz"
-    print "Theta co : ", scan_params.theta_co, " arcmin"
-    print "Theta cross : ", scan_params.theta_cross, " arcmin"
+    print "T precession :", scan_params.t_prec/60.0/60.0, "hours"
+    print "T spin :", scan_params.t_spin, " seconds"
+    print "T sampling :", scan_params.t_sampling, " milli-seconds"
+    print "Scan frequency :", 1000.0/scan_params.t_sampling, "Hz"
+    print "Theta co :", scan_params.theta_co, " arcmin"
+    print "Theta cross :", scan_params.theta_cross, " arcmin"
     print "Scan resolution for beam integration :", scan_params.scan_resolution, "arcmin"
     print "Beam resolution :", beam_params.beam_resolution, "arcmin"
     print "Pixel size for NSIDE =", scan_params.nside, ":", hp.nside2resol(scan_params.nside, arcmin=True), "arcmin"
     print "Filter cutoff :", scan_params.filter_cutoff
     n_steps = int(1000*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate
-    print "#Samples per segment : ", n_steps
-    print "Size of signal array : ", n_steps*8.0/1024/1024, "MB"
-    print "Estimated use of memory : ", 15*n_steps*8.0/1024/1024, "MB"
+    print "#Samples per segment :", n_steps
+    print "Size of signal array :", n_steps*8.0/1024/1024, "MB"
+    print "Estimated use of memory :", 15*n_steps*8.0/1024/1024, "MB"
+    print "# of processes required :", len(scan_params.bolo_names)*scan_params.t_flight/scan_params.t_segment
 
 def get_scanned_map(sky_map, hitmap):
     valid = hitmap>0

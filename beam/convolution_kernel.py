@@ -5,6 +5,7 @@ import healpy as hp
 from scipy import ndimage
 import matplotlib.pyplot as plt
 import sys
+import importlib
 from simulation.lib.plotting.my_imshow import new_imshow
 
 
@@ -20,7 +21,7 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     dim = y[0].size
     conv_kernel[...,:dim/2] = 0
     conv_kernel[...,dim/2+1:] = 0
-    conv_kernel = ndimage.interpolation.rotate(conv_kernel, angle=bolo_params.beam_angle, reshape=False)
+    conv_kernel = ndimage.interpolation.rotate(conv_kernel, angle=bolo_params.beam_angle + bolo_params.pol_ang, reshape=False)
     conv_kernel[conv_kernel<0] = 0
     integral = np.sum(conv_kernel)*beam_params.beam_resolution
     #integral = np.sqrt(2*np.pi)*sigma
@@ -47,13 +48,14 @@ def get_mesh(beam_params, bolo_params):
 
 
 def display_beam_settings(beam_params, bolo_params, beam_kernel):
-    #fwhm_minor = bolo_params.fwhm
-    #fwhm_major = (1+bolo_params.ellipticity)*fwhm_minor 
-    #fwhm_conv = np.sqrt(fwhm_major**2 - fwhm_minor**2)
+    fwhm_minor = bolo_params.fwhm
+    fwhm_major = np.sqrt(fwhm_minor**2 + bolo_params.conv_fwhm**2)
     fwhm_conv = bolo_params.conv_fwhm
-    #print "Major axis(FWHM) :", fwhm_major, "arcmins" 
-    #print "Minor axis(FWHM) :", fwhm_minor, "arcmins"
+    ellipticity = 100*2*(fwhm_major - fwhm_minor)/(fwhm_major + fwhm_minor)
+    print "Major axis(FWHM) :", fwhm_major, "arcmins" 
+    print "Minor axis(FWHM) :", fwhm_minor, "arcmins"
     print "Convolution function FWHM :", fwhm_conv, "arcmins"
+    print "Ellipticity :", ellipticity
     print "Tilt :", bolo_params.beam_angle, "degrees"
     print "Pixel size :", beam_params.beam_resolution, "arcmins" 
     print "Actual # of pixels in kernel cross-section :", beam_kernel[0].size 
@@ -70,7 +72,8 @@ def plot_beam(beam_kernel, beam_params):
 if __name__=="__main__":
 
     from custom_params import beam_params
-    from simulation.timestream_simulation.bolo_params.bolo_0001 import bolo_params
+    bolo_name = sys.argv[1]
+    bolo_params = importlib.import_module("simulation.timestream_simulation.bolo_params." + bolo_name).bolo_params
 
     if bolo_params.conv_fwhm == 0.0:
         conv_kernel = np.array([[1]])/beam_params.beam_resolution
@@ -80,10 +83,10 @@ if __name__=="__main__":
         mesh, del_beta = get_mesh(beam_params, bolo_params)
         conv_kernel = gaussian_2d(beam_params, bolo_params, mesh)
 
-    if beam_params.check_normalisation:
-        check_normalisation(beam_params, bolo_params, conv_kernel)
     if beam_params.display_beam_settings:
         display_beam_settings(beam_params, bolo_params, conv_kernel)
+    if beam_params.check_normalisation:
+        check_normalisation(beam_params, bolo_params, conv_kernel)
     if beam_params.plot_beam:
         plot_beam(conv_kernel, beam_params)
 

@@ -11,7 +11,7 @@ scan_params = Generic()
 # Scan Parameters
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-scan_params.bolo_names = ['bolo_0001']
+scan_params.bolo_names = ['bolo_0001a']
 scan_params.do_only_T = False
 scan_params.oversampling_rate = 1
 

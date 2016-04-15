@@ -2,16 +2,23 @@
 
 import numpy as np
 import healpy as hp
+import matplotlib.pyplot as plt
 import simulation.lib.numericals.filters as fl
 from simulation.params.custom_params import global_paths
 import os
 
-def mask_map(sky_map, binary_mask=None, pol=False):
+def mask_map(sky_map, binary_mask=None, pol=True, ret_mask=False, fill_zeros=False):
+
     if binary_mask is None:
+        binary_mask = np.logical_not(np.isnan(sky_map[0] if pol else sky_map))
+
+    if fill_zeros:
         if pol:
-            binary_mask = np.logical_not(np.isnan(sky_map[0]))
+            sky_map[0][np.isnan(sky_map[0])] = 0.0
+            sky_map[1][np.isnan(sky_map[1])] = 0.0
+            sky_map[2][np.isnan(sky_map[2])] = 0.0
         else:
-            binary_mask = np.logical_not(np.isnan(sky_map))
+            sky_map[np.isnan(sky_map)] = 0.0
 
     sky_map_masked = hp.ma(sky_map)
 
@@ -22,22 +29,22 @@ def mask_map(sky_map, binary_mask=None, pol=False):
     else:
         sky_map_masked.mask = np.logical_not(binary_mask)
 
-    return sky_map_masked
-
-def estimate_cl(sky_map, lmax, binary_mask=None, fwhm=0.0, pol=False):
-
-    sky_map_masked = mask_map(sky_map, binary_mask=binary_mask, pol=pol)
-
-    if pol:
-        binary_mask = np.logical_not(sky_map_masked[0].mask)
+    if ret_mask:
+        return sky_map_masked, binary_mask
     else:
-        binary_mask = np.logical_not(sky_map_masked.mask)
+        return sky_map_masked
+
+def estimate_cl(sky_map, lmax, binary_mask=None, fwhm=0.0, pol=True):
+
+    sky_map_masked, binary_mask = mask_map(sky_map, binary_mask=binary_mask, pol=pol, ret_mask=True, fill_zeros=True)
+
     f_sky = float(np.sum(binary_mask))/binary_mask.size
 
     Bl = hp.gauss_beam(fwhm=fwhm, lmax=lmax, pol=pol)
 
     if pol:
-        spectra = hp.anafast((sky_map_masked[0].filled(), sky_map_masked[1].filled(), sky_map_masked[2].filled()), lmax=lmax)
+        spectra = hp.anafast((sky_map_masked[0].filled(), sky_map_masked[1].filled(), sky_map_masked[2].filled()), lmax=lmax)[:4]
+        spectra = np.array(spectra)
         spectra /= f_sky*Bl.T**2
     else:
         spectra = hp.anafast(sky_map_masked.filled(), lmax=lmax)
@@ -46,11 +53,26 @@ def estimate_cl(sky_map, lmax, binary_mask=None, fwhm=0.0, pol=False):
     spectra = np.array(spectra)
     return spectra
 
-def wiener_filter_for_alm(alm, lmax, fwhm=0.0, f_sky=1.0, sky_prior=None):
+
+def estimate_alm(sky_map, lmax, binary_mask=None, pol=False):
+    sky_map_masked = mask_map(sky_map, binary_mask, pol=pol)
+    if pol:
+        alm = hp.map2alm((sky_map_masked[0].filled(), sky_map_masked[1].filled(), sky_map_masked[2].filled()), lmax=lmax)
+    else:
+        alm = hp.map2alm(sky_map_masked.filled(), lmax=lmax)
+
+    return alm
+
+
+def wiener_filter_for_alm(alm, lmax=None, fwhm=0.0, f_sky=1.0, sky_prior=None):
+
+    if lmax is None:
+        lmax = hp.Alm.getlmax(len(alm), None)
+
     if sky_prior is None:
         spectra_th = np.load("/global/homes/b/banerji/simulation/spectra/r_001/unlensed_cls.npy")[0,:lmax+1]
     else:
-        spectra_th = estimate_cl(sky_prior, lmax, fwhm=fwhm)
+        spectra_th = estimate_cl(sky_prior, lmax, fwhm=fwhm, pol=False)
 
     Bl = hp.gauss_beam(fwhm=fwhm, lmax=lmax, pol=False)
     spectra_ob = hp.alm2cl(alm, lmax_out=lmax)
@@ -62,50 +84,24 @@ def wiener_filter_for_alm(alm, lmax, fwhm=0.0, f_sky=1.0, sky_prior=None):
 
     return filter_response
 
-"""
-def get_wiener_filter(sky_map, lmax, alm=None, binary_mask=None, fwhm=0.0):
-    spectra_th = np.load("/global/homes/b/banerji/simulation/spectra/r_001/unlensed_cls.npy")[0,:lmax+1]
 
-    if sky_map is None:
-        Bl = hp.gauss_beam(fwhm=fwhm, lmax=lmax, pol=False)
-        f_sky = float(np.sum(binary_mask))/binary_mask.size
-        spectra_ob = hp.alm2cl(alm, lmax_out=lmax)
-        spectra_ob /= f_sky*Bl**2
-    else:
-        spectra_ob = estimate_cl(sky_map, lmax, fwhm=fwhm, binary_mask=binary_mask, pol=False) 
+def deconvolve_alm(alms, lmax=None, fwhm_in=0.0, fwhm_out=0.0, f_sky=1.0, pol=False, wiener=True, sky_prior=None):
 
-    filter_response = spectra_ob/spectra_th
-    filter_response[:2] = 1.0
-
-    return filter_response
-"""
-
-def estimate_alm(sky_map, lmax, binary_mask=None, pol=False):
-    sky_map_masked = mask_map(sky_map, binary_mask, pol=pol)
-    if pol:
-        alm = hp.map2alm((sky_map_masked[0].filled(), sky_map_masked[1].filled(), sky_map_masked[2].filled()), lmax=lmax)
-    else:
-        alm = hp.map2alm(sky_map_masked.filled(), lmax=lmax)
-
-    return alm
-
-def deconvolve_alm(alms, lmax=None, fwhm=0.0, f_sky=1.0, pol=False, wiener=True, sky_prior=None):
+    fwhm = np.sqrt(fwhm_in**2 - fwhm_out**2)
     if fwhm == 0.0:
         return alms
-
-    retalm = []
-
     factor = (2.0*np.sqrt(2.0*np.log(2.0)))
     sigma = fwhm/factor
     
+    retalm = []
+
     if lmax is None:
         lmax = hp.Alm.getlmax(len(alms[0] if pol else alms), None)
     
     if wiener:
-        wiener_filter = wiener_filter_for_alm(alms[0] if pol else alms, lmax, fwhm=fwhm, f_sky=f_sky, sky_prior=sky_prior)
-        wiener_smooth=wiener_filter
+        wiener_filter = wiener_filter_for_alm(alms[0] if pol else alms, lmax, f_sky=f_sky, sky_prior=sky_prior)
         wiener_smooth = fl.filter_butter(wiener_filter, lmax, 100)
-        wiener_smooth[:1500] = 1.0
+        #wiener_smooth[:1500] = 1.0
 
     if pol:
         for ialm, alm in enumerate(alms):
@@ -119,7 +115,6 @@ def deconvolve_alm(alms, lmax=None, fwhm=0.0, f_sky=1.0, pol=False, wiener=True,
                 fact /= wiener_smooth
             res = hp.almxfl(alm, fact, inplace=False)
             retalm.append(res)
-        retalm = np.array(retalm)
     else:
         lmax = hp.Alm.getlmax(len(alms), None)
         ell = np.arange(lmax + 1)
@@ -131,14 +126,34 @@ def deconvolve_alm(alms, lmax=None, fwhm=0.0, f_sky=1.0, pol=False, wiener=True,
     return retalm 
 
 
-def deconvolve_map(map_in, fwhm, lmax=None, binary_mask=None, pol=False, wiener=True, sky_prior=None):
-    #if fwhm == 0:
-    #    return map_in
+def deconvolve_map(map_in, fwhm_in=0.0, fwhm_out=0.0, lmax=None, binary_mask=None, pol=False, wiener=True, sky_prior=None):
+    
+    if fwhm_in == fwhm_out:
+        return map_in
+
+    if lmax is None:
+        lmax = 3*hp.get_nside(map_in) - 1
 
     if binary_mask is None:
-        binary_mask = np.logical_not(np.isnan(map_in))
+        binary_mask = np.logical_not(np.isnan(map_in[0] if pol else map_in))
     f_sky = float(np.sum(binary_mask))/binary_mask.size
+
     alm_in = estimate_alm(map_in, lmax, binary_mask, pol)
-    alm_dec = deconvolve_alm(alm_in, fwhm=fwhm, f_sky=f_sky, pol=pol, wiener=True, sky_prior=sky_prior)
-    map_dec = hp.alm2map(alm_dec, nside=hp.get_nside(map_in))
+    alm_dec = deconvolve_alm(alm_in, fwhm_in=fwhm_in, fwhm_out=fwhm_out, f_sky=f_sky, pol=pol, wiener=True, sky_prior=sky_prior)
+    map_dec = hp.alm2map(alm_dec, nside=hp.get_nside(map_in), pol=pol)
+    
     return map_dec
+
+def get_central_mask(nside, radius, deg=True):
+
+    pix = np.arange(12*nside**2)
+    theta_c, phi_c = np.pi/2, 0.0
+
+    pix_dist = hp.rotator.angdist([theta_c, phi_c], hp.pix2ang(nside, pix))
+
+    if deg:
+        radius = np.radians(radius)
+
+    mask = pix_dist<radius
+
+    return mask

@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH -p debug
 #SBATCH -N 44
-#SBATCH -t 00:30:00
+#SBATCH -t 00:5:00
 #SBATCH -J core_map_making
 #SBATCH -o core_map_making_%j.out
 
