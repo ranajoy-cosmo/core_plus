@@ -11,6 +11,7 @@ scan_params = Generic()
 # Scan Parameters
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
+scan_params.mode = 2
 scan_params.bolo_names = ['bolo_0001a']
 scan_params.do_only_T = False
 scan_params.oversampling_rate = 1
@@ -21,12 +22,12 @@ scan_params.t_spin = 30.0                             #seconds
 
 scan_params.t_flight = 4*24*60*60.0                       #seconds
 scan_params.t_segment = 12*60*60.0
-scan_params.sampling_rate = 400                         #Hz
+sampling_rate = 200                                  #Hz
+scan_params.t_sampling = 1000*(1.0/sampling_rate)       #milli-seconds 
 
 scan_params.alpha = 50.0                                #degrees
 scan_params.beta = 45.0                                #degrees
 
-scan_params.do_pol = True
 scan_params.nside = 1024
 scan_params.do_filtering = True
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
@@ -36,7 +37,8 @@ scan_params.do_filtering = True
 scan_params.time_stamp = get_time_stamp()
 scan_params.base_dir = global_paths.base_dir 
 scan_params.global_output_dir = global_paths.output_dir
-scan_params.input_map = os.path.join(global_paths.maps_dir, "sky_map_1024_0_pixwin.fits")
+input_map_list = os.path.join(global_paths.maps_dir, "r_001", "sky_map_1024_0.fits")
+scan_params.input_maps = dict(zip(scan_params.bolo_names, input_map_list))
 scan_params.bolo_param_dir = os.path.join(global_paths.base_dir, "bolo", "bolo_params")
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*

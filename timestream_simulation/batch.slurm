@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH -p debug
-#SBATCH -N 22
-#SBATCH -t 00:20:00
+#SBATCH -N 20
+#SBATCH -t 00:10:00
 #SBATCH -J core_ts_sim
 #SBATCH -o core_ts_sim_%j.out
 
@@ -9,4 +9,4 @@ export KMP_DUPLICATE_LIB_OK=TRUE
 #export OMP_NUM_THREADS=1
 export PYOPERATORS_NO_MPI=0
 
-srun -n 88 ./sim_timestream_pol.py run_mpi
+srun -n 160 ./sim_timestream_pol.py run_mpi

@@ -1,11 +1,11 @@
 #!/bin/bash -l
 #SBATCH -p debug
-#SBATCH -N 44
-#SBATCH -t 00:5:00
+#SBATCH -N 128
+#SBATCH -t 00:10:00
 #SBATCH -J core_map_making
 #SBATCH -o core_map_making_%j.out
 
 export KMP_DUPLICATE_LIB_OK=TRUE
 export PYOPERATORS_NO_MPI=0
 
-srun -n 88 python map_maker_pol.py
+srun -n 1024 python map_maker_pol.py

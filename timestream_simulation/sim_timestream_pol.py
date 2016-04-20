@@ -13,7 +13,6 @@ from memory_profiler import profile
 from simulation.lib.quaternion import quaternion
 from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
-#from simulation.beam.convolution_kernel import get_beam
 from simulation.beam.beam_kernel import get_beam
 from simulation.lib.utilities.time_util import get_time_stamp
 import simulation.lib.numericals.filters as filters
@@ -211,8 +210,8 @@ def get_scanned_map(sky_map, hitmap):
     sky_map[...,~valid] = np.nan
     return sky_map
 
-def get_sky_map():
-    sky_map = np.array(hp.read_map(scan_params.input_map, field=(0,1,2)))
+def get_sky_map(bolo_name):
+    sky_map = np.array(hp.read_map(scan_params.input_maps[bolo_name], field=(0,1,2)))
     nside = hp.get_nside(sky_map)
     if scan_params.nside != nside:
         print "NSIDE of map does not match with given NSIDE. Running with map NSIDE"
@@ -274,7 +273,6 @@ def run_mpi():
     rank = comm.Get_rank()
 
     num_segments = int(scan_params.t_flight/scan_params.t_segment)
-    sky_map = get_sky_map()
 
     time_stamp = [None]
     if rank is 0:
@@ -299,6 +297,7 @@ def run_mpi():
     for bolo_name in scan_params.bolo_names:
         for segment in range(num_segments):
             if count%size is rank:
+                sky_map = get_sky_map(bolo_name)
                 bolo = Bolo(bolo_name)
                 out_dir_local = os.path.join(out_dir, bolo_name, str(segment+1).zfill(4))
                 print "Doing Bolo :", bolo_name, " Segment :", segment+1, " Rank :", rank, " Count :", count+1
