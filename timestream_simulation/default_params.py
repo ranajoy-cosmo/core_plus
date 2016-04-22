@@ -1,5 +1,6 @@
 import healpy as hp
 import os
+import numpy as np
 from simulation.lib.utilities.generic_class import Generic
 from simulation.lib.utilities.time_util import get_time_stamp
 from simulation.params.custom_params import global_paths, global_scanning, global_system
@@ -11,33 +12,37 @@ scan_params = Generic()
 # Scan Parameters
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
+scan_params.t_year = 365*24*60*60.0                    #seconds
+scan_params.t_prec = 4*24*60*60.0                     #seconds
+scan_params.t_spin = 60.0                             #seconds
+scan_params.sampling_rate = 200                                  #Hz
+
+scan_params.t_segment = 12*60*60.0                      #seconds
+scan_params.segment_list = range(8)
+
 scan_params.mode = 2
-scan_params.bolo_names = ['bolo_0001a']
+scan_params.alpha = 45.0                                #degrees
+scan_params.beta = 45.0                                #degrees
+
 scan_params.do_only_T = False
 scan_params.oversampling_rate = 1
 
-scan_params.t_year = 365*24*60*60.0                    #seconds
-scan_params.t_prec = 4*24*60*60.0                     #seconds
-scan_params.t_spin = 30.0                             #seconds
+scan_params.do_filtering = False
 
-scan_params.t_flight = 4*24*60*60.0                       #seconds
-scan_params.t_segment = 12*60*60.0
-sampling_rate = 200                                  #Hz
-scan_params.t_sampling = 1000*(1.0/sampling_rate)       #milli-seconds 
-
-scan_params.alpha = 50.0                                #degrees
-scan_params.beta = 45.0                                #degrees
-
-scan_params.nside = 1024
-scan_params.do_filtering = True
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Read/Write Settings
+# Data selection Parameters
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-scan_params.time_stamp = get_time_stamp()
+scan_params.bolo_names = ['bolo_0001a']
+input_map_list = [os.path.join(global_paths.maps_dir, "r_001", "sky_map_1024_0.fits")]
+scan_params.input_maps = dict(zip(scan_params.bolo_names, input_map_list))
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+# Read/Write Parameters
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+
 scan_params.base_dir = global_paths.base_dir 
 scan_params.global_output_dir = global_paths.output_dir
-input_map_list = os.path.join(global_paths.maps_dir, "r_001", "sky_map_1024_0.fits")
 scan_params.input_maps = dict(zip(scan_params.bolo_names, input_map_list))
 scan_params.bolo_param_dir = os.path.join(global_paths.base_dir, "bolo", "bolo_params")
 

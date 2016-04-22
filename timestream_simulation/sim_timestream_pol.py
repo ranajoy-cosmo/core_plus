@@ -169,6 +169,9 @@ class Bolo:
 
 
 def calculate_params():
+
+    scan_params.t_sampling = 1000.0/scan_params.sampling_rate
+
     if scan_params.mode is 1:
         scan_params.t_spin = 360.0*60.0*np.sin(np.radians(scan_params.beta))*scan_params.t_sampling/1000.0/scan_params.theta_co
         scan_params.t_prec = 360.0*60.0*np.sin(np.radians(scan_params.alpha))*scan_params.t_spin/scan_params.theta_cross
@@ -187,7 +190,8 @@ def display_params():
     print "alpha :", scan_params.alpha, " degrees"
     print "beta :", scan_params.beta, " degrees"
     print "Mode :", scan_params.mode
-    print "T flight :", scan_params.t_flight/60.0/60.0, "hours /", scan_params.t_flight/60.0/60.0/24, "days"
+    t_flight = scan_params.t_segment*len(scan_params.segment_list)
+    print "T flight :", t_flight/60.0/60.0, "hours /", t_flight/60.0/60.0/24, "days"
     print "T segment :", scan_params.t_segment/60.0/60.0, "hours /", scan_params.t_segment/60.0/60.0/24, "days"
     print "T precession :", scan_params.t_prec/60.0/60.0, "hours"
     print "T spin :", scan_params.t_spin, " seconds"
@@ -203,7 +207,7 @@ def display_params():
     print "#Samples per segment :", n_steps
     print "Size of signal array :", n_steps*8.0/1024/1024, "MB"
     print "Estimated use of memory :", 15*n_steps*8.0/1024/1024, "MB"
-    print "# of processes required :", len(scan_params.bolo_names)*scan_params.t_flight/scan_params.t_segment
+    print "# of processes required :", len(scan_params.bolo_names)*len(scan_params.segment_list)
 
 def get_scanned_map(sky_map, hitmap):
     valid = hitmap>0
@@ -220,7 +224,7 @@ def get_sky_map(bolo_name):
         sky_map[1:,...] = 0.0
     return sky_map
 
-def make_output_dirs(out_dir, bolo_names, num_segments):
+def make_output_dirs(out_dir, scan_params):
     os.makedirs(out_dir)
     param_dir = os.path.join(out_dir, "params")
     bolo_param_dir = os.path.join(param_dir, "bolo_params")
@@ -229,10 +233,10 @@ def make_output_dirs(out_dir, bolo_names, num_segments):
     shutil.copy("default_params.py", param_dir)
     shutil.copy("custom_params.py", param_dir)
     shutil.copy("sim_timestream_pol.py", out_dir)
-    for bolo in bolo_names:
+    for bolo in scan_params.bolo_names:
         os.makedirs(os.path.join(out_dir, bolo))
         shutil.copy("bolo_params/"+bolo+".py", bolo_param_dir)
-        for segment in range(num_segments):
+        for segment in scan_params.segment_list:
             segment_name = str(segment+1).zfill(4)
             os.makedirs(os.path.join(out_dir, bolo, segment_name))
             
@@ -272,8 +276,6 @@ def run_mpi():
     size = comm.Get_size()
     rank = comm.Get_rank()
 
-    num_segments = int(scan_params.t_flight/scan_params.t_segment)
-
     time_stamp = [None]
     if rank is 0:
         time_stamp[0] = get_time_stamp()
@@ -285,7 +287,7 @@ def run_mpi():
 
     if rank is 0:
         display_params()
-        make_output_dirs(out_dir, scan_params.bolo_names, num_segments)
+        make_output_dirs(out_dir, scan_params)
         hitmap = np.zeros(hp.nside2npix(scan_params.nside), dtype=np.float32)
     else:
         hitmap = None
@@ -295,9 +297,10 @@ def run_mpi():
 
     count = 0
     for bolo_name in scan_params.bolo_names:
-        for segment in range(num_segments):
+        for segment in scan_params.segment_list:
             if count%size is rank:
                 sky_map = get_sky_map(bolo_name)
+                scan_params.nside = hp.get_nside(sky_map)
                 bolo = Bolo(bolo_name)
                 out_dir_local = os.path.join(out_dir, bolo_name, str(segment+1).zfill(4))
                 print "Doing Bolo :", bolo_name, " Segment :", segment+1, " Rank :", rank, " Count :", count+1

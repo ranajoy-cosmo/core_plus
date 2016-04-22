@@ -58,6 +58,6 @@ global_paths.spectra_dir = os.path.join(global_paths.base_dir, 'spectra')
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 global_scanning = Generic()
 
-global_scanning.nside_in = 4096
-global_scanning.nside_out = 4096
-global_scanning.lmax = 5000
+#global_scanning.nside_in = 4096
+#global_scanning.nside_out = 4096
+#global_scanning.lmax = 5000

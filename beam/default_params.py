@@ -8,8 +8,7 @@ beam_params = generic_class.Generic()
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Resolution beam_params
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-beam_params.nside = global_scanning.nside_in
-beam_params.beam_resolution = hp.nside2resol(beam_params.nside, arcmin=True)            #arcmins
+beam_params.beam_resolution = 1.0                                                       #arcmins
 beam_params.beam_cutoff = 4                                                             #fwhm
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
