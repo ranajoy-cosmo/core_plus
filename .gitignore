@@ -10,5 +10,5 @@ output
 long_term_output
 custom*
 *.out
-maps/maps
+maps/r_001
 *test*
