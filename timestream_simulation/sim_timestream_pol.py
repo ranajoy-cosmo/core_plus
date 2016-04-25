@@ -35,7 +35,9 @@ class Bolo:
         sys.stdout.flush()
 
         t_start = scan_params.t_segment*segment
-        rot_qt, pol_ang = self.generate_quaternion(t_start)
+        rot_qt = self.generate_quaternion(t_start)
+        if beam_params.do_pencil_beam is False:
+            pol_ang = self.get_pol_ang(rot_qt, v_dir=None)
         sys.stdout.flush()
 
         pad = self.del_beta.size/2
@@ -45,8 +47,9 @@ class Bolo:
 
         matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
         matrix.data.value[:, 0, 0, 0] = 0.5
-        matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol_ang)
-        matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
+        if beam_params.do_pencil_beam is False:
+            matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol_ang)
+            matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
 
         P = ProjectionOperator(matrix)
 
@@ -58,7 +61,10 @@ class Bolo:
             v = quaternion.transform(rot_qt, v_init)
             if i is self.del_beta.size/2:
                 if beam_params.do_pencil_beam:
+                    pol_ang = self.get_pol_ang(rot_qt, v_dir=v)
                     v_central = v[::scan_params.oversampling_rate]
+                    matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol_ang)
+                    matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
                 else:
                     v_central = v[pad:-pad][::scan_params.oversampling_rate]
             hit_pix = hp.vec2pix(scan_params.nside, v[...,0], v[...,1], v[...,2])
@@ -140,10 +146,27 @@ class Bolo:
 
         r_total = quaternion.multiply(quaternion.make_quaternion(w_rev*t_steps, self.axis_rev), quaternion.multiply(quaternion.make_quaternion(w_prec*t_steps, self.axis_prec), quaternion.make_quaternion(w_spin*t_steps, self.axis_spin)))
 
-        pol_init = np.deg2rad(self.bolo_params.pol_ang)
-        pol_ang = ((w_prec + w_spin)*t_steps + pol_init)%np.pi
+        return r_total
 
-        return r_total, pol_ang
+    def get_pol_ang(self, rot_qt, v_dir=None):
+        pad = self.del_beta.size/2
+        n_steps = int(1000.0*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate + 2*pad
+
+        pol_init = np.deg2rad(self.bolo_params.pol_ang)
+        x_axis = np.array([0.0, 0.0, 1.0])
+
+        pol_vec = quaternion.transform(rot_qt, np.tile(x_axis, n_steps).reshape(-1,3))
+
+        if v_dir is None:
+            v_init = self.get_initial_vec(0.0)
+            v_dir = quaternion.transform(rot_qt, v_init)
+
+        py = pol_vec[:,0] * v_dir[:,1] - pol_vec[:,1] * v_dir[:,0]
+        px = pol_vec[:,0] * (-v_dir[:,2] * v_dir[:,0]) + pol_vec[:,1] * (-v_dir[:,2] * v_dir[:,1]) + pol_vec[:,2] * (v_dir[:,0] * v_dir[:,    0] + v_dir[:,1] * v_dir[:,1])
+
+        pol_ang = (np.arctan2(py, px) + pol_init) % 2*np.pi
+
+        return pol_ang
 
 
     def get_initial_vec(self, del_beta):
@@ -243,13 +266,12 @@ def make_output_dirs(out_dir, scan_params):
 
 def run_serial():
 
-    num_segments = int(scan_params.t_flight/scan_params.t_segment)
     sky_map = get_sky_map() 
     hitmap = np.zeros(hp.nside2npix(scan_params.nside))
 
     time_stamp = get_time_stamp()
     out_dir = os.path.join(scan_params.global_output_dir, "scanning", time_stamp)
-    make_output_dirs(out_dir, scan_params.bolo_names, num_segments)
+    make_output_dirs(out_dir, scan_params)
     
     calculate_params()
 
@@ -258,7 +280,7 @@ def run_serial():
     for bolo_name in scan_params.bolo_names:
         bolo = Bolo(bolo_name)
         print "Doing Bolo : ", bolo_name
-        for segment in range(num_segments):
+        for segment in scan_params.segment_list:
             out_dir_local = os.path.join(out_dir, bolo_name, str(segment+1).zfill(4))
             segment_name = str(segment+1).zfill(4)
             print "Segment : ", segment_name
