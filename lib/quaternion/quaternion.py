@@ -136,7 +136,7 @@ def rotate_about_fixed_axis(thetas, axis, vectors, degree=False):
     output shape : (N,3)
     """
 
-    return rotate(make_quaternion(thetas, axis, degree), vectors)
+    return transform(make_quaternion(thetas, axis, degree), vectors)
 
 def quaternion_from_euler(theta1, theta2, theta3, degree=False, mode='XYX'):
 
