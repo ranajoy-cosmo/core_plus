@@ -32,6 +32,8 @@ class Bolo:
     #@profile
     def simulate_timestream(self, segment, sky_map, out_dir):
 
+        rot = hp.Rotator(coord=['E', 'G'])
+
         sys.stdout.flush()
 
         t_start = scan_params.t_segment*segment
@@ -62,6 +64,10 @@ class Bolo:
             if i is self.del_beta.size/2:
                 if beam_params.do_pencil_beam:
                     pol_ang = self.get_pol_ang(rot_qt, v_dir=v)
+                    if scan_params.gal_coords:
+                        theta, phi = hp.vec2ang(v)
+                        theta_gal, phi_gal = rot(theta, phi)
+                        v = hp.ang2vec(theta_gal, phi_gal)
                     v_central = v[::scan_params.oversampling_rate]
                     matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol_ang)
                     matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
@@ -92,26 +98,24 @@ class Bolo:
         beam_sum = np.sum(self.beam_kernel)
         signal/=beam_sum
 
-        """
         if beam_params.do_pencil_beam:
             np.save(os.path.join(out_dir, "pol_ang"), pol_ang[::scan_params.oversampling_rate])
         else:
             np.save(os.path.join(out_dir, "pol_ang"), pol_ang[pad:-pad][::scan_params.oversampling_rate])
         np.save(os.path.join(out_dir, "vector"), v_central)
         np.save(os.path.join(out_dir, "ts_signal"), signal[::scan_params.oversampling_rate])
-        """
 
         print "Done saving"
         sys.stdout.flush()
         print "Time taken for scanning segment :", (time_segment_end - time_segment_start), "seconds"
 
         del signal
-        #del pol_ang
+        del pol_ang
         del rot_qt
 
-        #hitmap = self.get_hitmap(v_central)
+        hitmap = self.get_hitmap(v_central)
 
-        return pol_ang
+        return hitmap 
 
     #@profile
     def get_hitmap(self, v):
@@ -150,6 +154,12 @@ class Bolo:
         pol_init = np.deg2rad(self.bolo_params.pol_ang)
         x_axis = np.array([0.0, 1.0, 0.0])
 
+        if scan_params.use_old_orientation:
+            w_spin = -2*np.pi/scan_params.t_spin
+            w_prec = -2*np.pi/scan_params.t_prec
+            pol_ang = ((w_prec + w_spin)*t_steps + pol_init)%np.pi
+            return pol_ang
+
         pol_vec = quaternion.transform(rot_qt, np.tile(x_axis, n_steps).reshape(-1,3))
 
         if v_dir is None:
@@ -165,7 +175,7 @@ class Bolo:
         proj_y = np.sum(pol_vec*y_local, axis=-1)
 
         pol_ang = (np.arctan2(proj_y, proj_x) + pol_init) % np.pi 
-        pol_ang *= 2.0
+        #pol_ang *= 2.0
 
         return pol_ang 
 
@@ -270,7 +280,7 @@ def run_serial():
 
     time_stamp = get_time_stamp()
     out_dir = os.path.join(scan_params.global_output_dir, "scanning", time_stamp)
-    #make_output_dirs(out_dir, scan_params)
+    make_output_dirs(out_dir, scan_params)
     
     calculate_params()
 
@@ -284,18 +294,15 @@ def run_serial():
             out_dir_local = os.path.join(out_dir, bolo_name, str(segment+1).zfill(4))
             segment_name = str(segment+1).zfill(4)
             print "Segment : ", segment_name
-            #hitmap += bolo.simulate_timestream(segment, sky_map, out_dir_local)
-            pol_ang = bolo.simulate_timestream(segment, sky_map, out_dir_local)
+            hitmap += bolo.simulate_timestream(segment, sky_map, out_dir_local)
 
-            #rot_qt, pol_ang, v_init, v, x_local, y_local, proj_x, proj_y  = bolo.simulate_timestream(segment, sky_map, out_dir_local)
 
-    #return rot_qt, pol_ang, v_init, v, x_local, y_local, proj_x, proj_y 
 
-    #scanned_map = get_scanned_map(sky_map, hitmap)
-    #hp.write_map(os.path.join(out_dir, "scanned_map.fits"), scanned_map)
-    #hp.write_map(os.path.join(out_dir, "hitmap_in.fits"), hitmap)
+    scanned_map = get_scanned_map(sky_map, hitmap)
+    hp.write_map(os.path.join(out_dir, "scanned_map.fits"), scanned_map)
+    hp.write_map(os.path.join(out_dir, "hitmap_in.fits"), hitmap)
 
-    return pol_ang
+    return hitmap 
 
 
 def run_mpi():
@@ -365,5 +372,4 @@ if __name__=="__main__":
         run_mpi()
 
     if action=='run_serial':
-        #rot_qt, pol_ang, v_init, v, x_local, y_local, proj_x, proj_y = run_serial()
-        pol_ang = run_serial()
+        run_serial()
