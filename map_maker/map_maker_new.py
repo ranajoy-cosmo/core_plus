@@ -1,69 +1,76 @@
-#! /usr/bin/env python 
+#!/usr/bin/env python
 
 import numpy as np
 import healpy as hp
-import matplotlib.pyplot as plt
-from mpi4py import MPI
-from pyoperators import DiagonalOperator, PackOperator, pcg, MPIDistributionIdentityOperator
 from pysimulators import ProjectionOperator
-from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
-import os
+from pysimulators.sparse import FSRBlockMatrix
 
-def make_map_from_signal(signal, v, bolo_name, segment):
+nside = 512
+npix = 12*nside**2
 
-    hit_pix = hp.vec2pix(map_making_params.nside_out, v[...,0], v[...,1], v[...,2])
-    nsamples = hit_pix.size
-    npix = hp.nside2npix(map_making_params.nside_out)
-   
-    matrix = FSRMatrix((nsamples, npix), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
-    matrix.data.value = 1
-    matrix.data.index = hit_pix[..., None]
+nsamples = 12*60*60*200 
 
-    P = ProjectionOperator(matrix, shapein = npix, shapeout = nsamples)
-    P.matrix = matrix
-    D = MPIDistributionIdentityOperator()
-    H = P*D
-    sky_map = (H.T*H).I*H.T*signal
+sky = np.empty((3, npix))
+sky[0] = 1.0*np.arange(npix)
+sky[1] = 2.0*np.arange(npix)
+sky[2] = 3.0*np.arange(npix)
 
-    hitmap = H.T(np.ones(nsamples, dtype=np.float32))
+hitpix = np.random.random_integers(0, npix-1, nsamples) 
+pol_ang = 2*np.pi*np.random.random(nsamples)
 
-    return sky_map, hitmap
+def get_projection_matrix():
 
+    matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
+    matrix.data.index[:, 0] = hitpix
+    matrix.data.value[:, 0, 0, 0] = 0.5
+    matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol_ang) 
+    matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
 
-def get_signal(out_dir, bolo_name, segment):
-    segment_name = str(segment+1).zfill(4)
-    data_dir = os.path.join(out_dir, bolo_name, segment_name)
-    ts = np.load(os.path.join(data_dir, "ts_signal.npy"))
-    v = np.load(os.path.join(data_dir, "vector.npy"))
-    return ts, v
+    return ProjectionOperator(matrix)
 
-def write_map(sky_map, hitmap):
-    out_dir = os.path.join(map_making_params.global_output_dir, "reconstructing", map_making_params.time_stamp)
-    os.makedirs(out_dir)
-    hp.write_map(os.path.join(out_dir, "reconstructed_map.fits"), sky_map)
-    hp.write_map(os.path.join(out_dir, "hitmap_out.fits"), hitmap)
-
-def run_mpi():
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size() 
+def get_hitmap(P):
     
-    num_segments = int(map_making_params.t_flight/map_making_params.t_segment)
-    count = 0
+    hitmap = P.T(np.ones(nsamples, dtype=np.float32))[:, 0]*2
+    return hitmap
 
-    data_dir = os.path.join(map_making_params.global_output_dir, "scanning", map_making_params.scanning_time_stamp)
+def get_signal(P, sky):
 
-    for bolo_name in map_making_params.bolo_names:
-        for segment in range(num_segments): 
-            signal, v = get_signal(data_dir, bolo_name, segment)
-            if count%size is rank:
-                print "Doing Bolo : ", bolo_name, "Segment : ", segment, "Rank : ", rank, "Count : ", count 
-                sky_map, hitmap = make_map_from_signal(signal, v, bolo_name, segment)
-            count+=1
+    d = P(sky.T)
+    return d
 
-    if rank is 0:
-        write_map(sky_map, hitmap)
-        
-if __name__=="__main__":
-    from custom_params import map_making_params
-    run_mpi()
+def get_b_matrix(P, d):
+
+    b = P.T(d)
+    return b
+
+def get_cov_matrix(P):
+
+    matrix = np.squeeze(P.matrix.data.value)
+    matrix_2 = np.einsum('ij...,i...->ij...', matrix, matrix)
+    cov_matrix_inv = np.zeros((npix, 3, 3))
+    for i in xrange(nsamples):
+        cov_matrix_inv[hitpix[i]] += matrix_2[i]
+    
+    det = np.linalg.det(cov_matrix_inv)
+    bad_pixel = (det==0.0)
+    cov_matrix_inv[bad_pixel] = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+
+    return np.linalg.inv(cov_matrix_inv), bad_pixel
+
+def get_map(cov_matrix, b):
+
+    sky_rec = np.sum(cov_matrix*b[..., None], axis=1)
+    return sky_rec.T
+
+proj_matrix = get_projection_matrix()
+
+signal = get_signal(proj_matrix, sky)
+
+hitmap = get_hitmap(proj_matrix)
+
+b = get_b_matrix(proj_matrix, signal)
+
+cov_matrix, bad_pix = get_cov_matrix(proj_matrix)
+
+sky_rec = get_map(cov_matrix, b)
+sky_rec[..., bad_pix] = np.nan
