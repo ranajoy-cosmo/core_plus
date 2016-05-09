@@ -7,7 +7,7 @@ from mpi4py import MPI
 from pyoperators import DiagonalOperator, PackOperator, pcg, MPIDistributionIdentityOperator
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
-from memory_profiler import profile
+#from memory_profiler import profile
 import os
 import sys
 import shutil
@@ -43,7 +43,7 @@ def make_map_from_signal(signal, v, pol_ang):
     b = H.T*signal
     M = DiagonalOperator(1/hitmap[mask], broadcast='rightward')
 
-    solution = pcg(A, b, M=M, disp=True, tol=1e-4, maxiter=200)
+    solution = pcg(A, b, M=M, disp=True, tol=1e-10, maxiter=200)
     x = pack.T*solution['x']
     x[hitmap == 0] = np.nan
     del solution

@@ -9,7 +9,7 @@ import os
 import shutil
 import importlib
 import time
-from memory_profiler import profile
+#from memory_profiler import profile
 from simulation.lib.quaternion import quaternion
 from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
@@ -90,6 +90,8 @@ class Bolo:
             else:
                 signal += np.convolve(P(sky_map.T), self.beam_kernel[i], mode = 'valid')
 
+        if scan_params.add_noise:
+            signal += np.random.normal(scale=scan_params.noise_level, size=signal.size)
 
         time_segment_end = time.time() 
         print "Got full signal"
