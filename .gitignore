@@ -13,3 +13,4 @@ custom*
 maps/r_001
 maps/psm_output_set_1
 *test*
+batch.slurm
