@@ -7,7 +7,7 @@ from mpi4py import MPI
 from pyoperators import DiagonalOperator, PackOperator, pcg, MPIDistributionIdentityOperator
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
-from memory_profiler import profile
+#from memory_profiler import profile
 import os
 import sys
 import shutil

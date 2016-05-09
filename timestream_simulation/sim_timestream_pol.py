@@ -9,13 +9,14 @@ import os
 import shutil
 import importlib
 import time
-from memory_profiler import profile
+#from memory_profiler import profile
 from simulation.lib.quaternion import quaternion
 from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 from simulation.beam.beam_kernel import get_beam
 from simulation.lib.utilities.time_util import get_time_stamp
 import simulation.lib.numericals.filters as filters
+import simulation.lib.data_loading.bolo_data_loading as bolo_data_loading
 
 class Bolo:
 
@@ -99,6 +100,8 @@ class Bolo:
             else:
                 signal += np.convolve(P(sky_map.T), self.beam_kernel[i], mode = 'valid')
 
+        if scan_params.add_noise:
+            signal += np.random.normal(scale=scan_params.noise_level, size=signal.size)
 
         time_segment_end = time.time() 
         print "Got full signal"
@@ -339,24 +342,24 @@ def run_mpi():
 
     comm.Barrier()
 
+    hitmap_local = np.zeros(hp.nside2npix(scan_params.nside), dtype=np.float32)
 
-    count = 0
-    for bolo_name in scan_params.bolo_names:
-        for segment in scan_params.segment_list:
-            if count%size is rank:
-                sky_map = get_sky_map(bolo_name)
-                scan_params.nside = hp.get_nside(sky_map)
-                bolo = Bolo(bolo_name)
-                out_dir_local = os.path.join(out_dir, bolo_name, str(segment+1).zfill(4))
-                print "Doing Bolo :", bolo_name, " Segment :", segment+1, " Rank :", rank, " Count :", count+1
-                hitmap_local = bolo.simulate_timestream(segment, sky_map, out_dir_local)
-                print "Got local hitmap. Rank :", rank
-                sys.stdout.flush()
-                del bolo
-                comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0)
-                print "Reduced hitmap"
-                del hitmap_local
-            count += 1
+    local_bolo_list, local_segment_list = bolo_data_loading.get_local_bolo_segment_list(rank, size)
+
+    prev_bolo_name = None 
+
+    for bolo_name, segment in zip(local_bolo_list, local_segment_list):
+        if bolo_name != prev_bolo_name:
+            sky_map = get_sky_map(bolo_name)
+            bolo = Bolo(bolo_name)
+        print "Doing Bolo :", bolo_name, " Segment :", segment+1, " Rank :", rank
+        out_dir_local = os.path.join(out_dir, bolo_name, str(segment+1).zfill(4))
+        hitmap_local += bolo.simulate_timestream(segment, sky_map, out_dir_local)
+        print "Got local hitmap for bolo :", bolo_name, "segment :", segment+1, "rank :", rank
+
+    comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0)
+
+    print "Reduced hitmap"
 
     if rank is 0:
         scanned_map = get_scanned_map(sky_map, hitmap)
@@ -367,6 +370,7 @@ def run_mpi():
     if rank is 0:
         print "Total time taken :", (time_end - time_start), "seconds"
         print "Scan time stamp :", time_stamp[0]
+
 
 if __name__=="__main__":
     from custom_params import scan_params, beam_params
