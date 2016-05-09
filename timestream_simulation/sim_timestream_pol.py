@@ -37,15 +37,21 @@ class Bolo:
         sys.stdout.flush()
 
         t_start = scan_params.t_segment*segment
+        """
         rot_qt = self.generate_quaternion(t_start)
         if beam_params.do_pencil_beam is False:
             pol_ang = self.get_pol_ang(rot_qt, v_dir=None)
         sys.stdout.flush()
+        """
 
         pad = self.del_beta.size/2
         #Building the projection matrix P
         nsamples = int(1000.0*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate + 2*pad
         npix = hp.nside2npix(scan_params.nside)
+
+        nsamples = 10000
+        
+        pol_ang = np.pi*np.random.random(nsamples)
 
         matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
         matrix.data.value[:, 0, 0, 0] = 0.5
@@ -59,11 +65,14 @@ class Bolo:
 
         time_segment_start = time.time()
         for i in range(self.del_beta.size):
-            v_init = self.get_initial_vec(self.del_beta[i])
-            v = quaternion.transform(rot_qt, v_init)
+            #v_init = self.get_initial_vec(self.del_beta[i])
+            #v = quaternion.transform(rot_qt, v_init)
+            theta = np.radians(80.0) + np.radians(20.0)*np.random.random(nsamples)
+            phi = np.radians(350.0) + np.radians(20.0)*np.random.random(nsamples)
+            v = hp.ang2vec(theta, phi)
             if i is self.del_beta.size/2:
                 if beam_params.do_pencil_beam:
-                    pol_ang = self.get_pol_ang(rot_qt, v_dir=v)
+                    #pol_ang = self.get_pol_ang(rot_qt, v_dir=v)
                     if scan_params.gal_coords:
                         theta, phi = hp.vec2ang(v)
                         theta_gal, phi_gal = rot(theta, phi)
@@ -111,7 +120,7 @@ class Bolo:
 
         del signal
         del pol_ang
-        del rot_qt
+        #del rot_qt
 
         hitmap = self.get_hitmap(v_central)
 
