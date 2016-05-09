@@ -10,6 +10,7 @@ from memory_profiler import profile
 from mpi4py import MPI
 from pysimulators.sparse import FSRBlockMatrix
 from pysimulators import ProjectionOperator
+import simulation.lib.data_loading.bolo_data_loading as bolo_data_loading
 
 #@profile
 def get_signal(out_dir, bolo_name, segment):
@@ -115,34 +116,13 @@ def run_serial():
     write_map(sky_rec, hitmap)
 
 
-def get_local_bolo_segment_list(rank, num_processes):
-    num_bolos = len(map_making_params.bolo_names)
-    num_segments_per_bolo = map_making_params.segment_list.size
-    num_total_segments = num_bolos*num_segments_per_bolo
-
-    if num_total_segments % num_processes != 0:
-        num_segments_per_process = num_total_segments/num_processes + 1
-    else:
-        num_segments_per_process = num_total_segments/num_processes
-    
-    bolo_list = []
-    for bolo_name in map_making_params.bolo_names:
-        bolo_list.extend([bolo_name]*num_segments_per_bolo)
-
-    segment_list = np.arange(num_total_segments) % num_segments_per_bolo
-
-    local_bolo_list = bolo_list[rank*num_segments_per_process : (rank + 1)*num_segments_per_process]
-    local_segment_list = segment_list[rank*num_segments_per_process : (rank + 1)*num_segments_per_process]
-
-    return local_bolo_list, local_segment_list, num_segments_per_process
-
 
 def run_mpi():
+    start_time_total = time.time()
+    
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size() 
-
-    start_time_total = time.time()
 
     data_dir = os.path.join(map_making_params.global_output_dir, "scanning", map_making_params.scanning_time_stamp)
 
@@ -158,7 +138,7 @@ def run_mpi():
     inv_cov_matrix_local = np.zeros((npix, 3, 3))
     b_matrix_local = np.zeros((npix, 3))
 
-    local_bolo_list, local_segment_list, num_segments_per_process = get_local_bolo_segment_list(rank, size)
+    local_bolo_list, local_segment_list = bolo_data_loading.get_local_bolo_segment_list(rank, size)
     print "Rank :", rank, "doing Bolos :", local_bolo_list, "and segments :", local_segment_list
     sys.stdout.flush()
 
@@ -182,9 +162,6 @@ def run_mpi():
 
         inv_cov_matrix *= 0.25
 
-        res_100 = [5748339, 5749950, 5749968, 5750147, 5751494, 5751521, 5751853, 5752077, 5754245, 5754291]
-        res_01 = [16178, 18790, 19212, 19213, 19605, 19606, 19607, 20003, 20776, 20806]
-        res_0 = [0, 1, 2, 3, 4 , 5, 6, 7, 8, 9, 10]
 
         hitmap = 4*inv_cov_matrix[..., 0, 0]
 
@@ -192,18 +169,25 @@ def run_mpi():
 
         inv_cov_matrix[bad_pix] = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
 
+        cov_matrix = np.linalg.inv(inv_cov_matrix)
+
+        """
+        res_100 = [5748339, 5749950, 5749968, 5750147, 5751494, 5751521, 5751853, 5752077, 5754245, 5754291]
+        res_01 = [16178, 18790, 19212, 19213, 19605, 19606, 19607, 20003, 20776, 20806]
+        res_0 = [0, 1, 2, 3, 4 , 5, 6, 7, 8, 9, 10]
+
         np.save("bad_pix_inv_100", inv_cov_matrix[res_100])
         np.save("bad_pix_inv_01", inv_cov_matrix[res_01])
         np.save("bad_pix_inv_0", inv_cov_matrix[res_0])
+
         np.save("bad_pix_b_100", b_matrix[res_100])
         np.save("bad_pix_b_01", b_matrix[res_01])
         np.save("bad_pix_b_0", b_matrix[res_0])
 
-        cov_matrix = np.linalg.inv(inv_cov_matrix)
-
         np.save("bad_pix_100", cov_matrix[res_100])
         np.save("bad_pix_01", cov_matrix[res_01])
         np.save("bad_pix_0", cov_matrix[res_0])
+        """
 
         sky_rec = np.sum(cov_matrix*b_matrix[..., None], axis=1).T
 
@@ -213,7 +197,7 @@ def run_mpi():
 
         end_time_total = time.time()
 
-        print "Average time taken per segment :", (end_time - start_time) / num_segments_per_process, "s"
+        print "Average time taken per segment :", (end_time - start_time) / len(local_segment_list), "s"
         print "Total time taken :", (end_time_total - start_time_total), "s"
 
 
