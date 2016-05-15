@@ -23,62 +23,12 @@ class Bolo:
     def __init__(self, bolo_name):
         self.bolo_params = importlib.import_module("simulation.timestream_simulation.bolo_params." + bolo_name).bolo_params
         #Getting the beam profile and the del_beta
-        self.beam_kernel, self.del_beta = get_beam(beam_params, self.bolo_params)
+        self.beam = self.get_real_beam()
         self.axis_spin, self.axis_prec, self.axis_rev = self.get_initial_axes()
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Simulating the time-ordered data for a given bolo with any beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-
-    @profile
-    def simulate_timestream(self, segment, sky_map, out_dir):
-
-        t_start = scan_params.t_segment*segment
-
-        nsamples = int(1000.0*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate
-
-        npix = hp.nside2npix(scan_params.nside)
-
-        rot_qt = self.generate_quaternion(t_start)
-
-        v_init = self.get_initial_vec(0.0)
-        v = quaternion.transform(rot_qt, v_init)
-        pol_ang = self.get_pol_ang(rot_qt, v_dir=v)
-        if scan_params.gal_coords:
-            rot = hp.Rotator(coord=['E', 'G'])
-            theta, phi = hp.vec2ang(v)
-            theta_gal, phi_gal = rot(theta, phi)
-            v = hp.ang2vec(theta_gal, phi_gal)
-        hit_pix = hp.vec2pix(scan_params.nside, v[...,0], v[...,1], v[...,2])
-        np.save(os.path.join(out_dir, "vector"), v)
-        np.save(os.path.join(out_dir, "pol_ang"), pol_ang)
-        del v
-
-        matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
-        matrix.data.index[:, 0] = hit_pix
-        matrix.data.value[:, 0, 0, 0] = 0.5
-        matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol_ang)
-        matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
-
-        P = ProjectionOperator(matrix)
-
-        if scan_params.do_filtering:
-            signal = filters.filter_butter(P(sky_map.T), 1000.0/scan_params.t_sampling, scan_params.filter_cutoff)
-        else:
-            signal = P(sky_map.T)
-
-        del pol_ang
-
-        if scan_params.add_noise:
-            signal += np.random.normal(scale=scan_params.noise_level, size=signal.size)
-
-        np.save(os.path.join(out_dir, "ts_signal"), signal)
-        del signal
-
-        hitmap = self.get_hitmap(hit_pix)
-        del hit_pix
-
-        return hitmap 
 
     #@profile
     def simulate_timestream_beamed(self, segment, sky_map, out_dir):
@@ -155,6 +105,9 @@ class Bolo:
 
         return hitmap 
 
+    def get_real_beam(self):
+        beam = hp.mrdfits(self.bolo_params.beam_file)
+        return beam
 
     #@profile
     def get_hitmap(self, hit_pix):
@@ -243,11 +196,11 @@ def calculate_params():
 
     scan_params.t_sampling = 1000.0/scan_params.sampling_rate
 
-    if scan_params.mode == 1:
+    if scan_params.mode is 1:
         scan_params.t_spin = 360.0*60.0*np.sin(np.radians(scan_params.beta))*scan_params.t_sampling/1000.0/scan_params.theta_co
         scan_params.t_prec = 360.0*60.0*np.sin(np.radians(scan_params.alpha))*scan_params.t_spin/scan_params.theta_cross
 
-    if scan_params.mode == 2:
+    if scan_params.mode is 2:
         scan_params.theta_cross = 360.0*60.0*np.sin(np.radians(scan_params.alpha))*scan_params.t_spin/scan_params.t_prec
         scan_params.theta_co = 360*60*np.sin(np.radians(scan_params.beta))*scan_params.t_sampling/1000.0/scan_params.t_spin
 
@@ -353,7 +306,7 @@ def run_mpi():
     rank = comm.Get_rank()
 
     time_stamp = [None]
-    if rank == 0:
+    if rank is 0:
         time_stamp[0] = get_time_stamp()
     time_stamp = comm.bcast(time_stamp, root=0)
 
@@ -361,7 +314,7 @@ def run_mpi():
 
     calculate_params()
 
-    if rank == 0:
+    if rank is 0:
         display_params()
         make_output_dirs(out_dir, scan_params)
 
@@ -391,21 +344,21 @@ def run_mpi():
     print "Average time taken per segment :", (time_segment_stop - time_segment_start)/len(local_bolo_list), "s"
     sys.stdout.flush()
 
-    if rank == 0:
+    if rank is 0:
         hitmap = np.zeros(hp.nside2npix(scan_params.nside), dtype=np.float32)
     else:
         hitmap = None
 
     comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0)
 
-    if rank == 0:
+    if rank is 0:
         valid = hitmap>0
         sky_map[...,~valid] = np.nan
         hp.write_map(os.path.join(out_dir, "scanned_map.fits"), sky_map)
         hp.write_map(os.path.join(out_dir, "hitmap_in.fits"), hitmap)
 
     time_end = time.time() 
-    if rank == 0:
+    if rank is 0:
         print "Total time taken :", (time_end - time_start), "seconds"
         print "Scan time stamp :", time_stamp[0]
 

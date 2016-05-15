@@ -3,7 +3,7 @@ from simulation.lib.utilities import generic_class
 
 bolo_params = generic_class.Generic()
 
-bolo_params.bolo_name = "bolo_0001a"
+bolo_params.bolo_name = "bolo_0006"
 
 #The offset of the bolo from the centre of the F-O-V axis
 bolo_params.del_x = 0.0         #arc-min
