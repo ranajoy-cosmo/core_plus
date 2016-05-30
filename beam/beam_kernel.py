@@ -15,7 +15,8 @@ def gaussian_2d(beam_params, bolo_params, mesh):
 
     #Building a circular Gaussian beam on the 2D mesh
     x,y = mesh
-    beam_kernel = np.exp(-(x**2/(2*sigma**2) + y**2/(2*sigma**2)))
+    dx, dy = bolo_params.del_x, bolo_params.del_y
+    beam_kernel = np.exp(-((x-dx)**2/(2*sigma**2) + (y-dy)**2/(2*sigma**2)))
     
     #Normalising the circular Gaussian beam so that the integral is 1
     integral = np.sum(beam_kernel)*beam_params.beam_resolution**2
@@ -99,7 +100,7 @@ if __name__=="__main__":
         display_beam_settings(beam_params, bolo_params, mesh)
     if beam_params.plot_beam:
         plot_beam(beam_kernel, beam_params)
-        if bolo_params.ellipticity != 0.0:
+        if bolo_params.conv_fwhm != 0.0:
             plot_beam(convolve_kernel, beam_params)
     print del_beta
 
