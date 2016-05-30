@@ -7,6 +7,7 @@ from mpi4py import MPI
 from pyoperators import DiagonalOperator, PackOperator, pcg, MPIDistributionIdentityOperator
 from pysimulators import ProjectionOperator
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
+import simulation.lib.data_loading.bolo_data_loading as bolo_data_loading
 #from memory_profiler import profile
 import os
 import sys
@@ -52,15 +53,6 @@ def make_map_from_signal(signal, v, pol_ang):
 
     return x.T, hitmap
 
-"""
-def get_signal(bolo_name, segment, data_root):
-    segment_name = str(segment+1).zfill(4)
-    ts = data_root[os.path.join(bolo_name, segment_name, "ts_signal"][:]
-    v = data_root[os.path.join(bolo_name, segment_name, "vector"][:]
-    pol = data_root[os.path.join(bolo_name, segment_name, "pol_ang"][:]
-    return ts, v, pol
-"""
-
 def get_signal(out_dir, bolo_name, segment):
     segment_name = str(segment+1).zfill(4)
     data_dir = os.path.join(out_dir, bolo_name, segment_name)
@@ -92,6 +84,14 @@ def run_mpi():
     #data_root = h5py.File(os.path.join(out_dir, "data.hdf5"), "r")
     start = time.time()
 
+    local_bolo_list, local_segment_list = bolo_data_loading.get_local_bolo_segment_list(rank, size, map_making_params)
+    print "Rank :", rank, "doing Bolos :", local_bolo_list, "and segments :", local_segment_list
+    sys.stdout.flush()
+
+    signal, v, pol_ang = get_signal(data_dir, local_bolo_list[0], local_segment_list[0])
+    sky_map, hitmap = make_map_from_signal(signal, v, pol_ang)
+
+    """
     for bolo_name in map_making_params.bolo_names:
         for segment in map_making_params.segment_list: 
             if count%size == rank:
@@ -99,6 +99,7 @@ def run_mpi():
                 print "Doing Bolo :", bolo_name, " Segment :", segment, " Rank :", rank, " Count :", count 
                 sky_map, hitmap = make_map_from_signal(signal, v, pol_ang)
             count += 1
+    """
 
     stop = time.time()
     if rank is 0:

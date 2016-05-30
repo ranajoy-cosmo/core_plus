@@ -43,7 +43,7 @@ class imshow_show_z:
 def new_imshow(ax, z, x=None, y=None, *args, **kwargs):
     #assert(len(x) == z.shape[1])
     #assert(len(y) == z.shape[0])
-    if x==None and y==None:
+    if x is None and y is None:
         x = np.arange(z.shape[0])
         y = np.arange(z.shape[1])
     dx = x[1] - x[0]

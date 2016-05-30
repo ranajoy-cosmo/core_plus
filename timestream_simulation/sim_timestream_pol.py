@@ -13,7 +13,7 @@ from memory_profiler import profile
 from simulation.lib.quaternion import quaternion
 from pysimulators import ProjectionOperator, BeamGaussian
 from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
-from simulation.beam.beam_kernel import get_beam
+from simulation.beam.beam_kernel import get_beam, display_beam_settings
 from simulation.lib.utilities.time_util import get_time_stamp
 import simulation.lib.numericals.filters as filters
 import simulation.lib.data_loading.bolo_data_loading as bolo_data_loading
@@ -30,10 +30,13 @@ class Bolo:
 # Simulating the time-ordered data for a given bolo with any beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-    @profile
+    #@profile
     def simulate_timestream(self, segment, sky_map, out_dir):
 
         t_start = scan_params.t_segment*segment
+
+        if segment == 0:
+            display_beam_settings(beam_params, self.bolo_params, None)
 
         nsamples = int(1000.0*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate
 
@@ -83,6 +86,9 @@ class Bolo:
     #@profile
     def simulate_timestream_beamed(self, segment, sky_map, out_dir):
 
+        if segment == 0:
+            display_beam_settings(beam_params, self.bolo_params, None)
+
         t_start = scan_params.t_segment*segment
 
         nsamples = int(1000.0*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate
@@ -92,18 +98,18 @@ class Bolo:
         pad = self.del_beta.size/2
         nsamples = int(1000.0*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate + 2*pad
 
-        npix = hp.nside2npix(scan_params.nside)
-
         rot_qt = self.generate_quaternion(t_start)
 
         pol_ang = self.get_pol_ang(rot_qt, None) 
 
-        matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
-        matrix.data.value[:, 0, 0, 0] = 0.5
-        matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol_ang)
-        matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
+        #matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
+        #matrix.data.value[:, 0, 0, 0] = 0.5
+        #matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol_ang)
+        #matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
+        cos2 = np.cos(2*pol_ang)
+        sin2 = np.sin(2*pol_ang)
 
-        P = ProjectionOperator(matrix)
+        #P = ProjectionOperator(matrix)
 
         signal = np.zeros(nsamples - 2*pad)
 
@@ -124,14 +130,15 @@ class Bolo:
             hit_pix = hp.vec2pix(scan_params.nside, v[...,0], v[...,1], v[...,2])
             if self.del_beta[i] == 0.0:
                 np.save(os.path.join(out_dir, "vector"), v[pad:-pad][::scan_params.oversampling_rate])
-                hitpix_central = hit_pix
+                #hitpix_central = hit_pix
             del v
-            P.matrix.data.index[:, 0] = hit_pix
+            #P.matrix.data.index[:, 0] = hit_pix
             if scan_params.do_filtering:
                 signal_int = np.convolve(P(sky_map.T), self.beam_kernel[i], mode = 'valid')
                 signal += filters.filter_butter(signal_int, 1000.0/scan_params.t_sampling, scan_params.filter_cutoff)
             else:
-                signal += np.convolve(P(sky_map.T), self.beam_kernel[i], mode = 'valid')
+                #signal += np.convolve(P(sky_map.T), self.beam_kernel[i], mode = 'valid')
+                signal += np.convolve(0.5*(sky_map[0][hit_pix] + sky_map[1][hit_pix]*cos2 + sky_map[2][hit_pix]*sin2), self.beam_kernel[i], mode = 'valid')
 
         beam_sum = np.sum(self.beam_kernel)
         signal /= beam_sum
@@ -151,9 +158,9 @@ class Bolo:
         del pol_ang
         del signal
 
-        hitmap = self.get_hitmap(hitpix_central)
+        #hitmap = self.get_hitmap(hitpix_central)
 
-        return hitmap 
+        #return hitmap 
 
 
     #@profile
@@ -367,7 +374,7 @@ def run_mpi():
 
     comm.Barrier()
 
-    hitmap_local = np.zeros(hp.nside2npix(scan_params.nside), dtype=np.float32)
+    #hitmap_local = np.zeros(hp.nside2npix(scan_params.nside), dtype=np.float32)
 
     local_bolo_list, local_segment_list = bolo_data_loading.get_local_bolo_segment_list(rank, size, scan_params)
 
@@ -385,7 +392,8 @@ def run_mpi():
         if beam_params.do_pencil_beam:
             hitmap_local += bolo.simulate_timestream(segment, sky_map, out_dir_local)
         else:
-            hitmap_local += bolo.simulate_timestream_beamed(segment, sky_map, out_dir_local)
+            #hitmap_local += bolo.simulate_timestream_beamed(segment, sky_map, out_dir_local)
+            bolo.simulate_timestream_beamed(segment, sky_map, out_dir_local)
 
     time_segment_stop = time.time()
     print "Average time taken per segment :", (time_segment_stop - time_segment_start)/len(local_bolo_list), "s"
