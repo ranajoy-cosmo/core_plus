@@ -86,7 +86,6 @@ def run_mpi():
     rank = comm.Get_rank()
     size = comm.Get_size() 
     
-    num_segments = int(map_making_params.t_flight/map_making_params.t_segment)
     count = 0
 
     data_dir = os.path.join(map_making_params.global_output_dir, "scanning", map_making_params.scanning_time_stamp)
@@ -94,13 +93,12 @@ def run_mpi():
     start = time.time()
 
     for bolo_name in map_making_params.bolo_names:
-        for segment in range(num_segments): 
-            if count%size is rank:
+        for segment in map_making_params.segment_list: 
+            if count%size == rank:
                 signal, v, pol_ang = get_signal(data_dir, bolo_name, segment)
                 print "Doing Bolo :", bolo_name, " Segment :", segment, " Rank :", rank, " Count :", count 
-                print signal.size, v.shape, pol_ang.shape
                 sky_map, hitmap = make_map_from_signal(signal, v, pol_ang)
-            count+=1
+            count += 1
 
     stop = time.time()
     if rank is 0:

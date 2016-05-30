@@ -138,13 +138,15 @@ def run_mpi():
     inv_cov_matrix_local = np.zeros((npix, 3, 3))
     b_matrix_local = np.zeros((npix, 3))
 
-    local_bolo_list, local_segment_list = bolo_data_loading.get_local_bolo_segment_list(rank, size)
+    local_bolo_list, local_segment_list = bolo_data_loading.get_local_bolo_segment_list(rank, size, map_making_params)
     print "Rank :", rank, "doing Bolos :", local_bolo_list, "and segments :", local_segment_list
     sys.stdout.flush()
 
     start_time = time.time()
 
     for bolo_name, segment in zip(local_bolo_list, local_segment_list):
+        print "Rank :", rank, "doing Bolo :", bolo_name, "and segment :", segment
+        sys.stdout.flush()
         signal, v, pol_ang = get_signal(data_dir, bolo_name, segment)
         hitpix = hp.vec2pix(map_making_params.nside_out, v[...,0], v[...,1], v[...,2])
         b_matrix_local += get_b_matrix(hitpix, pol_ang, signal)

@@ -20,4 +20,4 @@ bolo_params.fwhm = 8.0        #arcmin
 bolo_params.conv_fwhm = 0.0
 
 #The angle the beam major axis of the bolometer with the W-E axis measured anti-clockwise
-bolo_params.beam_angle = 45.0    #degrees
+bolo_params.beam_angle = 42.0    #degrees
