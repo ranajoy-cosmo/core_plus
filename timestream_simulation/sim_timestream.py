@@ -36,8 +36,8 @@ def run_mpi():
 
     if rank == 0:
         display_params()
-        make_output_dirs(out_dir, scan_params)
-
+        data_utils.make_output_dirs(out_dir, scan_params.bolo_list, scan_params.segment_list)
+        data_utils.copy_source_to_output(out_dir, scan_params.bolo_list)
 
     comm.Barrier()
 
