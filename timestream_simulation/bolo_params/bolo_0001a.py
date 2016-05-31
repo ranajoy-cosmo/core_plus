@@ -6,8 +6,8 @@ bolo_params = generic_class.Generic()
 bolo_params.bolo_name = "bolo_0001a"
 
 #The offset of the bolo from the centre of the F-O-V axis
-bolo_params.del_x = 2.0*np.random.normal(loc=0.0, scale=2.0)         #arc-min
-bolo_params.del_y = 2.0*np.random.normal(loc=0.0, scale=2.0)         #arc-min
+bolo_params.del_x = np.random.normal(loc=0.0, scale=3)         #arc-min
+bolo_params.del_y = np.random.normal(loc=0.0, scale=3)         #arc-min
 
 #The angle the polarisation direction of the bolometer with the W-E axis measured anti-clockwise
 bolo_params.pol_ang = 0.0       #degrees
