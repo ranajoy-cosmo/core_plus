@@ -1,11 +1,12 @@
 #!/usr/bin/env python 
 
 import numpy as np
+import os
 import shutil
 
-def get_local_bolo_segment_list(rank, num_processes, params):
-    num_bolos = len(params.bolo_names)
-    num_segments_per_bolo = params.segment_list.size
+def get_local_bolo_segment_list(rank, num_processes, bolo_list, segment_list):
+    num_bolos = len(bolo_list)
+    num_segments_per_bolo = segment_list.size
     num_total_segments = num_bolos*num_segments_per_bolo
 
     if num_total_segments % num_processes != 0:
@@ -13,14 +14,14 @@ def get_local_bolo_segment_list(rank, num_processes, params):
     else:
         num_segments_per_process = num_total_segments/num_processes
 
-    bolo_list = []
-    for bolo_name in params.bolo_names:
-        bolo_list.extend([bolo_name]*num_segments_per_bolo)
+    bolo_list_deg = []
+    for bolo_name in bolo_list:
+        bolo_list_deg.extend([bolo_name]*num_segments_per_bolo)
 
-    segment_list = np.arange(num_total_segments) % num_segments_per_bolo
+    segment_list_deg = np.arange(num_total_segments) % num_segments_per_bolo
 
-    local_bolo_list = bolo_list[rank*num_segments_per_process : (rank + 1)*num_segments_per_process]
-    local_segment_list = segment_list[rank*num_segments_per_process : (rank + 1)*num_segments_per_process]
+    local_bolo_list = bolo_list_deg[rank*num_segments_per_process : (rank + 1)*num_segments_per_process]
+    local_segment_list = segment_list_deg[rank*num_segments_per_process : (rank + 1)*num_segments_per_process]
 
     bolo_segment_dict = dict.fromkeys(set(local_bolo_list), None)
 
@@ -39,20 +40,20 @@ def create_output_directories(output_dir, bolo_list, segment_list):
 
         for segment in segment_list:
             segment_name = str(segment+1).zfill(4)
-            os.makedirs(os.path.join(output_dir, bolo, segment_name))
+            if not os.path.isdir(os.path.join(output_dir, bolo, segment_name)):
+                os.makedirs(os.path.join(output_dir, bolo, segment_name))
 
 def copy_source_to_output(output_dir, bolo_list):
     param_dir = os.path.join(output_dir, "params")
-    if not os.path.isdir(param_dir)
+    if not os.path.isdir(param_dir):
         os.makedirs(param_dir)
-
-    bolo_param_dir = os.path.join(param_dir, "bolo_params")
-    if not os.path.isdir(bolo_params_dir):
-        os.makedirs(bolo_param_dir)
 
     shutil.copy("default_params.py", param_dir)
     shutil.copy("custom_params.py", param_dir)
     shutil.copy("sim_timestream_pol.py", output_dir)
 
+    bolo_param_dir = os.path.join(param_dir, "bolo_params")
+    if not os.path.isdir(bolo_param_dir):
+        os.makedirs(bolo_param_dir)
     for bolo in bolo_list:
         shutil.copy("bolo_params/"+bolo+".py", bolo_param_dir)
