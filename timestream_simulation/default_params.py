@@ -12,7 +12,7 @@ scan_params = Generic()
 # Scan Parameters
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-scan_params.t_year = 365*24*60*60.0                    #seconds
+scan_params.t_year = 366*24*60*60.0                    #seconds
 scan_params.t_prec = 4*24*60*60.0                     #seconds
 scan_params.t_spin = 60.0                             #seconds
 scan_params.sampling_rate = 200                                  #Hz
@@ -28,6 +28,7 @@ scan_params.do_only_T = False
 scan_params.oversampling_rate = 1
 
 scan_params.do_filtering = False
+scan_params.fixed_pointing_error = 3                 #arc seconds
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Data selection Parameters
@@ -42,9 +43,10 @@ scan_params.input_maps = dict(zip(scan_params.bolo_names, input_map_list))
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 scan_params.base_dir = global_paths.base_dir 
-scan_params.global_output_dir = global_paths.output_dir
+scan_params.output_dir = global_paths.output_dir
 scan_params.input_maps = dict(zip(scan_params.bolo_names, input_map_list))
 scan_params.bolo_param_dir = os.path.join(global_paths.base_dir, "bolo", "bolo_params")
+scan_params.tag = None
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Beam Parameters

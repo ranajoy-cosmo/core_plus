@@ -6,9 +6,6 @@ import simulation.lib.quaternion.quaternion as qt
 
 class Pointing:
 
-    _x_axis = np.array([1.0, 0.0, 0.0])
-    _y_axis = np.array([0.0, 1.0, 0.0])
-    _z_axis = np.array([0.0, 0.0, 1.0])
 
     def __init__(self, bolo_params, scan_params):
         self._set_pointing_params(bolo_params, scan_params)
@@ -18,7 +15,7 @@ class Pointing:
         self._alpha = np.radians(scan_params.alpha)                         #radians
         self._beta = np.radians(scan_params.beta)                           #radians
         self._t_year = scan_params.t_year                                   #seconds
-        self._t_prec = scan_params.t_preci                                  #seconds   
+        self._t_prec = scan_params.t_prec                                  #seconds   
         self._t_spin = scan_params.t_spin                                   #seconds
         self._t_segment = scan_params.t_segment                             #seconds
         self._oversampling_rate = scan_params.oversampling_rate
@@ -27,8 +24,11 @@ class Pointing:
         self._pointing_offset_y = bolo_params.pointing_offset_y
 
     def get_initial_axes(self):
-        self._axis_rev = _z_axis
-        self._axis_prec = _x_axis
+        self._x_axis = np.array([1.0, 0.0, 0.0])
+        self._y_axis = np.array([0.0, 1.0, 0.0])
+        self._z_axis = np.array([0.0, 0.0, 1.0])
+        self._axis_rev = self._z_axis
+        self._axis_prec = self._x_axis
         self._axis_spin = np.array([np.cos(self._alpha), 0.0, np.sin(self._alpha)])
 
     def get_initial_vector(self, beta_offset):
