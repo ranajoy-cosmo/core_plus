@@ -43,7 +43,7 @@ scan_params.input_maps = dict(zip(scan_params.bolo_names, input_map_list))
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 scan_params.base_dir = global_paths.base_dir 
-scan_params.output_dir = global_paths.output_dir
+scan_params.global_output_dir = global_paths.output_dir
 scan_params.input_maps = dict(zip(scan_params.bolo_names, input_map_list))
 scan_params.bolo_param_dir = os.path.join(global_paths.base_dir, "bolo", "bolo_params")
 scan_params.tag = None

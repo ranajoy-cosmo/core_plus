@@ -11,6 +11,8 @@ from mpi4py import MPI
 from pysimulators.sparse import FSRBlockMatrix
 from pysimulators import ProjectionOperator
 from simulation.lib.data_management.data_utilities import get_local_bolo_segment_list
+from simulation.timestream_simulation.new_sim_timestream import Bolo
+from simulation.lib.utilities.prompter import prompt
 
 #@profile
 def get_signal(out_dir, bolo_name, segment):
@@ -42,6 +44,8 @@ def get_inv_cov_matrix(hitpix, pol):
     inv_cov_matrix[..., 1, 0] = inv_cov_matrix[..., 0, 1]
     inv_cov_matrix[..., 2, 0] = inv_cov_matrix[..., 0, 2]
     inv_cov_matrix[..., 2, 1] = inv_cov_matrix[..., 1, 2]
+
+    inv_cov_matrix *= 0.25
 
     return inv_cov_matrix
 
@@ -99,8 +103,6 @@ def run_serial():
             #print "Time taken to get inverse covariance matrix :", (end_time - start_time), "s"
             sys.stdout.flush()
 
-    inv_cov_matrix_total *= 0.25
-
     hitmap = 4*inv_cov_matrix_total[..., 0, 0]
 
     bad_pix = hitmap<3
@@ -118,22 +120,13 @@ def run_serial():
 
 
 def run_mpi():
-    start_time_total = time.time()
-    
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size() 
 
-    data_dir = os.path.join(map_making_params.global_output_dir, "scanning", map_making_params.scanning_time_stamp)
+    #data_dir = os.path.join(map_making_params.global_output_dir, "scanning", map_making_params.scanning_time_stamp)
 
-    npix = hp.nside2npix(map_making_params.nside_out)
-
-    if rank == 0:
-        inv_cov_matrix = np.zeros((npix, 3, 3))
-        b_matrix = np.zeros((npix, 3))
-    else:
-        inv_cov_matrix = None
-        b_matrix = None
+    npix = hp.nside2npix(config.nside_out)
 
     inv_cov_matrix_local = np.zeros((npix, 3, 3))
     b_matrix_local = np.zeros((npix, 3))
@@ -141,24 +134,28 @@ def run_mpi():
     bolo_segment_dict = get_local_bolo_segment_list(rank, size, map_making_params.bolo_list, map_making_params.segment_list)
     sys.stdout.flush()
 
-    start_time = time.time()
 
-    count = 0
     for bolo_name in bolo_segment_dict.keys():
+        bolo = Bolo(bolo_name, config)
         for segment in bolo_segment_dict[bolo_name]:
-            time_in = time.time()
-            count += 1
-            print "Rank :", rank, "doing Bolo :", bolo_name, "and segment :", segment
-            sys.stdout.flush()
-            signal, v, pol_ang = get_signal(data_dir, bolo_name, segment)
+            prompt("Rank : %d doing Bolo : %s and segment : %d" % (rank, bolo_name, segment))
+            if config.simulate_ts:
+                signal, v, pol_ang = bolo.simulate_timestream(...)
+            else 
+                signal, v, pol_ang = bolo.load_signal()
             hitpix = hp.vec2pix(map_making_params.nside_out, v[...,0], v[...,1], v[...,2])
+            del v
             b_matrix_local += get_b_matrix(hitpix, pol_ang, signal)
             inv_cov_matrix_local += get_inv_cov_matrix(hitpix, pol_ang)
             time_out = time.time()
-            if rank==0:
-                print "Time taken :", (time_out-time_in), 's. Projected time :', (time_out-time_in)*len(bolo_segment_dict[bolo_name])/60.0, 'm'
 
-    end_time = time.time()
+
+    if rank == 0:
+        inv_cov_matrix = np.zeros((npix, 3, 3))
+        b_matrix = np.zeros((npix, 3))
+    else:
+        inv_cov_matrix = None
+        b_matrix = None
 
     comm.Reduce(b_matrix_local, b_matrix, MPI.SUM, 0)
     comm.Reduce(inv_cov_matrix_local, inv_cov_matrix, MPI.SUM, 0)
@@ -184,19 +181,15 @@ def run_mpi():
 
         write_map(sky_rec, hitmap)
 
-        end_time_total = time.time()
-
-        print "Average time taken per segment :", (end_time - start_time) / count, "s"
-        print "Total time taken :", (end_time_total - start_time_total), "s"
-
 
 if __name__=="__main__":
-    from custom_params import map_making_params
-    action = sys.argv[1]
+    config_file = sys.argv[1]
 
-    if action=='run_mpi':
+    config = importlib.import_module(config_file).config
+
+    if config.run_type=='run_mpi':
         from mpi4py import MPI
         run_mpi()
 
-    if action=='run_serial':
+    if config.run_type=='run_serial':
         run_serial()

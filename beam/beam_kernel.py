@@ -15,7 +15,7 @@ def gaussian_2d(beam_params, bolo_params, mesh):
 
     #Building a circular Gaussian beam on the 2D mesh
     x,y = mesh
-    del_x, del_y = bolo_params.del_x/60.0, bolo_params.del_y/60.0
+    del_x, del_y = bolo_params.pointing_offset_x/60.0, bolo_params.pointing_offset_y/60.0
     beam_kernel = np.exp(-((x-del_x)**2/(2*sigma**2) + (y-del_y)**2/(2*sigma**2)))
     beam_kernel_symmetric = np.exp(-(x**2/(2*sigma**2) + y**2/(2*sigma**2)))
     
@@ -43,7 +43,7 @@ def check_normalisation(beam_params, bolo_params, beam_kernel):
 
 
 def get_mesh(beam_params, bolo_params):
-    offset_max = max(abs(bolo_params.del_x/60.0), abs(bolo_params.del_y/60.0))              #arc-mins
+    offset_max = max(abs(bolo_params.pointing_offset_x/60.0), abs(bolo_params.pointing_offset_y/60.0))              #arc-mins
     fwhm_minor = bolo_params.fwhm
     fwhm_major = np.sqrt(fwhm_minor**2 + bolo_params.conv_fwhm**2)
     size = beam_params.beam_cutoff*fwhm_major + offset_max             #arc-mins
@@ -66,7 +66,7 @@ def display_beam_settings(beam_params, bolo_params, mesh):
         print "Major axis(FWHM) :", fwhm_major, "arcmins" 
         print "Minor axis(FWHM) :", fwhm_minor, "arcmins"
         print "Ellipticity :", ellipticity, "%"
-        print "Center :", bolo_params.del_x, bolo_params.del_y
+        print "Center :", bolo_params.pointing_offset_x, bolo_params.pointing_offset_y
         print "Tilt :", bolo_params.beam_angle, "degrees"
         print "Pixel size :", beam_params.beam_resolution, "arcmins" 
         print "Kernel width in FWHM of beam:", beam_params.beam_cutoff

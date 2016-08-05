@@ -16,7 +16,7 @@ from pysimulators.sparse import FSRMatrix, FSRBlockMatrix
 from simulation.beam.beam_kernel import get_beam, display_beam_settings
 from simulation.lib.utilities.time_util import get_time_stamp
 import simulation.lib.numericals.filters as filters
-import simulation.lib.data_loading.bolo_data_loading as bolo_data_loading
+from simulation.lib.data_management.data_utilities import get_local_bolo_segment_list
 
 class Bolo:
 
@@ -101,13 +101,11 @@ class Bolo:
         rot_qt = self.generate_quaternion(t_start)
 
         pol_ang = self.get_pol_ang(rot_qt, None) 
+        np.save(os.path.join(out_dir, "pol_ang"), pol_ang[pad:-pad][::scan_params.oversampling_rate])
 
-        #matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
-        #matrix.data.value[:, 0, 0, 0] = 0.5
-        #matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol_ang)
-        #matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol_ang)
         cos2 = np.cos(2*pol_ang)
         sin2 = np.sin(2*pol_ang)
+        del pol_ang
 
         #P = ProjectionOperator(matrix)
 
@@ -137,15 +135,15 @@ class Bolo:
                 signal_int = np.convolve(P(sky_map.T), self.beam_kernel[i], mode = 'valid')
                 signal += filters.filter_butter(signal_int, 1000.0/scan_params.t_sampling, scan_params.filter_cutoff)
             else:
-                #signal += np.convolve(P(sky_map.T), self.beam_kernel[i], mode = 'valid')
                 signal += np.convolve(0.5*(sky_map[0][hit_pix] + sky_map[1][hit_pix]*cos2 + sky_map[2][hit_pix]*sin2), self.beam_kernel[i], mode = 'valid')
+                #signal += np.convolve(0.5*sky_map[hit_pix], self.beam_kernel[i], mode = 'valid')
 
         beam_sum = np.sum(self.beam_kernel)
         signal /= beam_sum
 
         time_end = time.time()
 
-        del hit_pix
+        #del hit_pix
 
         print "Average time taken per beam slice :", (time_end - time_start)/self.del_beta.size, "seconds"
         sys.stdout.flush()
@@ -153,10 +151,10 @@ class Bolo:
         if scan_params.add_noise:
             signal += np.random.normal(scale=scan_params.noise_level, size=signal.size)
 
-        np.save(os.path.join(out_dir, "pol_ang"), pol_ang[pad:-pad][::scan_params.oversampling_rate])
+        #np.save(os.path.join(out_dir, "pol_ang"), pol_ang[pad:-pad][::scan_params.oversampling_rate])
         np.save(os.path.join(out_dir, "ts_signal"), signal[::scan_params.oversampling_rate])
-        del pol_ang
-        del signal
+        #del pol_ang
+        #del signal
 
         #hitmap = self.get_hitmap(hitpix_central)
 
@@ -202,7 +200,7 @@ class Bolo:
         pad = self.del_beta.size/2
         n_steps = int(1000.0*scan_params.t_segment/scan_params.t_sampling)*scan_params.oversampling_rate + 2*pad
 
-        pol_init = np.deg2rad(self.bolo_params.pol_ang)
+        pol_init = np.deg2rad(self.bolo_params.pol_phase_ini)
         x_axis = np.array([0.0, 1.0, 0.0])
 
         pol_vec = quaternion.transform(rot_qt, np.tile(x_axis, n_steps).reshape(-1,3))
@@ -227,8 +225,8 @@ class Bolo:
     def get_initial_vec(self, del_beta):
         alpha = np.deg2rad(scan_params.alpha)
         beta = np.deg2rad(scan_params.beta)
-        del_x = np.deg2rad(self.bolo_params.del_x/60.0)
-        del_y = np.deg2rad(self.bolo_params.del_y/60.0)
+        del_x = np.deg2rad(self.bolo_params.pointing_offset_x/60.0)
+        del_y = np.deg2rad(self.bolo_params.pointing_offset_y/60.0)
         del_beta_rad = np.deg2rad(del_beta/60.0)
 
         u_view = np.array([np.cos(alpha + beta + del_beta_rad), 0.0, np.sin(alpha + beta + del_beta_rad)])
@@ -293,15 +291,18 @@ def get_scanned_map(sky_map, hitmap):
     sky_map[...,~valid] = np.nan
     return sky_map
 
+#@profile
 def get_sky_map(bolo_name):
-    sky_map = np.array(hp.read_map(scan_params.input_maps[bolo_name], field=(0,1,2)))
-    nside = hp.get_nside(sky_map)
-    if scan_params.nside != nside:
-        print "NSIDE of map does not match with given NSIDE. Running with map NSIDE"
-        scan_params.nside = nside
-    if scan_params.do_only_T:
-        sky_map[1:,...] = 0.0
+    #sky_map = hp.read_map(scan_params.input_maps[bolo_name])
+    #return sky_map
+    sky_map = np.array(hp.read_map(scan_params.input_maps[bolo_name], field=(0,1,2), verbose=False))
     return sky_map
+    #nside = hp.get_nside(sky_map)
+    #if scan_params.nside != nside:
+    #    print "NSIDE of map does not match with given NSIDE. Running with map NSIDE"
+    #    scan_params.nside = nside
+    #if scan_params.do_only_T:
+    #    sky_map[1:,...] = 0.0
 
 def make_output_dirs(out_dir, scan_params):
     os.makedirs(out_dir)
@@ -312,7 +313,7 @@ def make_output_dirs(out_dir, scan_params):
     shutil.copy("default_params.py", param_dir)
     shutil.copy("custom_params.py", param_dir)
     shutil.copy("sim_timestream_pol.py", out_dir)
-    for bolo in scan_params.bolo_names:
+    for bolo in scan_params.bolo_list:
         os.makedirs(os.path.join(out_dir, bolo))
         shutil.copy("bolo_params/"+bolo+".py", bolo_param_dir)
         for segment in scan_params.segment_list:
@@ -376,29 +377,30 @@ def run_mpi():
 
     #hitmap_local = np.zeros(hp.nside2npix(scan_params.nside), dtype=np.float32)
 
-    local_bolo_list, local_segment_list = bolo_data_loading.get_local_bolo_segment_list(rank, size, scan_params)
-
-    prev_bolo_name = None 
+    bolo_segment_dict = get_local_bolo_segment_list(rank, size, scan_params.bolo_list, scan_params.segment_list)
 
     time_segment_start = time.time()
 
-    for bolo_name, segment in zip(local_bolo_list, local_segment_list):
-        if bolo_name != prev_bolo_name:
-            sky_map = get_sky_map(bolo_name)
-            bolo = Bolo(bolo_name)
-        print "Doing Bolo :", bolo_name, " Segment :", segment+1, " Rank :", rank
-        sys.stdout.flush()
-        out_dir_local = os.path.join(out_dir, bolo_name, str(segment+1).zfill(4))
-        if beam_params.do_pencil_beam:
-            hitmap_local += bolo.simulate_timestream(segment, sky_map, out_dir_local)
-        else:
+    count = 0
+    for bolo_name in bolo_segment_dict.keys():
+        sky_map = get_sky_map(bolo_name)
+        bolo = Bolo(bolo_name)
+        for segment in bolo_segment_dict[bolo_name]:
+            count +=1
+            print "Doing Bolo :", bolo_name, " Segment :", segment+1, " Rank :", rank
+            sys.stdout.flush()
+            out_dir_local = os.path.join(out_dir, bolo_name, str(segment+1).zfill(4))
+            #if beam_params.do_pencil_beam:
+            #    hitmap_local += bolo.simulate_timestream(segment, sky_map, out_dir_local)
+            #else:
             #hitmap_local += bolo.simulate_timestream_beamed(segment, sky_map, out_dir_local)
             bolo.simulate_timestream_beamed(segment, sky_map, out_dir_local)
 
     time_segment_stop = time.time()
-    print "Average time taken per segment :", (time_segment_stop - time_segment_start)/len(local_bolo_list), "s"
+    print "Average time taken per segment :", (time_segment_stop - time_segment_start) / count, "s"
     sys.stdout.flush()
-
+    
+    """
     if rank == 0:
         hitmap = np.zeros(hp.nside2npix(scan_params.nside), dtype=np.float32)
     else:
@@ -411,7 +413,7 @@ def run_mpi():
         sky_map[...,~valid] = np.nan
         hp.write_map(os.path.join(out_dir, "scanned_map.fits"), sky_map)
         hp.write_map(os.path.join(out_dir, "hitmap_in.fits"), hitmap)
-
+    """
     time_end = time.time() 
     if rank == 0:
         print "Total time taken :", (time_end - time_start), "seconds"

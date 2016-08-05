@@ -21,7 +21,7 @@ def gaussian_2d(beam_params, bolo_params, mesh):
     dim = y[0].size
     conv_kernel[...,:dim/2] = 0
     conv_kernel[...,dim/2+1:] = 0
-    conv_kernel = ndimage.interpolation.rotate(conv_kernel, angle=bolo_params.beam_angle + bolo_params.pol_ang, reshape=False)
+    conv_kernel = ndimage.interpolation.rotate(conv_kernel, angle=bolo_params.beam_angle + bolo_params.pol_phase_ini, reshape=False)
     conv_kernel[conv_kernel<0] = 0
     integral = np.sum(conv_kernel)*beam_params.beam_resolution
     #integral = np.sqrt(2*np.pi)*sigma
