@@ -34,7 +34,8 @@ class Bolo:
 
         #Simulating the scan along the centre of the FOV
         v_init = self.get_initial_vec(0.0)
-        v = quaternion.transform(rot_qt, v_init)
+        #v = quaternion.transform(rot_qt, v_init)
+        v = self.get_v_obv(v_init, rot_qt)
         hit_pix_central, v = self.get_hitpix(v, ret_v=True)
 
         pol_ang = self.get_pol_ang(rot_qt, v) 
@@ -173,16 +174,33 @@ class Bolo:
         return r_total
 
 
-    def get_pol_ang(self, rot_qt, v_dir=None):
+    def get_v_obv(self, v_init, rot_qt):
+        v = quaternion.transform(rot_qt, v_init)
 
-        pol_init = np.deg2rad(self.config.pol_phase_ini)
-        x_axis = np.array([0.0, 1.0, 0.0])
+        if self.config.gal_coords:
+            v = self.transform_to_gal_coords(v)
 
-        pol_vec = quaternion.transform(rot_qt, np.tile(x_axis, self.nsamples).reshape(-1,3))
+        return v
 
-        if v_dir is None:
-            v_init = self.get_initial_vec(0.0)
-            v_dir = quaternion.transform(rot_qt, v_init)
+
+    def transform_to_gal_coords(self, v):
+        rot = hp.Rotator(coord=['E', 'G'])
+        theta, phi = hp.vec2ang(v)
+        theta_gal, phi_gal = rot(theta, phi)
+        return hp.ang2vec(theta_gal, phi_gal)
+
+
+    def get_pol_ang(self, rot_qt, v_dir):
+        alpha = np.deg2rad(self.config.alpha)                                   #radians
+        beta = np.deg2rad(self.config.beta)                                     #radians
+        total_opening = alpha + beta
+
+        pol_ini = np.deg2rad(self.config.pol_phase_ini)
+        pol_vec_ini = np.array([0.0, 1.0, 0.0])
+
+        pol_vec = quaternion.transform(rot_qt, np.tile(pol_vec_ini, self.nsamples).reshape(-1,3))
+        if self.config.gal_coords:
+            pol_vec = transform_to_gal_coords(pol_vec)
 
         theta, phi = hp.vec2ang(v_dir)
 
@@ -192,7 +210,7 @@ class Bolo:
         proj_x = np.sum(pol_vec*x_local, axis=-1)
         proj_y = np.sum(pol_vec*y_local, axis=-1)
 
-        pol_ang = (np.arctan2(proj_y, proj_x) + pol_init) % np.pi 
+        pol_ang = np.pi - (np.arctan2(proj_y, proj_x) + pol_ini) % np.pi 
         #pol_ang *= 2.0
 
         return pol_ang 

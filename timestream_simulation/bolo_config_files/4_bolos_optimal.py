@@ -1,11 +1,11 @@
 import numpy as np
 from simulation.lib.utilities import generic_class
-from simulation.timestream_simulation.custom_params import scan_params
 
 bolo_config = generic_class.Generic()
 bolo_config.bolos = {}
 
-bolo_config.common_input_map = "/global/homes/b/banerji/simulation/maps/r_001/sky_map_1024_0.fits"
+#bolo_config.common_input_map = "/global/homes/b/banerji/simulation/maps/r_001/sky_map_1024_0.fits"
+bolo_config.common_input_map = "/Users/banerji/CORE+/simulation/maps/r_001/sky_map_1024_8.fits"
 bolo_config.common_input_beam = "/global/homes/b/banerji/grasp_beams/square/beam_217-5a_uv_rescaled_fwhm_5.79_arcmin.npy"
 bolo_config.offset_sigma = 0.0
 bolo_config.common_beam_angle = 45.0
