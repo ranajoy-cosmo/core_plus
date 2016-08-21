@@ -2,22 +2,27 @@ import numpy as np
 import healpy as hp
 import os
 import shutil
+import importlib
 from simulation.timestream_simulation.beam_kernel import Beam
+from simulation.lib.utilities.generic_class import Generic
+import simulation.lib.utilities.prompter as prompter
+import simulation.lib.quaternion.quaternion as quaternion
 
 class Bolo:
 
     def __init__(self, bolo_name, config):
         self.name = bolo_name
         bolo_config = importlib.import_module("simulation.timestream_simulation.bolo_config_files." + 
-                config.bolo_config_file).bolos[bolo_name]
+                config.bolo_config_file).bolo_config.bolos[bolo_name]
         self.config = Generic()
         self.config.__dict__.update(config.__dict__)
         self.config.__dict__.update(bolo_config.__dict__)
-        self.calculate_parameters()
+        self.calculate_params()
         self.beam = Beam(config, bolo_config)
         self.get_sky_map()
         self.get_initial_axes()
         self.get_nsamples()
+        self.set_bolo_dirs()
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Simulating the time-ordered data for a given bolo with any beam
@@ -33,18 +38,18 @@ class Bolo:
         hit_pix_central, v = self.get_hitpix(v, ret_v=True)
 
         pol_ang = self.get_pol_ang(rot_qt, v) 
-        if self.config.sim_type == "TQU":
+        if self.config.sim_pol_type == "TQU":
             cos2 = np.cos(2*pol_ang)
             sin2 = np.sin(2*pol_ang)
 
         if "timestream_data" in self.config.timestream_data_products:
-            write_dir = self.make_write_dir(segment)
+            self.make_write_dir(segment)
             if self.config.do_pencil_beam:
-                self.write_timestream_data(v, "pointing_vec", write_dir)
-                self.write_timestream_data(pol_ang, "pol_ang", write_dir)
+                self.write_timestream_data(v, "pointing_vec", segment)
+                self.write_timestream_data(pol_ang, "pol_ang", segment)
             else:
-                self.write_timestream_data(v[self.pad:-self.pad][::self.config.oversampling_rate], "pointing_vec", write_dir)
-                self.write_timestream_data(pol_ang[self.pad:-self.pad][::self.config.oversampling_rate], "pol_ang", write_dir)
+                self.write_timestream_data(v[self.pad:-self.pad][::self.config.oversampling_rate], "pointing_vec", segment)
+                self.write_timestream_data(pol_ang[self.pad:-self.pad][::self.config.oversampling_rate], "pol_ang", segment)
 
         beam_kernel_row = self.beam.get_beam_row(0.0)                       #The input argument is the beam offset from the centre
 
@@ -67,33 +72,48 @@ class Bolo:
             signal += self.add_noise(nsamples) 
 
         if "timestream_data" in self.config.timestream_data_products:
-            self.write_timestream_data(signal[::self.config.oversampling_rate], "signal", write_dir)
+            self.write_timestream_data(signal[::self.config.oversampling_rate], "signal", segment)
+
+        if segment == 0  and self.config.write_beam:
+            self.beam.write_beam(self.bolo_dir)
 
         if self.config.pipe_with_map_maker:
-            return signal, v, pol_angle
+            return signal, v, pol_ang
 
-        if self.config.make_scanned_map:
+        if "hitmap" in self.config.timestream_data_products:
             hitmap = self.get_hitmap(hit_pix_central)
             return hitmap 
 
+    def read_timestream(self, segment):
+        segment_dir = self.get_segment_dir(segment)
+        signal = np.load(os.path.join(segment_dir, "signal.npy"))
+        v = np.load(os.path.join(segment_dir, "pointing_vec.npy"))
+        pol_ang = np.load(os.path.join(segment_dir, "pol_ang.npy"))
+
+        return signal, v, pol_ang
+
     
     def get_signal(self, hit_pix, beam_kernel_row, cos2, sin2):
-        if self.config.pol_type == "noise_only":
+        if self.config.sim_pol_type == "noise_only":
             signal = np.zeros(self.nsamples - 2*self.pad) 
 
-        elif self.config.pol_type == "T_only":
+        elif self.config.sim_pol_type == "T_only":
             signal = 0.5*self.sky_map[hit_pix]
             if not self.config.do_pencil_beam:
                 signal = np.convolve(signal, beam_kernel_row, mode = 'valid')
 
         else:
-            signal = 0.5*(sky_map[0][hitpix] + sky_map[1][hit_pix]*cos2 + sky_map[2][hitpix]*sin2)
+            signal = 0.5*(self.sky_map[0][hit_pix] + self.sky_map[1][hit_pix]*cos2 + self.sky_map[2][hit_pix]*sin2)
             if not self.config.do_pencil_beam:
                 signal = np.convolve(signal, beam_kernel_row, mode = 'valid')
 
         return signal
 
-        
+
+    def get_nsamples(self):
+        self.pad = self.beam.del_beta.size/2
+        self.nsamples = int(self.config.t_segment*self.config.sampling_rate)*self.config.oversampling_rate + 2*self.pad
+
 
     def calculate_params(self):
 
@@ -103,62 +123,62 @@ class Bolo:
         self.config.scan_resolution = self.config.theta_co/self.config.oversampling_rate
 
 
-    def get_hitpix(self, v, ret_v=False):
-        if self.config.gal_coords:
-            rot = hp.Rotator(coord=['E', 'G'])
-            theta, phi = hp.vec2ang(v)
-            theta_gal, phi_gal = rot(theta, phi)
-            hit_pix = hp.ang2pix(self.config.nside_in, theta_gal, phi_gal)
-            if ret_v:
-                v = hp.ang2vec(theta_gal, phi_gal)
+    def get_initial_axes(self):
+        alpha = np.deg2rad(self.config.alpha)                                   #radians
+        beta = np.deg2rad(self.config.beta)                                     #radians
+
+        self.axis_spin = np.array([np.cos(alpha), 0.0, np.sin(alpha)])
+        self.axis_prec = np.array([1.0, 0.0, 0.0])
+        self.axis_rev = np.array([0.0, 0.0, 1.0])
+
+
+    def get_initial_vec(self, del_beta):
+        alpha = np.deg2rad(self.config.alpha)                                   #radians
+        beta = np.deg2rad(self.config.beta)                                     #radians
+        if self.config.do_pencil_beam:
+            del_x = np.deg2rad(self.config.offset_x/60.0/60.0)    #radians
+            del_y = np.deg2rad(self.config.offset_y/60.0/60.0)    #radians
         else:
-            hit_pix = hp.vec2pix(self.config.nside, v[...,0], v[...,1], v[...,2])
+            del_x = 0.0
+            del_y = 0.0
+        del_beta_rad = np.deg2rad(del_beta/60.0)                                #radians
+        total_opening = alpha + beta + del_beta_rad
 
-        if ret_v:
-            return hit_pix, v
-        else:
-            return hit_pix
+        u_view = np.array([np.cos(total_opening), 0.0, np.sin(total_opening)])
+        
+        x_roll_axis = np.array([0.0, 1.0, 0.0])
+        y_roll_axis = np.array([-np.sin(total_opening), 0.0, np.cos(total_opening)])
+
+        q_x_roll = quaternion.make_quaternion(del_x, x_roll_axis)
+        q_y_roll = quaternion.make_quaternion(del_y, y_roll_axis)
+        q_offset = quaternion.multiply(q_x_roll, q_y_roll)
+        u_view = quaternion.transform(q_offset, u_view)
+
+        return u_view
 
 
-    def get_nsamples(self):
-        self.pad = self.beam.del_beta.size/2
-        self.nsamples = int(self.config.t_segment*self.config.sampling_rate)*self.config.oversampling_rate + 2*self.pad
-
-    
-    def add_noise(self):
-        if self.config.noise_type == "white":
-            return np.random.normal(scale=self.config.noise_level, size=self.nsamples - 2*self.pad)
-
-
-    #@profile
-    def get_hitmap(self, hitpix):
-        hitmap = np.bincount(hitpix, minlength=self.npix)
-
-        return hitmap
-    
-
-    #@profile
     def generate_quaternion(self, segment):
 
-        t_start = config.t_segment*segment
+        t_start = self.config.t_segment*segment
 
-        t_steps = t_start + (1.0/config.sampling_rate/config.oversampling_rate)*np.arange(-self.pad, self.nsamples - self.pad)
+        t_steps = t_start + (1.0/self.config.sampling_rate/self.config.oversampling_rate)*np.arange(-self.pad, self.nsamples - self.pad)
 
-        w_spin = -2*np.pi/config.t_spin
-        w_prec = -2*np.pi/config.t_prec
-        w_rev = -2*np.pi/config.t_year
+        w_spin = -2*np.pi/self.config.t_spin
+        w_prec = -2*np.pi/self.config.t_prec
+        w_rev = -2*np.pi/self.config.t_year
 
         r_total = quaternion.multiply(quaternion.make_quaternion(w_rev*t_steps, self.axis_rev), quaternion.multiply(quaternion.make_quaternion(w_prec*t_steps, self.axis_prec), quaternion.make_quaternion(w_spin*t_steps, self.axis_spin)))
+        #r_total = quaternion.multiply(quaternion.make_quaternion(w_prec*t_steps, self.axis_prec), quaternion.make_quaternion(w_spin*t_steps, self.axis_spin))
 
         return r_total
 
-    #@profile
+
     def get_pol_ang(self, rot_qt, v_dir=None):
 
-        pol_init = np.deg2rad(self.bolo_params.pol_phase_ini)
+        pol_init = np.deg2rad(self.config.pol_phase_ini)
         x_axis = np.array([0.0, 1.0, 0.0])
 
-        pol_vec = quaternion.transform(rot_qt, np.tile(x_axis, n_steps).reshape(-1,3))
+        pol_vec = quaternion.transform(rot_qt, np.tile(x_axis, self.nsamples).reshape(-1,3))
 
         if v_dir is None:
             v_init = self.get_initial_vec(0.0)
@@ -177,61 +197,100 @@ class Bolo:
 
         return pol_ang 
 
-    def get_initial_vec(self, del_beta):
-        alpha = np.deg2rad(self.config.alpha)                                   #radians
-        beta = np.deg2rad(self.config.beta)                                     #radians
-        if self.config.do_pencil_beam:
-            del_x = np.deg2rad(self.bolo_params.pointing_offset_x/60.0/60.0)    #radians
-            del_y = np.deg2rad(self.bolo_params.pointing_offset_y/60.0/60.0)    #radians
+
+    def get_hitpix(self, v, ret_v=False):
+        if self.config.gal_coords:
+            rot = hp.Rotator(coord=['E', 'G'])
+            theta, phi = hp.vec2ang(v)
+            theta_gal, phi_gal = rot(theta, phi)
+            hit_pix = hp.ang2pix(self.config.nside_in, theta_gal, phi_gal)
+            if ret_v:
+                v = hp.ang2vec(theta_gal, phi_gal)
         else:
-            del_x = 0.0
-            del_y = 0.0
-        del_beta_rad = np.deg2rad(del_beta/60.0)                                #radians
+            hit_pix = hp.vec2pix(self.config.nside_in, v[...,0], v[...,1], v[...,2])
 
-        self.u_view = np.array([np.cos(alpha + beta + del_beta_rad), 0.0, np.sin(alpha + beta + del_beta_rad)])
+        if ret_v:
+            return hit_pix, v
+        else:
+            return hit_pix
+
+    
+    def add_noise(self):
+        if self.config.noise_type == "white":
+            return np.random.normal(scale=self.config.noise_level, size=self.nsamples - 2*self.pad)
 
 
-    def get_initial_axes(self):
-        alpha = np.deg2rad(self.config.alpha)                                   #radians
-        beta = np.deg2rad(self.config.beta)                                     #radians
+    def get_hitmap(self, hitpix):
+        hitmap = np.bincount(hitpix, minlength=self.npix)
 
-        self.axis_spin = np.array([np.cos(alpha), 0.0, np.sin(alpha)])
-        self.axis_prec = np.array([1.0, 0.0, 0.0])
-        self.axis_rev = np.array([0.0, 0.0, 1.0])
-
+        return hitmap
+    
 
     def get_sky_map(self):
         if self.config.sim_pol_type == "noise_only":
             self.sky_map = None
         elif self.config.sim_pol_type == "T_only":
-            self.sky_map = hp.read_map(self.config.map_file)
+            self.sky_map = hp.read_map(self.config.input_map)
         else:
-            self.sky_map = hp.read_map(self.config.map_file, field=(0,1,2))
+            self.sky_map = hp.read_map(self.config.input_map, field=(0,1,2))
 
+        if not self.config.sim_pol_type == "noise_only":
+            map_nside = hp.get_nside(self.sky_map)
+            if map_nside != self.config.nside_in:
+                prompter.prompt_warning("NSIDE of config does not match NSIDE of map")
+                sys.exit()
         self.npix = hp.nside2npix(self.config.nside_in)
 
 
     def make_write_dir(self, segment):
-        sim_dir = os.path.join(self.config.general_data_dir, self.config.sim_tag)
-        if not os.path.exists(sim_dir):
-            os.makedirs(sim_dir)
-        scan_dir = os.path.join(sim_dir, self.config.scan_tag)
-        if not os.path.exists(scan_dir):
-            os.makedirs(scan_dir)
+        if not os.path.exists(self.bolo_dir):
+            os.makedirs(self.bolo_dir)
 
-        bolo_dir = os.path.join(sim_dir, self.config.scan_tag, self.bolo_name)
-        if not os.path.exists(bolo_dir):
-            os.makedirs(bolo_dir)
-
-        segment_name = str(segment+1).zfill(4)
-        segment_dir = os.path.join(bolo_dir, segment_name)
+        segment_dir = self.get_segment_dir(segment) 
         if os.path.exists(segment_dir):
             shutil.rmtree(segment_dir)
 
-        os.path.makedirs(segment_dir)
+        os.makedirs(segment_dir)
 
-        return segment_dir
+    def set_bolo_dirs(self):
+        self.sim_dir = os.path.join(self.config.general_data_dir, self.config.sim_tag)
+        self.scan_dir = os.path.join(self.sim_dir, self.config.scan_tag)
+        self.bolo_dir = os.path.join(self.scan_dir, self.name)
 
+    def get_segment_dir(self, segment):
+        segment_name = str(segment+1).zfill(4)
+        return os.path.join(self.bolo_dir, segment_name)
 
-    def write_timestream_data(self, ts_data, data_name, write_dir):
+    def write_timestream_data(self, ts_data, data_name, segment):
+        write_dir = self.get_segment_dir(segment)
         np.save(os.path.join(write_dir, data_name), ts_data)
+
+    def load_ts_data(self, segment):
+        segment_dir = self.get_segment_dir(segment)
+        signal = np.load(os.path.join(segment_dir, "signal"))
+        v = np.load(os.path.join(segment_dir, "pointing_vec"))
+        pol_ang = np.load(os.path.join(segment_dir, "pol_ang"))
+
+        return signal, v, pol_ang
+
+    def display_params(self):
+        display_string = ""
+        display_string += "Alpha : %f degrees\n" % (self.config.alpha)
+        display_string += "Beta : %f degrees\n" % (self.config.beta)
+        t_flight = self.config.t_segment*len(self.config.segment_list)
+        display_string += "T flight : %f hours / %f days\n" % (t_flight/60.0/60.0, t_flight/60.0/60.0/24.0)
+        display_string += "T segment : %f hours / %f days\n" % (self.config.t_segment/60.0/60.0, self.config.t_segment/60.0/60.0/24)
+        display_string += "T precession : %f hours\n" % (self.config.t_prec/60.0/60.0)
+        display_string += "T spin : %f seconds\n" % (self.config.t_spin)
+        display_string += "Scan sampling rate : %f Hz\n" % (self.config.sampling_rate)
+        display_string += "Theta co : %f arcmin\n" % (self.config.theta_co)
+        display_string += "Theta cross : %f arcmin\n" % (self.config.theta_cross)
+        display_string += "Oversampling rate : %d\n" % (self.config.oversampling_rate)
+        display_string += "Scan resolution for beam integration : %f arcmin\n" % (self.config.scan_resolution)
+        display_string += "Pixel size for NSIDE = %d : %f arcmin\n" % (self.config.nside_in, hp.nside2resol(self.config.nside_in, arcmin=True))
+        n_steps = int(self.config.t_segment*self.config.sampling_rate)*self.config.oversampling_rate 
+        display_string += "#Samples per segment : %d\n" %(n_steps)
+
+        prompter.prompt(display_string, True)
+        #prompter.prompt(display_string, False if not self.config.action=="display_params" else True)
+

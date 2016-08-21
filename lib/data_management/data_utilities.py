@@ -1,12 +1,10 @@
-#!/usr/bin/env python 
-
 import numpy as np
 import os
 import shutil
 
 def get_local_bolo_segment_list(rank, num_processes, bolo_list, segment_list):
     num_bolos = len(bolo_list)
-    num_segments_per_bolo = segment_list.size
+    num_segments_per_bolo = len(segment_list)
     num_total_segments = num_bolos*num_segments_per_bolo
 
     if num_total_segments % num_processes != 0:

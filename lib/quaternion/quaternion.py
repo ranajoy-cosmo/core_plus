@@ -1,8 +1,6 @@
-#!/usr/bin/env python 
-
 import numpy as np
 from simulation.lib.geometry.conversions import deg2rad
-from .euler_to_quaternion import *
+#from .euler_to_quaternion import *
 
 def make_quaternion(thetas, vectors, degree=False):
 

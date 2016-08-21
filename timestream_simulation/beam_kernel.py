@@ -8,6 +8,7 @@ import sys
 import os
 import importlib
 from simulation.lib.plotting.my_imshow import new_imshow
+from simulation.lib.utilities.generic_class import Generic
 
 class Beam():
     def __init__(self, config, bolo_config):
@@ -32,11 +33,14 @@ class Beam():
         beam_kernel = np.load(self.config.beam_file)
         #orig_dim = 181                              #pixels
         #orig_res = 0.29796916162354475              #arc-mins 
-        self.config.fwhm_major = 5.79
-        self.config.fwhm_minor = 5.79
-        mark_resolution = 0.2979691616235447
-        num_pix = self.config.beam_cutoff * self.config.fwhm_major / mark_resolution
+        self.config.fwhm_major = 5.79                   #arc-mins
+        self.config.fwhm_minor = 5.79                   #arc-mins
+        mark_resolution = 0.2979691616235447            #arc-mins
+        beam_extension_required = self.config.fwhm_major * self.config.beam_cutoff          #arc-min
+        num_pix = floor(beam_extension_required / mark_resolution)
         n = int(num_pix/2)
+        self.config.beam_cutoff = (2*n + 1) * mark_resolution / self.config.fwhm_major        #actual achieved
+        #Work needed from here
         beam_kernel = beam_kernel[..., 91-n:91+n+1, 91-n:91+n+1]
         factor = self.config.beam_resolution / mark_resolution
         print factor
@@ -72,7 +76,7 @@ class Beam():
         self.beam_kernel[1] = -1.0*beam_kernel
 
 
-    def get_beam_row(del_beta):
+    def get_beam_row(self, del_beta):
         row_num = np.where(self.del_beta==del_beta)[0][0]
 
         return self.beam_kernel[...,row_num]
@@ -134,7 +138,7 @@ class Beam():
 
     def write_beam(self, out_dir=None):
         if out_dir == None:
-            out_dir = self.config.out_dir
+            out_dir = os.path.join(os.getcwd(), "beam_maps") 
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
         np.save(os.path.join(out_dir, self.config.beam_file_name), self.beam_kernel)

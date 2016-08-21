@@ -1,13 +1,5 @@
-import healpy as hp
-import os
-import numpy as np
-from simulation.lib.utilities.time_util import get_time_stamp
-from simulation.lib.utilities.generic_class import Generic
-from simulation.lib.utilities.time_util import get_time_stamp
+from simulation.timestream_simulation.config_files.default_config import config
 from simulation.params.custom_params import global_paths, global_scanning, global_system
-from simulation.beam.default_params import beam_params
-
-config = Generic()
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Sim Action 
@@ -27,8 +19,6 @@ config.do_pencil_beam = True
 config.gal_coords = False
 
 config.bolo_config_file = "4_bolos_optimal"
-
-config.pipe_with_map_maker = False
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Scan 
@@ -72,7 +62,7 @@ config.segment_list = range(8)
 #Available options for timestream_data_products = ["timestream_data", "scanned_map"]
 #"timestream_data" -> will write the simulated pointing, polarisation angle and the simulated signal in the scan data directory
 #"scanned_map" -> will write the input hitmap and scanned map in the scan data directory
-config.timestream_data_products = ["timestream_data", "scanned_map"]
+config.timestream_data_products = ["timestream_data", "hitmap"]
 
 config.base_dir = global_paths.base_dir 
 config.general_data_dir = global_paths.output_dir

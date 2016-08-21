@@ -5,7 +5,7 @@ from simulation.timestream_simulation.custom_params import scan_params
 bolo_config = generic_class.Generic()
 bolo_config.bolos = {}
 
-bolo_config.common_input_map = None
+bolo_config.common_input_map = "/global/homes/b/banerji/simulation/maps/r_001/sky_map_1024_0.fits"
 bolo_config.common_input_beam = "/global/homes/b/banerji/grasp_beams/square/beam_217-5a_uv_rescaled_fwhm_5.79_arcmin.npy"
 bolo_config.offset_sigma = 0.0
 bolo_config.common_beam_angle = 45.0
@@ -35,9 +35,9 @@ bolo_config.bolos[bolo_name].beam_file = bolo_config.common_input_beam
 #bolo_config.bolos[bolo_name].offset_x = 0.0 
 #bolo_config.bolos[bolo_name].offset_y = 0.0
 
-#bolo_config.bolos[bolo_name].input_map = bolo_config.common_input_map
+#bolo_config.bolos[bolo_name].input_map = 
 
-#bolo_config.bolos[bolo_name].beam_angle = bolo_config.common_beam_angle      #degrees
+#bolo_config.bolos[bolo_name].beam_angle =                                   #degrees
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Bolo 0001b

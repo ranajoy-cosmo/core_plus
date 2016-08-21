@@ -12,5 +12,6 @@ custom*
 *.out
 maps/r_001
 maps/psm_output_set_1
+maps/psm_100
 *test*
 batch.slurm
