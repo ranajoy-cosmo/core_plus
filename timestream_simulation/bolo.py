@@ -211,7 +211,6 @@ class Bolo:
         proj_y = np.sum(pol_vec*y_local, axis=-1)
 
         pol_ang = np.pi - (np.arctan2(proj_y, proj_x) + pol_ini) % np.pi 
-        #pol_ang *= 2.0
 
         return pol_ang 
 
