@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import shutil
+import simulation.lib.utilities.prompter as prompter
 
 def get_local_bolo_segment_list(rank, num_processes, bolo_list, segment_list):
     num_bolos = len(bolo_list)
@@ -28,30 +29,15 @@ def get_local_bolo_segment_list(rank, num_processes, bolo_list, segment_list):
 
     return bolo_segment_dict
 
-def create_output_directories(output_dir, bolo_list, segment_list):
-    if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
 
-    for bolo in bolo_list:
-        if not os.path.isdir(os.path.join(output_dir, bolo)):
-            os.makedirs(os.path.join(output_dir, bolo))
+def get_bolo_pair_segment_list(rank, num_processes, segment_list):
+    num_segments = len(segment_list)
 
-        for segment in segment_list:
-            segment_name = str(segment+1).zfill(4)
-            if not os.path.isdir(os.path.join(output_dir, bolo, segment_name)):
-                os.makedirs(os.path.join(output_dir, bolo, segment_name))
+    if num_segments % num_processes != 0:
+        num_segments_per_process = num_segments/num_processes + 1
+    else:
+        num_segments_per_process = num_segments/num_processes
 
-def copy_source_to_output(output_dir, bolo_list):
-    param_dir = os.path.join(output_dir, "params")
-    if not os.path.isdir(param_dir):
-        os.makedirs(param_dir)
+    pair_segment_list = segment_list[rank*num_segments_per_process : (rank+1)*num_segments_per_process]
 
-    shutil.copy("default_params.py", param_dir)
-    shutil.copy("custom_params.py", param_dir)
-    shutil.copy("sim_timestream_pol.py", output_dir)
-
-    bolo_param_dir = os.path.join(param_dir, "bolo_params")
-    if not os.path.isdir(bolo_param_dir):
-        os.makedirs(bolo_param_dir)
-    for bolo in bolo_list:
-        shutil.copy("bolo_params/"+bolo+".py", bolo_param_dir)
+    return pair_segment_list

@@ -51,9 +51,6 @@ config.nside_in = 1024
 
 #Options for noise_type = ["white", "1_over_f"]
 config.noise_type = "white"
-config.noise_sigma = 1200                           #\mu K 
-config.noise_f_knee = 0
-config.noise_alpha = 0
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Data selection
@@ -68,10 +65,10 @@ config.segment_list = range(8)
 # Read & Write
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-#Available options for timestream_data_products = ["timestream_data", "scanned_map"]
+#Available options for timestream_data_products = ["timestream_data", "scanned_map", "grad_T_scan", "noise"]
 #"timestream_data" -> will write the simulated pointing, polarisation angle and the simulated signal in the scan data directory
 #"scanned_map" -> will write the input hitmap and scanned map in the scan data directory
-config.timestream_data_products = ["timestream_data", "scanned_map"]
+config.timestream_data_products = ["timestream_data", "hitmap"]
 
 config.base_dir = global_paths.base_dir 
 config.general_data_dir = global_paths.output_dir
@@ -85,4 +82,3 @@ config.beam_file_name = "test_beam"
 config.simulate_beam = True
 config.beam_cutoff = 4                                                             #fwhm
 config.check_normalisation = True
-config.display_beam_settings = True

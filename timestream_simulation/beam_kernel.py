@@ -30,27 +30,49 @@ class Beam():
 
 
     def read_mark_beam_map(self):
-        beam_kernel = np.load(self.config.beam_file)
-        #orig_dim = 181                              #pixels
-        #orig_res = 0.29796916162354475              #arc-mins 
-        self.config.fwhm_major = 5.79                   #arc-mins
-        self.config.fwhm_minor = 5.79                   #arc-mins
+        beam_kernel = np.load(self.config.input_beam_file)
+        mark_orig_dim = 181                              #pixels
+        mark_fwhm_major = 5.79                   #arc-mins
+        mark_fwhm_minor = 5.79                   #arc-mins
         mark_resolution = 0.2979691616235447            #arc-mins
-        beam_extension_required = self.config.fwhm_major * self.config.beam_cutoff          #arc-min
-        num_pix = floor(beam_extension_required / mark_resolution)
-        n = int(num_pix/2)
-        self.config.beam_cutoff = (2*n + 1) * mark_resolution / self.config.fwhm_major        #actual achieved
-        #Work needed from here
-        beam_kernel = beam_kernel[..., 91-n:91+n+1, 91-n:91+n+1]
-        factor = self.config.beam_resolution / mark_resolution
-        print factor
-        print 2*n + 1
-        new_num_pix = int((2*n+1)/factor)
-        print new_num_pix
-        self.beam_kernel = np.empty((4, new_num_pix, new_num_pix))
+
+        new_dim = int(mark_orig_dim * mark_resolution / self.config.scan_resolution)
+        if new_dim%2 == 0:
+            new_dim += 1
+        #print "old dim :", 181
+        #print "new dim :", new_dim
+        #print "old resolution :", mark_resolution
+        #print "new_resolution :", self.config.scan_resolution
+        old_extent = mark_orig_dim * mark_resolution
+        new_extent = new_dim * self.config.scan_resolution
+        #print "old extent :", mark_resolution * 181
+        #print "new_extent :", new_extent
+        self.config.fwhm_major = mark_fwhm_major * new_extent / old_extent
+        self.config.fwhm_minor = mark_fwhm_minor * new_extent / old_extent
+        #print "old fwhm :", mark_fwhm_major
+        #print "new fwhm :", self.config.fwhm_major
+
+        self.beam_kernel = np.empty((4, new_dim, new_dim))
         for i in range(4):
-            self.beam_kernel[i] = imresize(beam_kernel[i], (new_num_pix, new_num_pix))
-            self.beam_kernel[i] /= (np.sum(self.beam_kernel[i])*self.config.beam_resolution**2)
+            self.beam_kernel[i] = imresize(beam_kernel[i], (new_dim, new_dim))
+
+        #print "beam_cutoff required :", self.config.beam_cutoff
+        beam_extension_required = self.config.fwhm_major * self.config.beam_cutoff          #arc-min
+        #print "extention required :", beam_extension_required
+        num_pix = int(new_dim * beam_extension_required / new_extent)
+        if num_pix%2 == 0:
+            num_pix -= 1
+        #print "num pix :", num_pix
+        #print "extension achieved :", num_pix * self.config.scan_resolution
+
+        self.config.beam_cutoff = num_pix * self.config.scan_resolution / self.config.fwhm_major
+        #print "cutoff achieved :", self.config.beam_cutoff
+
+        start = new_dim/2 - num_pix/2
+        stop = new_dim/2 + num_pix/2 + 1
+        self.beam_kernel = self.beam_kernel[..., start:stop, start:stop]
+        #print "kernel shape :", self.beam_kernel.shape
+        self.del_beta = self.config.scan_resolution * np.arange(-num_pix/2 + 1, num_pix/2 + 1)
 
 
     def gaussian_2d(self, mesh):
@@ -83,8 +105,8 @@ class Beam():
 
 
     def check_normalisation(self):
-        dx = self.config.beam_resolution
-        dy = self.config.beam_resolution
+        dx = self.config.scan_resolution
+        dy = self.config.scan_resolution
         map_index = ["T", "Q", "U", "V"]
         for i in range(4): 
             integral = np.sum(self.beam_kernel[i])*dx*dy
@@ -97,7 +119,7 @@ class Beam():
         fwhm_major = self.config.fwhm_major
         fwhm_minor = self.config.fwhm_minor
         size = self.config.beam_cutoff*fwhm_major + offset_max             #arc-mins
-        dd = self.config.beam_resolution                                            #arc-mins
+        dd = self.config.scan_resolution                                            #arc-mins
         n = int(size/dd/2)
         x = np.arange(-n, n+1)*dd
         y = -1*np.arange(-n, n+1)*dd
@@ -113,18 +135,18 @@ class Beam():
         print "Major axis(FWHM) :", fwhm_major, "arcmins" 
         print "Minor axis(FWHM) :", fwhm_minor, "arcmins"
         print "Ellipticity :", ellipticity, "%"
-        print "Center :", self.config.offset_x, config.offset_y
+        print "Center :", self.config.offset_x, self.config.offset_y
         print "Tilt :", self.config.beam_angle, "degrees"
-        print "Pixel size :", self.config.beam_resolution, "arcmins" 
+        print "Beam pixel size :", self.config.scan_resolution, "arcmins" 
         print "Kernel width in FWHM of beam:", self.config.beam_cutoff
-        print "# of pixels per FWHM (minor-axis) of beam :", fwhm_minor/self.config.beam_resolution
-        print "Expected # of pixels in kernel cross-section :", int(self.config.beam_cutoff*fwhm_major/self.config.beam_resolution/2)*2 + 1 
+        print "# of pixels per FWHM (minor-axis) of beam :", fwhm_minor/self.config.scan_resolution
+        sys.stdout.flush()
 
 
     def plot_beam(self):
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
         n = self.beam_kernel[0].shape[0]/2
-        extent = np.arange(-n, n+1)*self.config.beam_resolution
+        extent = np.arange(-n, n+1)*self.config.scan_resolution
         im = new_imshow(ax1, self.beam_kernel[0], x=extent, y=extent, interpolation="nearest")
         fig.colorbar(im, ax=ax1)
         im = new_imshow(ax2, self.beam_kernel[1], x=extent, y=extent, interpolation="nearest")
@@ -153,11 +175,11 @@ if __name__=="__main__":
 
     bolo_beam = Beam(config, bolo_config.bolos[bolo_name])
 
-    if config.check_normalisation:
-        bolo_beam.check_normalisation()
-    if config.display_beam_settings:
-        bolo_beam.display_beam_settings()
+    #if config.check_normalisation:
+    #    bolo_beam.check_normalisation()
+    #if config.display_beam_settings:
+    #    bolo_beam.display_beam_settings()
     if config.plot_beam:
         bolo_beam.plot_beam()
-    if config.write_beam:
-        bolo_beam.write_beam()
+    #if config.write_beam:
+    #    bolo_beam.write_beam()

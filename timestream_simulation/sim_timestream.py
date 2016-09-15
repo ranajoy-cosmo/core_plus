@@ -2,93 +2,103 @@
 
 import numpy as np
 import healpy as hp
-import matplotlib.pyplot as plt
-from simulation.timestream_simulation.pointing import Pointing
 import sys
 import os
+import shutil
 import importlib
 import time
-import simulation.lib.data_management.data_utilities as data_utils
-from simulation.lib.utilities.time_util import get_time_stamp
-
-class Bolo:
-
-    def __init__(self, bolo_name):
-        self.name = bolo_name
-        self.bolo_params = importlib.import_module("simulation.timestream_simulation.bolo_params." + bolo_name).bolo_params
-        self.beam_kernel, self.del_beta = self.get_optical_beam() 
-        self.sky_map = self.load_sky_map()
-        self.pointing = Pointing(self.bolo_params, scan_params)
-
-    def load_sky_map(self):
-        sky_map = np.array(hp.read_map(scan_params.input_maps[self.name], field=(0,1,2)))
-        nside = hp.get_nside(sky_map)
-        if scan_params.nside != nside:
-            print "NSIDE of map",nside, "does not match with given NSIDE of", scan_params.nside, "\nRunning with NSIDE", nside
-            scan_params.nside = nside
-        if scan_params.do_only_T:
-            sky_map[1:,...] = 0.0
-        return sky_map
-
-    def get_optical_beam(self):
-        return None, None
-
-    def set_params(self):
-        pass
-
-    def generate_timestream(self, segment):
-        print "Generating timestream data for Bolo :", self.name, "and Segment :", segment
+from memory_profiler import profile
+from simulation.lib.data_management.data_utilities import get_local_bolo_segment_list
+import simulation.lib.utilities.prompter as prompter
+from simulation.timestream_simulation.bolo import Bolo
 
 
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+#* The master section which distributes the data and collects it
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-def calculate_scan_params():
-    pass
-
-def display_scan_params():
-    pass
 
 def run_mpi():
-    comm = MPI.COMM_WORLD
-    size = comm.Get_size()
-    rank = comm.Get_rank()
-
-    if scan_params.tag == None:
-        tag = [get_time_stamp()]
-        comm.bcast(tag, root=0)
-        tag = tag[0]
-    else:
-        tag = scan_params.tag
-
-    out_dir = os.path.join(scan_params.output_dir, "scanning", tag)
-
-    calculate_scan_params()
-
     if rank == 0:
-        display_scan_params()
-        data_utils.create_output_directories(out_dir, scan_params.bolo_list, scan_params.segment_list)
-        data_utils.copy_source_to_output(out_dir, scan_params.bolo_list)
+        make_data_dirs()
 
     comm.Barrier()
 
-    bolo_segment_dict = data_utils.get_local_bolo_segment_list(rank, size, scan_params.bolo_list, scan_params.segment_list)
-
-    print "Rank :", rank, "doing \n", bolo_segment_dict
+    bolo_segment_dict = get_local_bolo_segment_list(rank, size, config.bolo_list, config.segment_list)
 
     for bolo_name in bolo_segment_dict.keys():
-        bolo = Bolo(bolo_name)
+        bolo = Bolo(bolo_name, config)
         for segment in bolo_segment_dict[bolo_name]:
-            bolo.generate_timestream(segment)
+            prompter.prompt("Doing Bolo : %s Segment : %d Rank : %d" % (bolo_name, segment+1, rank))
+            if "hitmap" in config.timestream_data_products:
+                try:
+                    hitmap_local += bolo.simulate_timestream(segment)
+                except NameError:
+                    hitmap_local = bolo.simulate_timestream(segment)
+            else:
+                bolo.simulate_timestream(segment)
+
+    
+    if "hitmap" in config.timestream_data_products:
+        hitmap = np.zeros(hitmap_local.size, dtype=np.float32)
+
+        comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0)
+        
+        scan_dir = os.path.join(config.general_data_dir, config.sim_tag, config.scan_tag)
+        if rank == 0:
+            hp.write_map(os.path.join(scan_dir, "hitmap_in.fits"), hitmap)
 
 
+
+def make_data_dirs():
+    sim_dir = os.path.join(config.general_data_dir, config.sim_tag)
+    if not os.path.exists(sim_dir):
+        os.makedirs(sim_dir)
+    scan_dir = os.path.join(sim_dir, config.scan_tag)
+    if not os.path.exists(scan_dir):
+        os.makedirs(scan_dir)
+    config_dir = os.path.join(scan_dir, "config_files")
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+    default_config_file = "/global/homes/b/banerji/simulation/timestream_simulation/config_files/default_config.py"
+    shutil.copy(default_config_file, config_dir)
+    current_config_file = os.path.join("/global/homes/b/banerji/simulation/timestream_simulation/config_files", config_file + '.py') 
+    shutil.copy(current_config_file, config_dir)
+
+
+def run_check(config, verbose=True):
+    if config.noise_only:
+        if not config.do_pencil_beam:
+            if verbose:
+                prompter.prompt_warning("No beam convolution required for noise only simulation.")
+            config.do_pencil_beam = True
+
+    if config.do_pencil_beam:
+        if config.oversampling_rate != 1:
+            if verbose:
+                prompter.prompt_warning("No oversampling required for pencil beam")
+            config.oversampling_rate = 1
+
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+#* Main function definition. This is where the code begins when executed
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 if __name__=="__main__":
-    time_start = time.time()
-    from custom_params import scan_params, beam_params
-    action = sys.argv[1]
+    config_file = sys.argv[1]
+    run_type = sys.argv[2]
 
-    if action=='run_mpi':
+    config = importlib.import_module("simulation.timestream_simulation.config_files." + config_file).config
+
+    if run_type=='run_check':
+        run_check()
+
+    if run_type=='run_mpi':
         from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        size = comm.Get_size()
+        rank = comm.Get_rank()
         run_mpi()
 
-    time_stop = time.time()
-    print "Total time taken :", (time_stop - time_start), "s"
+    if run_type=='run_serial':
+        run_serial()

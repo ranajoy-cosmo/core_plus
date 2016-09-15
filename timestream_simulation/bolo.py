@@ -3,7 +3,10 @@ import healpy as hp
 import os
 import shutil
 import importlib
+import sys
+import time
 from simulation.timestream_simulation.beam_kernel import Beam
+from simulation.timestream_simulation.noise import Noise 
 from simulation.lib.utilities.generic_class import Generic
 import simulation.lib.utilities.prompter as prompter
 import simulation.lib.quaternion.quaternion as quaternion
@@ -18,7 +21,8 @@ class Bolo:
         self.config.__dict__.update(config.__dict__)
         self.config.__dict__.update(bolo_config.__dict__)
         self.calculate_params()
-        self.beam = Beam(config, bolo_config)
+        self.beam = Beam(self.config, bolo_config)
+        self.noise_class = Noise(self.config)
         self.get_sky_map()
         self.get_initial_axes()
         self.get_nsamples()
@@ -30,59 +34,98 @@ class Bolo:
 
     #@profile
     def simulate_timestream(self, segment):
+        if segment == 0:
+            self.display_params()
+            self.beam.display_beam_settings()
+            if self.config.write_beam:
+                self.beam.write_beam(self.bolo_dir)
         rot_qt = self.generate_quaternion(segment)
 
+        prompter.prompt("0.0")
         #Simulating the scan along the centre of the FOV
         v_init = self.get_initial_vec(0.0)
-        #v = quaternion.transform(rot_qt, v_init)
-        v = self.get_v_obv(v_init, rot_qt)
-        hit_pix_central, v = self.get_hitpix(v, ret_v=True)
+        v_central = self.get_v_obv(v_init, rot_qt)
 
-        pol_ang = self.get_pol_ang(rot_qt, v) 
+        pol_ang = self.get_pol_ang(rot_qt, v_central) 
         if self.config.sim_pol_type == "TQU":
             cos2 = np.cos(2*pol_ang)
             sin2 = np.sin(2*pol_ang)
-
+        else:
+            cos2=None
+            sin2=None
+ 
         if "timestream_data" in self.config.timestream_data_products:
             self.make_write_dir(segment)
-            if self.config.do_pencil_beam:
-                self.write_timestream_data(v, "pointing_vec", segment)
-                self.write_timestream_data(pol_ang, "pol_ang", segment)
-            else:
-                self.write_timestream_data(v[self.pad:-self.pad][::self.config.oversampling_rate], "pointing_vec", segment)
-                self.write_timestream_data(pol_ang[self.pad:-self.pad][::self.config.oversampling_rate], "pol_ang", segment)
+            self.write_timestream_data(v_central, "pointing_vec", segment)
+            self.write_timestream_data(pol_ang, "pol_ang", segment)
+        
+        if not self.config.pipe_with_map_maker:
+            del pol_ang
 
         beam_kernel_row = self.beam.get_beam_row(0.0)                       #The input argument is the beam offset from the centre
+        hit_pix = hp.vec2pix(self.config.nside_in, v_central[...,0], v_central[...,1], v_central[...,2])
+        signal = self.get_signal(hit_pix, beam_kernel_row, cos2, sin2)
 
-        signal = self.get_signal(hit_pix_central, beam_kernel_row, cos2, sin2)
+        if "grad_T_scan" in self.config.timestream_data_products:
+            T_signal = self.sky_map[0][hit_pix]
+            grad_T_par = (np.roll(T_signal, 1) - np.roll(T_signal, -1)) / (2*self.config.scan_resolution)
+            self.write_timestream_data(grad_T_par, "grad_T_par", segment)
+            del T_signal, grad_T_par
+            if self.config.do_pencil_beam:
+                del_beta_up, del_beta_down = -self.config.scan_resolution, self.config.scan_resolution
+                v_init = self.get_initial_vec(del_beta_up)
+                v = quaternion.transform(rot_qt, v_init)
+                hit_pix = hp.vec2pix(self.config.nside_in, v[...,0], v[...,1], v[...,2])
+                T_signal_up = self.sky_map[0][hit_pix]
+                v_init = self.get_initial_vec(del_beta_down)
+                v = quaternion.transform(rot_qt, v_init)
+                hit_pix = hp.vec2pix(self.config.nside_in, v[...,0], v[...,1], v[...,2])
+                T_signal_down = self.sky_map[0][hit_pix]
+                grad_T_perp = (T_signal_up - T_signal_down) / (2*self.config.scan_resolution)
+                self.write_timestream_data(grad_T_perp, "grad_T_perp", segment)
+                del grad_T_perp, v, hit_pix, T_signal_up, T_signal_down
 
         for del_beta in self.beam.del_beta:
             if del_beta == 0.0:
                 continue
+            prompter.prompt(str(del_beta))
             beam_kernel_row = self.beam.get_beam_row(del_beta)
             v_init = self.get_initial_vec(del_beta)
             v = quaternion.transform(rot_qt, v_init)
-            hit_pix = self.get_hitpix(v)
+            hit_pix = hp.vec2pix(self.config.nside_in, v[...,0], v[...,1], v[...,2])
             signal += self.get_signal(hit_pix, beam_kernel_row, cos2, sin2)
+            if "grad_T_scan" in self.config.timestream_data_products:
+                if del_beta == -self.config.scan_resolution:
+                    T_signal_up = self.sky_map[0][hit_pix]
+                if del_beta == self.config.scan_resolution:
+                    T_signal_up = self.sky_map[0][hit_pix]
+                    grad_T = (T_signal_up - T_signal_down) / (2*self.config.scan_resolution)
+                    self.write_timestream_data(grad_T_perp, "grad_T_perp", segment)
+                    del T_signal_up, T_signal_down, grad_T
 
-        beam_sum = np.sum(self.beam.beam_kernel)
+        beam_sum = np.sum(self.beam.beam_kernel[0])
         signal /= beam_sum
 
-
         if self.config.add_noise:
-            signal += self.add_noise(nsamples) 
+            noise = self.noise_class.simulate_timestream_noise_from_parameters()
+            if "noise" in self.config.timestream_data_products:
+                self.write_timestream_data(noise, "noise", segment)
+            signal[::self.config.oversampling_rate] += noise 
 
         if "timestream_data" in self.config.timestream_data_products:
-            self.write_timestream_data(signal[::self.config.oversampling_rate], "signal", segment)
-
-        if segment == 0  and self.config.write_beam:
-            self.beam.write_beam(self.bolo_dir)
+            self.write_timestream_data(signal, "signal", segment)
 
         if self.config.pipe_with_map_maker:
-            return signal, v, pol_ang
+            if self.config.do_pencil_beam:
+                return signal, v_central, pol_ang
+            else:
+                return signal[::self.config.oversampling_rate], v_central[self.pad:-self.pad][::self.config.oversampling_rate], pol_ang[self.pad:-self.pad][::self.config.oversampling_rate]
+
+        del signal
 
         if "hitmap" in self.config.timestream_data_products:
-            hitmap = self.get_hitmap(hit_pix_central)
+            hit_pix = hp.vec2pix(self.config.nside_in, v_central[...,0], v_central[...,1], v_central[...,2])
+            hitmap = self.get_hitmap(hit_pix)
             return hitmap 
 
     def read_timestream(self, segment):
@@ -101,6 +144,28 @@ class Bolo:
         elif self.config.sim_pol_type == "T_only":
             signal = 0.5*self.sky_map[hit_pix]
             if not self.config.do_pencil_beam:
+                signal = np.convolve(signal, beam_kernel_row, mode='valid')
+
+        else:
+            if self.config.do_pencil_beam:
+                signal = 0.5*(self.sky_map[0][hit_pix] + self.sky_map[1][hit_pix]*cos2 + self.sky_map[2][hit_pix]*sin2) 
+            else:
+                signal = np.convolve(0.5*self.sky_map[0][hit_pix], beam_kernel_row[0], mode='valid')
+                signal += np.convolve(-0.5*self.sky_map[1][hit_pix]*cos2, beam_kernel_row[1], mode='valid')
+                signal += np.convolve(-0.5*self.sky_map[1][hit_pix]*sin2, beam_kernel_row[2], mode='valid')
+                signal += np.convolve(-0.5*self.sky_map[2][hit_pix]*sin2, beam_kernel_row[1], mode='valid')
+                signal += np.convolve(0.5*self.sky_map[2][hit_pix]*cos2, beam_kernel_row[2], mode='valid')
+
+        return signal
+
+    """    
+    def get_signal(self, hit_pix, beam_kernel_row, cos2, sin2):
+        if self.config.sim_pol_type == "noise_only":
+            signal = np.zeros(self.nsamples - 2*self.pad) 
+
+        elif self.config.sim_pol_type == "T_only":
+            signal = 0.5*self.sky_map[hit_pix]
+            if not self.config.do_pencil_beam:
                 signal = np.convolve(signal, beam_kernel_row, mode = 'valid')
 
         else:
@@ -109,7 +174,7 @@ class Bolo:
                 signal = np.convolve(signal, beam_kernel_row, mode = 'valid')
 
         return signal
-
+    """
 
     def get_nsamples(self):
         self.pad = self.beam.del_beta.size/2
@@ -214,27 +279,10 @@ class Bolo:
 
         return pol_ang 
 
-
-    def get_hitpix(self, v, ret_v=False):
-        if self.config.gal_coords:
-            rot = hp.Rotator(coord=['E', 'G'])
-            theta, phi = hp.vec2ang(v)
-            theta_gal, phi_gal = rot(theta, phi)
-            hit_pix = hp.ang2pix(self.config.nside_in, theta_gal, phi_gal)
-            if ret_v:
-                v = hp.ang2vec(theta_gal, phi_gal)
-        else:
-            hit_pix = hp.vec2pix(self.config.nside_in, v[...,0], v[...,1], v[...,2])
-
-        if ret_v:
-            return hit_pix, v
-        else:
-            return hit_pix
-
     
     def add_noise(self):
         if self.config.noise_type == "white":
-            return np.random.normal(scale=self.config.noise_level, size=self.nsamples - 2*self.pad)
+            return np.random.normal(scale=self.config.noise_sigma, size=self.nsamples - 2*self.pad)
 
 
     def get_hitmap(self, hitpix):
@@ -280,7 +328,16 @@ class Bolo:
 
     def write_timestream_data(self, ts_data, data_name, segment):
         write_dir = self.get_segment_dir(segment)
-        np.save(os.path.join(write_dir, data_name), ts_data)
+        if data_name == "signal":
+            np.save(os.path.join(write_dir, data_name), ts_data[::self.config.oversampling_rate])
+        if data_name == "noise":
+            np.save(os.path.join(write_dir, data_name), ts_data)
+        else:
+            if self.config.do_pencil_beam:
+                np.save(os.path.join(write_dir, data_name), ts_data)
+            else:
+                np.save(os.path.join(write_dir, data_name), ts_data[self.pad:-self.pad][::self.config.oversampling_rate])
+
 
     def load_ts_data(self, segment):
         segment_dir = self.get_segment_dir(segment)
