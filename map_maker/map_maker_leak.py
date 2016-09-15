@@ -11,9 +11,10 @@ from memory_profiler import profile
 from mpi4py import MPI
 from pysimulators.sparse import FSRBlockMatrix
 from pysimulators import ProjectionOperator
-from simulation.lib.data_management.data_utilities import get_local_bolo_segment_list
+from simulation.lib.data_management.data_utilities import get_bolo_pair_segment_list 
 from simulation.timestream_simulation.new_sim_timestream import Bolo
 import simulation.lib.utilities.prompter as prompter
+from simulation.lib.utilities.time_util import get_time_stamp 
 
 def get_inv_cov_matrix(hitpix, pol):
     nsamples = hitpix.size
@@ -25,30 +26,36 @@ def get_inv_cov_matrix(hitpix, pol):
     cos_4 = np.bincount(hitpix, weights=np.cos(4*pol), minlength=npix)
     sin_4 = np.bincount(hitpix, weights=np.sin(4*pol), minlength=npix)
 
-    inv_cov_matrix = np.empty((npix, 3, 3))
-    inv_cov_matrix[..., 0, 0] = n
-    inv_cov_matrix[..., 0, 1] = cos_2 
-    inv_cov_matrix[..., 0, 2] = sin_2 
+    inv_cov_matrix = np.empty((npix, 4, 4))
+    inv_cov_matrix[..., 0, 0] = np.bincount(hitpix, weights=grad_sky_T[0][hitpix]**2, minlength=npix)
+    inv_cov_matrix[..., 0, 1] = np.bincount(hitpix, weights=grad_sky_T[0][hitpix]*grad_sky_T[1][hitpix], minlength=npix)
+    inv_cov_matrix[..., 0, 2] = np.bincount(hitpix, weights=grad_sky_T[0][hitpix]*np.cos(2*pol), minlength=npix)
+    inv_cov_matrix[..., 0, 3] = np.bincount(hitpix, weights=grad_sky_T[0][hitpix]*np.sin(2*pol), minlength=npix)
     inv_cov_matrix[..., 1, 0] = inv_cov_matrix[..., 0, 1]
-    inv_cov_matrix[..., 1, 1] = 0.5*(n + cos_4) 
-    inv_cov_matrix[..., 1, 2] = 0.5*sin_4 
+    inv_cov_matrix[..., 1, 1] = np.bincount(hitpix, weights=grad_sky_T[1][hitpix]**2, minlength=npix)
+    inv_cov_matrix[..., 1, 2] = np.bincount(hitpix, weights=grad_sky_T[1][hitpix]*np.cos(2*pol), minlength=npix)
+    inv_cov_matrix[..., 1, 3] = np.bincount(hitpix, weights=grad_sky_T[1][hitpix]*np.sin(2*pol), minlength=npix)
     inv_cov_matrix[..., 2, 0] = inv_cov_matrix[..., 0, 2]
     inv_cov_matrix[..., 2, 1] = inv_cov_matrix[..., 1, 2]
-    inv_cov_matrix[..., 2, 2] = 0.5*(n - cos_4) 
-
-    inv_cov_matrix *= 0.25
+    inv_cov_matrix[..., 2, 2] = np.bincount(hitpix, weights=np.cos(2*pol)**2, minlength=npix)
+    inv_cov_matrix[..., 2, 3] = np.bincount(hitpix, weights=np.cos(2*pol)*np.sin(2*pol), minlength=npix)
+    inv_cov_matrix[..., 3, 0] = inv_cov_matrix[..., 0, 3]
+    inv_cov_matrix[..., 3, 1] = inv_cov_matrix[..., 1, 3]
+    inv_cov_matrix[..., 3, 2] = inv_cov_matrix[..., 2, 3]
+    inv_cov_matrix[..., 3, 3] = np.bincount(hitpix, weights=np.sin(2*pol)**2, minlength=npix)
 
     return inv_cov_matrix
 
-def get_b_matrix(hitpix, pol, ts):
+def get_b_matrix(grad_sky_T, hitpix, pol, ts):
     nsamples = hitpix.size
     npix = hp.nside2npix(config.nside_out)
     
-    matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
+    matrix = FSRBlockMatrix((nsamples, npix*4), (1, 4), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
     matrix.data.index[:, 0] = hitpix
-    matrix.data.value[:, 0, 0, 0] = 0.5
-    matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol)
-    matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol)
+    matrix.data.value[:, 0, 0, 0] = grad_sky_T[0][hitpix]
+    matrix.data.value[:, 0, 0, 1] = grad_sky_T[1][hitpix]
+    matrix.data.value[:, 0, 0, 2] = np.cos(2*pol)
+    matrix.data.value[:, 0, 0, 3] = np.sin(2*pol)
 
     P = ProjectionOperator(matrix)
 
@@ -67,36 +74,50 @@ def write_covariance_maps(maps, map_type, recon_dir):
     os.makedirs(out_dir)
 
     if map_type == "partial_covariance_maps":
-        map_legends = {"EE" : (0,0), "EQ" : (0,1), "QQ" : (1,1)}
+        map_legends = {"QQ" : (0,0), "QU" : (0,1), "UU" : (1,1)}
     else:
-        map_legends = {"TT" : (0,0), "TE" : (0,1), "TQ" : (0,2), "EE" : (1,1), "EQ" : (1,2), "QQ" : (2,2)}
+        map_legends = {"TT" : (0,0), "TQ" : (0,1), "TU" : (0,2), "QQ" : (1,1), "QU" : (1,2), "UU" : (2,2)}
 
     for leg in map_legends.keys():
-        np.save(os.path.join(out_dir, "map_" + leg), maps[..., map_legends[leg][0], map_legends[leg][1]])
+        hp.write_map(os.path.join(out_dir, "map_" + leg), maps[..., map_legends[leg][0], map_legends[leg][1]])
+        #np.save(os.path.join(out_dir, "map_" + leg), maps[..., map_legends[leg][0], map_legends[leg][1]])
+
 
 def run_mpi():
+    start = time.time()
     npix = hp.nside2npix(config.nside_out)
 
-    inv_cov_matrix_local = np.zeros((npix, 3, 3))
-    b_matrix_local = np.zeros((npix, 3))
+    inv_cov_matrix_local = np.zeros((npix, 4, 4))
+    b_matrix_local = np.zeros((npix, 4))
 
-    bolo_segment_dict = get_local_bolo_segment_list(rank, size, config.bolo_list, config.segment_list)
+    pair_segment_list = get_bolo_pair_segment_list(rank, size, config.segment_list)
 
     if rank == 0:
         recon_dir = make_data_dirs() 
 
-    for bolo_name in bolo_segment_dict.keys():
-        bolo = Bolo(bolo_name, config)
-        for segment in bolo_segment_dict[bolo_name]:
-            prompter.prompt("Rank : %d doing Bolo : %s and segment : %d" % (rank, bolo_name, segment))
-            if config.simulate_ts:
-                signal, v, pol_ang = bolo.simulate_timestream(segment)
-            else:
-                signal, v, pol_ang = bolo.read_timestream(segment)
-            hitpix = hp.vec2pix(config.nside_out, v[...,0], v[...,1], v[...,2])
-            b_matrix_local += get_b_matrix(hitpix, pol_ang, signal)
-            inv_cov_matrix_local += get_inv_cov_matrix(hitpix, pol_ang)
+    bolo_name_1 = config.bolo_list[0]
+    bolo_name_2 = config.bolo_list[1]
 
+    for segment in pair_segment_list:
+        #Bolo 2
+        bolo = Bolo(bolo_name_2, config)
+        prompter.prompt("Rank : %d doing Bolo : %s and segment : %d" % (rank, bolo_name_2, segment))
+        if config.simulate_ts:
+            signal_2, v, pol_ang = bolo.simulate_timestream(segment)
+        else:
+            signal_2, v, pol_ang = bolo.read_timestream(segment)
+        #Bolo 1
+        bolo = Bolo(bolo_name_1, config)
+        prompter.prompt("Rank : %d doing Bolo : %s and segment : %d" % (rank, bolo_name_1, segment))
+        if config.simulate_ts:
+            signal_1, v, pol_ang = bolo.simulate_timestream(segment)
+        else:
+            signal_1, v, pol_ang = bolo.read_timestream(segment)
+        
+        signal_diff = signal_1 - signal_2
+        hitpix = hp.vec2pix(config.nside_out, v[...,0], v[...,1], v[...,2])
+        b_matrix_local += get_b_matrix(hitpix, pol_ang, signal_diff)
+        inv_cov_matrix_local += get_inv_cov_matrix(hitpix, pol_ang)
 
     inv_cov_matrix = np.zeros((npix, 3, 3))
     b_matrix = np.zeros((npix, 3))
@@ -125,6 +146,10 @@ def run_mpi():
         sky_rec[..., bad_pix] = np.nan
 
         write_maps_and_config(sky_rec, 4*inv_cov_matrix[..., 0, 0], bad_pix, recon_dir)
+        
+        stop = time.time()
+
+        prompter.prompt("Total time taken : %d" % (stop - start))
 
 
 def make_data_dirs():
@@ -132,16 +157,26 @@ def make_data_dirs():
     if not os.path.exists(sim_dir):
         os.makedirs(sim_dir)
 
+    time_stamp = get_time_stamp()
+
     recon_dir = os.path.join(config.general_data_dir, config.sim_tag, config.map_making_tag)
-    if os.path.exists(recon_dir):
-        shutil.rmtree(recon_dir)
-    os.makedirs(recon_dir)
     config_dir = os.path.join(recon_dir, "config_files")
-    os.makedirs(config_dir)
     default_config_file = "/global/homes/b/banerji/simulation/map_maker/config_files/default_config.py"
-    shutil.copy(default_config_file, config_dir)
     current_config_file = os.path.join("/global/homes/b/banerji/simulation/map_maker/config_files", config_file + ".py")
-    shutil.copy(current_config_file, config_dir)
+
+    if os.path.exists(recon_dir):
+        if config.map_making_action == "new":
+            shutil.rmtree(recon_dir)
+            os.makedirs(recon_dir)
+            os.makedirs(config_dir)
+        else:
+            pass
+    else:
+        os.makedirs(recon_dir)
+        os.makedirs(config_dir)
+
+    shutil.copy(default_config_file, config_dir)
+    shutil.copyfile(current_config_file, os.path.join(config_dir, config_file + time_stamp + ".py"))
     
     if config.timestream_data_products:
         scan_dir = os.path.join(sim_dir, config.scan_tag)
@@ -157,6 +192,7 @@ def make_data_dirs():
 
 
     return recon_dir
+
 
 def get_covariance_matrix(inv_cov_matrix):
     nv_cov_matrix_local = None 

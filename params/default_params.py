@@ -47,7 +47,7 @@ if global_system.host is "apc":
 
 if global_system.host in ["edison", "cori"]:
     global_paths.base_dir = os.path.join(home_dir, base_dir_name)
-    scratch_dir = os.environ["SCRATCH"]
+    scratch_dir = "/global/cscratch1/sd/banerji"
     global_paths.output_dir = os.path.join(scratch_dir, 'core_output')
     global_paths.maps_dir = os.path.join(scratch_dir, 'core_maps')
 

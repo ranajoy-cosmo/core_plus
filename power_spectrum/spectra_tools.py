@@ -157,3 +157,16 @@ def get_central_mask(nside, radius, deg=True):
     mask = pix_dist<radius
 
     return mask
+
+
+def get_temp_gradient_map(T_sky, fwhm_in=0.0, fwhm_out=0.0, nside=None, lmax=None):
+    if nside==None:
+        nside = hp.get_nside(T_sky)
+    if lmax==None:
+        lmax = 3*nside - 1
+
+    alm = estimate_alm(T_sky, lmax)
+    alm_dec = deconvolve_alm(alm, lmax, fwhm_in, fwhm_out)
+    grad_sky_T = hp.alm2map_der1(alm_dec, nside, lmax)
+
+    return grad_sky_T[1:]

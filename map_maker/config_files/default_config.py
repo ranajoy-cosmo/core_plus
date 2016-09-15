@@ -31,7 +31,7 @@ config.nside_out = 1024
 # Read & Write
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-#Available options for map_making_data_products = ["partial_covariance_matrix"]
+#Available options for map_making_data_products = ["partial_covariance_matrix", "b_matrix"]
 # reconstructed_maps, hitmap, inverse_covariance_maps, covariance_maps are done by default
 config.map_making_data_products = []
 
@@ -89,18 +89,15 @@ config.nside_in = 1024
 
 #Options for noise_type = ["white", "1_over_f"]
 config.noise_type = "white"
-config.noise_sigma = 1200                           #\mu K 
-config.noise_f_knee = 0
-config.noise_alpha = 0
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read & Write (Only if simulate_ts is True)
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-#Available options for timestream_data_products = ["timestream_data", "scanned_map"]
+#Available options for timestream_data_products = ["timestream_data", "scanned_map", "grad_T_scan", "noise"]
 #"timestream_data" -> will write the simulated pointing, polarisation angle and the simulated signal in the scan data directory
 #"scanned_map" -> will write the input hitmap and scanned map in the scan data directory
-config.timestream_data_products = ["timestream_data", "scanned_map"]
+config.timestream_data_products = ["timestream_data"]
 
 config.write_beam = True
 config.beam_file_name = "test_beam"

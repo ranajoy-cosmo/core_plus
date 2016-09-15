@@ -11,6 +11,8 @@ long_term_output
 custom*
 *.out
 maps/r_001
+maps/r_001_lensed
+maps/r_0
 maps/psm_output_set_1
 maps/psm_100
 *test*
