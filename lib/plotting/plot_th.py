@@ -2,10 +2,13 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 import sys
+from simulation.params.custom_params import global_paths
 
-def plot_theoretical(lmax, plot_log=True, plot_list=["TT", "EE", "BB"]):
-    spectra_folder = "/global/homes/b/banerji/simulation/spectra/"
+spectra_folder = os.path.join(global_paths.base_dir, "spectra")
+
+def plot_theoretical(lmax, plot_log=True, plot_list=["TT", "EE", "BB"], lensed=True):
 
     ell = np.arange(lmax+1)
 
@@ -14,7 +17,12 @@ def plot_theoretical(lmax, plot_log=True, plot_list=["TT", "EE", "BB"]):
     else:
         plotter = plt.plot
 
-    spectra = np.load(spectra_folder + "r_0001/unlensed_cls.npy")[..., :lmax+1]
+    #Plotting the TT and EE spectra
+    
+    if lensed:
+        spectra = np.load(os.path.join(spectra_folder, "r_0001/lensedtot_cls.npy"))[..., :lmax+1]
+    else:
+        spectra = np.load(os.path.join(spectra_folder, "r_0001/unlensed_cls.npy"))[..., :lmax+1]
 
     if "TT" in plot_list:
         plotter(ell, ell*(ell+1)*spectra[0]/2/np.pi, color='k')
@@ -24,22 +32,18 @@ def plot_theoretical(lmax, plot_log=True, plot_list=["TT", "EE", "BB"]):
         plotter(ell, ell*(ell+1)*spectra[1]/2/np.pi, color='k')
         plt.annotate("EE", xy=(1.25, 0.039), size=12)
 
+
     if "BB" in plot_list:
+        spectra = np.load(os.path.join(spectra_folder, "r_0001/unlensed_cls.npy"))[..., :lmax+1]
         plotter(ell, ell*(ell+1)*spectra[2]/2/np.pi, color='k')
 
-    spectra = np.load(spectra_folder + "r_001/unlensed_cls.npy")[..., :lmax+1]
-
-    if "BB" in plot_list:
+        spectra = np.load(os.path.join(spectra_folder, "r_0001/lensedtot_cls.npy"))[..., :lmax+1]
         plotter(ell, ell*(ell+1)*spectra[2]/2/np.pi, color='k')
 
-    spectra = np.load(spectra_folder + "r_001/lensedtot_cls.npy")[..., :lmax+1]
-
-    if "BB" in plot_list:
+        spectra = np.load(os.path.join(spectra_folder, "r_001/unlensed_cls.npy"))[..., :lmax+1]
         plotter(ell, ell*(ell+1)*spectra[2]/2/np.pi, color='k')
 
-    spectra = np.load(spectra_folder + "r_0001/lensedtot_cls.npy")[..., :lmax+1]
-
-    if "BB" in plot_list:
+        spectra = np.load(os.path.join(spectra_folder, "r_001/lensedtot_cls.npy"))[..., :lmax+1]
         plotter(ell, ell*(ell+1)*spectra[2]/2/np.pi, color='k')
 
         plt.annotate("BB", xy=(1.25, 7.5e-5), size=12)

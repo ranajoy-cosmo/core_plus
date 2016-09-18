@@ -144,17 +144,22 @@ class Bolo:
         elif self.config.sim_pol_type == "T_only":
             signal = 0.5*self.sky_map[hit_pix]
             if not self.config.do_pencil_beam:
-                signal = np.convolve(signal, beam_kernel_row, mode='valid')
+                signal = np.convolve(signal, beam_kernel_row[0], mode='valid')
 
         else:
             if self.config.do_pencil_beam:
                 signal = 0.5*(self.sky_map[0][hit_pix] + self.sky_map[1][hit_pix]*cos2 + self.sky_map[2][hit_pix]*sin2) 
             else:
+                """
                 signal = np.convolve(0.5*self.sky_map[0][hit_pix], beam_kernel_row[0], mode='valid')
-                signal += np.convolve(-0.5*self.sky_map[1][hit_pix]*cos2, beam_kernel_row[1], mode='valid')
-                signal += np.convolve(-0.5*self.sky_map[1][hit_pix]*sin2, beam_kernel_row[2], mode='valid')
-                signal += np.convolve(-0.5*self.sky_map[2][hit_pix]*sin2, beam_kernel_row[1], mode='valid')
-                signal += np.convolve(0.5*self.sky_map[2][hit_pix]*cos2, beam_kernel_row[2], mode='valid')
+                signal += np.convolve(0.5*self.sky_map[1][hit_pix]*cos2, -1.0*beam_kernel_row[1], mode='valid')
+                signal += np.convolve(0.5*self.sky_map[1][hit_pix]*sin2, -1.0*beam_kernel_row[2], mode='valid')
+                signal += np.convolve(0.5*self.sky_map[2][hit_pix]*sin2, -1.0*beam_kernel_row[1], mode='valid')
+                signal += np.convolve(0.5*self.sky_map[2][hit_pix]*cos2, -1.0*beam_kernel_row[2], mode='valid')
+                """
+                signal = np.convolve(0.5*self.sky_map[0][hit_pix], beam_kernel_row[0], mode='valid')
+                signal += np.convolve(0.5*(self.sky_map[1][hit_pix]*cos2 + self.sky_map[2][hit_pix]*sin2), -1.0*beam_kernel_row[1], mode='valid')
+                signal += np.convolve(0.5*(self.sky_map[1][hit_pix]*sin2 + self.sky_map[2][hit_pix]*cos2), -1.0*beam_kernel_row[2], mode='valid')
 
         return signal
 
