@@ -42,12 +42,14 @@ base_dir_name = "simulation"
 
 if global_system.host is "apc":
     global_paths.base_dir = os.path.join(home_dir, "CORE+/simulation")
-    global_paths.output_dir = os.path.join(global_paths.base_dir, 'output')
-    global_paths.maps_dir = os.path.join(global_paths.base_dir, 'maps')
+    scratch_dir = global_paths.base_dir
+    global_paths.output_dir = os.path.join(scratch_dir, 'output')
+    global_paths.maps_dir = os.path.join(scratch_dir, 'maps')
 
 if global_system.host in ["edison", "cori"]:
     global_paths.base_dir = os.path.join(home_dir, base_dir_name)
-    scratch_dir = "/global/cscratch1/sd/banerji"
+    scratch_dir = os.environ["SCRATCH"]
+    #scratch_dir = "/global/cscratch1/sd/banerji"
     global_paths.output_dir = os.path.join(scratch_dir, 'core_output')
     global_paths.maps_dir = os.path.join(scratch_dir, 'core_maps')
 
