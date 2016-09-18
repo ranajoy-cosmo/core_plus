@@ -8,10 +8,10 @@ import numpy as np
 #config.simulate_ts = True/False. True means it will simulate the entire timestream signal and pointing from scratch
 config.simulate_ts = True
 
-config.sim_tag = "1_bolo_test"
+config.sim_tag = "test_runs"
 #if simulate_ts is True, this is where the timestream data will be written if it is asked for. If False, this is where the timestream data will be read from.
 #config.scan_tag = "full_sky_5.8_mark"
-config.map_making_tag = "noise_only"
+config.map_making_tag = "test1"
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Resolution
@@ -39,7 +39,7 @@ config.general_data_dir = global_paths.output_dir
 config.bolo_list = ['bolo_0001a']#, 'bolo_0001b']#, 'bolo_0002a', 'bolo_0002b']
 
 config.t_segment = 36*60*60.0                      #seconds
-config.segment_list = range(240)
+config.segment_list = range(4)
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Sim Action (Only if simulate_ts is True)
@@ -47,7 +47,7 @@ config.segment_list = range(240)
 
 #Options for input_pol_type = ["TQU", "T_only", "noise_only"]
 #Default -> "TQU"
-config.sim_pol_type = "noise_only"
+config.sim_pol_type = "TQU"
 
 config.add_noise = True
 
@@ -76,10 +76,7 @@ config.nside_in = 1024
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 #Options for noise_type = ["white", "1_over_f"]
-config.noise_type = "white"
-config.noise_sigma = 50*np.sqrt(config.sampling_rate)                   #muK 
-config.noise_f_knee = 0
-config.noise_alpha = 0
+config.noise_type = "white_noise"
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read & Write (Only if simulate_ts is True)
@@ -88,7 +85,7 @@ config.noise_alpha = 0
 #Available options for timestream_data_products = ["timestream_data", "scanned_map", "grad_T_scan", "noise"]
 #"timestream_data" -> will write the simulated pointing, polarisation angle and the simulated signal in the scan data directory
 #"scanned_map" -> will write the input hitmap and scanned map in the scan data directory
-config.timestream_data_products = []#"timestream_data"]
+config.timestream_data_products = ["timestream_data", "grad_T_scan", "noise"]
 
 config.write_beam = True
 config.beam_file_name = "sym_8"

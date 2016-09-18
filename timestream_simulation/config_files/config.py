@@ -5,14 +5,14 @@ from simulation.params.custom_params import global_paths, global_scanning, globa
 # Sim Action 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-config.sim_tag = "1_bolo_test"
-config.scan_tag = "scan_test"
+config.sim_tag = "test_runs"
+config.scan_tag = "noise_grad_T_test"
 
 #Options for input_pol_type = ["TQU", "T_only", "noise_only"]
 #Default -> "TQU"
 config.sim_pol_type = "TQU"
 
-config.add_noise = False
+config.add_noise = True
 
 config.do_pencil_beam = True 
 
@@ -40,8 +40,8 @@ config.nside_in = 1024
 # Noise 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-#Options for noise_type = ["white", "1_over_f"]
-config.noise_type = "white"
+#Options for noise_type = ["white_noise", "1_over_f"]
+config.noise_type = "white_noise"
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Data selection
@@ -50,7 +50,7 @@ config.noise_type = "white"
 config.bolo_list = ['bolo_0001a']#, 'bolo_0001b', 'bolo_0002a', 'bolo_0002b']
 
 config.t_segment = 12*60*60.0                      #seconds
-config.segment_list = range(2)
+config.segment_list = range(4)
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read & Write
@@ -59,7 +59,7 @@ config.segment_list = range(2)
 #Available options for timestream_data_products = ["timestream_data", "scanned_map", "grad_T_scan", "noise"]
 #"timestream_data" -> will write the simulated pointing, polarisation angle and the simulated signal in the scan data directory
 #"scanned_map" -> will write the input hitmap and scanned map in the scan data directory
-config.timestream_data_products = ["timestream_data", "hitmap", "grad_T_scan"]
+config.timestream_data_products = ["timestream_data", "hitmap", "grad_T_scan", "noise"]
 
 config.base_dir = global_paths.base_dir 
 config.general_data_dir = global_paths.output_dir

@@ -87,8 +87,8 @@ config.nside_in = 1024
 # Noise (Only if simulate_ts is True)
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-#Options for noise_type = ["white", "1_over_f"]
-config.noise_type = "white"
+#Options for noise_type = ["white_noise", "1_over_f"]
+config.noise_type = "white_noise"
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read & Write (Only if simulate_ts is True)

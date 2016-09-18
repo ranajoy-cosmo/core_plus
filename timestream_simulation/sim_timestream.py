@@ -26,21 +26,21 @@ def run_mpi():
 
     bolo_segment_dict = get_local_bolo_segment_list(rank, size, config.bolo_list, config.segment_list)
 
+    if "hitmap" in config.timestream_data_products:
+        hitmap_local = np.zeros(hp.nside2npix(config.nside_in))
+
     for bolo_name in bolo_segment_dict.keys():
         bolo = Bolo(bolo_name, config)
         for segment in bolo_segment_dict[bolo_name]:
             prompter.prompt("Doing Bolo : %s Segment : %d Rank : %d" % (bolo_name, segment+1, rank))
             if "hitmap" in config.timestream_data_products:
-                try:
-                    hitmap_local += bolo.simulate_timestream(segment)
-                except NameError:
-                    hitmap_local = bolo.simulate_timestream(segment)
+                hitmap_local += bolo.simulate_timestream(segment)
             else:
                 bolo.simulate_timestream(segment)
 
     
     if "hitmap" in config.timestream_data_products:
-        hitmap = np.zeros(hitmap_local.size, dtype=np.float32)
+        hitmap = np.zeros(hitmap_local.size)
 
         comm.Reduce(hitmap_local, hitmap, MPI.SUM, 0)
         
