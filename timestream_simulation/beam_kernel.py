@@ -30,10 +30,11 @@ class Beam():
 
 
     def read_mark_beam_map(self):
-        beam_kernel = np.load(self.config.input_beam_file)
-        mark_orig_dim = 181                              #pixels
-        mark_fwhm_major = 5.79                   #arc-mins
-        mark_fwhm_minor = 5.79                   #arc-mins
+        beam_kernel = np.array(hp.mrdfits(self.config.input_beam_file))
+        mark_orig_dim = np.sqrt(beam_kernel.shape[1])                             #pixels
+        beam_kernel = beam_kernel.reshape((4, mark_orig_dim, mark_orig_dim))
+        mark_fwhm_major = 7.68                   #arc-mins
+        mark_fwhm_minor = 7.68                   #arc-mins
         mark_resolution = 0.2979691616235447            #arc-mins
 
         new_dim = int(mark_orig_dim * mark_resolution / self.config.scan_resolution)
