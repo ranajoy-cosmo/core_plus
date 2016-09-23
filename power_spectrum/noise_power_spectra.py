@@ -61,3 +61,20 @@ def get_spectral_noise_per_multipole(det_sens, beam_fwhm, lmax, t_mission, n_det
     spectral_noise = np.sqrt(variance_TT) / Cl[0] 
 
     return spectral_noise
+
+def get_noise_maps(map_noise_level, nside, pol=True):
+    npix = 12*nside**2
+    sigma_pix = map_noise_level / np.sqrt(get_pixel_solid_angle(nside, arcmin=True))
+    if pol:
+        sky = np.empty((3, npix))
+        sky[0] = np.random.normal(loc=0.0, scale=sigma_pix, size=npix)  
+        sky[1] = np.random.normal(loc=0.0, scale=sigma_pix/np.sqrt(2), size=npix)  
+        sky[2] = np.random.normal(loc=0.0, scale=sigma_pix/np.sqrt(2), size=npix)  
+    else:
+        sky = np.random.normal(loc=0.0, scale=map_noise_level, size=npix)  
+
+    return sky
+
+def get_noise_maps_from_sensitivity(det_sens, nside, t_mission, n_det=1, pol=True):
+    sigma_arcmin = sensitivity_to_noise_arcmin_sq(det_sens, t_mission, n_det)
+    return get_noise_maps(sigma_arcmin, nside, pol)

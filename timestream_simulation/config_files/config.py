@@ -25,9 +25,9 @@ config.bolo_config_file = "4_bolos_optimal"
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 config.t_year = 360*24*60*60.0                    #seconds
-config.t_prec = 6*24*60*60.0                     #seconds
-config.t_spin = 40.0                             #seconds
-config.sampling_rate = 200                               #Hz
+config.t_prec = 4*24*60*60.0                     #seconds
+config.t_spin = 120.0                             #seconds
+config.sampling_rate = 113                               #Hz
 
 config.alpha = 30.0                                #degrees
 config.beta = 65.0                                #degrees

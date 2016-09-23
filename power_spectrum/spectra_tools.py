@@ -70,7 +70,7 @@ def wiener_filter_for_alm(alm, lmax=None, fwhm=0.0, f_sky=1.0, sky_prior=None):
         lmax = hp.Alm.getlmax(len(alm), None)
 
     if sky_prior is None:
-        spectra_th = np.load("/global/homes/b/banerji/simulation/spectra/r_001/unlensed_cls.npy")[0,:lmax+1]
+        spectra_th = np.load("/global/homes/b/banerji/simulation/spectra/r_001/lensedtot_cls.npy")[0,:lmax+1]
     else:
         spectra_th = estimate_cl(sky_prior, lmax, fwhm=fwhm, pol=False)
 
@@ -99,7 +99,7 @@ def deconvolve_alm(alms, lmax=None, fwhm_in=0.0, fwhm_out=0.0, f_sky=1.0, pol=Fa
         lmax = hp.Alm.getlmax(len(alms[0] if pol else alms), None)
     
     if wiener:
-        wiener_filter = wiener_filter_for_alm(alms[0] if pol else alms, lmax, f_sky=f_sky, sky_prior=sky_prior)
+        wiener_filter = wiener_filter_for_alm(alms[0] if pol else alms, lmax, f_sky=f_sky, sky_prior=sky_prior, fwhm=fwhm_in)
         wiener_smooth = fl.filter_butter(wiener_filter, lmax, 100)
         #wiener_smooth[:1500] = 1.0
 

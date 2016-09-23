@@ -15,6 +15,7 @@ config = Generic()
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 #config.simulate_ts = True/False. True means it will simulate the entire timestream signal and pointing from scratch
 config.simulate_ts = False
+config.map_making_action = "new"
 
 config.sim_tag = "sim_test"
 #if simulate_ts is True, this is where the timestream data will be written if it is asked for. If False, this is where the timestream data will be read from.
