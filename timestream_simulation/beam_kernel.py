@@ -54,7 +54,7 @@ class Beam():
         self.beam_kernel = np.empty((4, new_dim, new_dim))
         for i in range(4):
             self.beam_kernel[i] = zoom(beam_kernel[i], float(new_dim)/float(mark_orig_dim))
-            #self.beam_kernel[i] = interpolation.rotate(self.beam_kernel[i], angle=self.config.beam_angle, reshape=False)
+            self.beam_kernel[i] = interpolation.rotate(self.beam_kernel[i], angle=self.config.beam_angle, reshape=False)
 
         #print "beam_cutoff required :", self.config.beam_cutoff
         beam_extension_required = self.config.fwhm_major * self.config.beam_cutoff          #arc-min
@@ -159,7 +159,7 @@ class Beam():
         im = new_imshow(ax4, self.beam_kernel[3], x=extent, y=extent, interpolation="nearest")
         ax4.set_title('V')
         fig.colorbar(im, ax=ax4)
-        fig.suptitle("Rescaled Plack 217_5b, FWHM : 7.79', Resol : 0.96', Extent : 3.82*FWHM")
+        fig.suptitle("Rescaled Plack 217_5a, FWHM : 7.68', Resol : 0.96', Extent : 3.85*FWHM")
         plt.show()
 
 
