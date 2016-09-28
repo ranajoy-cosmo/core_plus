@@ -11,8 +11,7 @@ config.simulate_ts = True
 config.sim_tag = "100_bolo_run"
 #if simulate_ts is True, this is where the timestream data will be written if it is asked for. If False, this is where the timestream data will be read from.
 #config.scan_tag = "full_sky_5.8_mark"
-config.map_making_tag = "100_bolo_recon"
-
+config.map_making_tag = "test_rec"
 config.gal_coords = True
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
@@ -51,7 +50,7 @@ config.segment_list = range(240)
 #Default -> "TQU"
 config.sim_pol_type = "TQU"
 
-config.add_noise = True
+config.add_noise = False
 
 config.do_pencil_beam = True
 

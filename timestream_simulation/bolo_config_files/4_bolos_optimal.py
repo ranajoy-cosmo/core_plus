@@ -5,9 +5,10 @@ from simulation.lib.utilities import generic_class
 bolo_config = generic_class.Generic()
 bolo_config.bolos = {}
 
-#bolo_config.common_input_map = "/global/homes/b/banerji/simulation/maps/r_001_lensed/sky_map_4096_0.fits"
+bolo_config.common_input_map = "/global/homes/b/banerji/simulation/maps/r_001_lensed/sky_map_4096_0.fits"
+bolo_config.common_input_map = "/global/homes/b/banerji/simulation/maps/r_001_lensed/sky_map_1024_0.fits"
 #bolo_config.common_input_map = "/scratch1/scratchdirs/banerji/core_output/real_beam/4_bolos_recon/sky_deconvolved_with_noise.fits"
-bolo_config.common_input_map = "/scratch1/scratchdirs/banerji/core_output/real_beam_setup_2/4_bolos_recon/sky_dec_with_noise.fits"
+#bolo_config.common_input_map = "/scratch1/scratchdirs/banerji/core_output/real_beam_setup_2/4_bolos_recon/sky_dec_with_noise.fits"
 bolo_config.input_beam_folder = "/project/projectdirs/core/sim/beams/planck_7.68_arcmin/square"
 bolo_config.common_input_beam = os.path.join(bolo_config.input_beam_folder, "beam_217-5a_uv_rescaled_fwhm_7.68_arcmin.fits")
 bolo_config.offset_sigma = 0.0

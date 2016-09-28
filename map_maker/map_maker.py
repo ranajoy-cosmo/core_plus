@@ -99,10 +99,7 @@ def run_mpi():
         recon_dir = make_data_dirs() 
 
     for bolo_name in bolo_segment_dict.keys():
-        if config.simulate_ts:
-            bolo = Bolo(bolo_name, config, load_map=True)
-        else:
-            bolo = Bolo(bolo_name, config, load_map=False)
+        bolo = Bolo(bolo_name, config)
         for segment in bolo_segment_dict[bolo_name]:
             segment_start = time.time()
             prompter.prompt("Rank : %d doing Bolo : %s and segment : %d" % (rank, bolo_name, segment))
@@ -129,8 +126,14 @@ def run_mpi():
 
         bad_pix = 4*inv_cov_matrix[..., 0, 0]<3
 
+        if config.stop_at_inv_cov_map:
+            write_covariance_maps(inv_cov_matrix, "inverse_covariance_maps", recon_dir)
+            np.save(os.path.join(recon_dir, "b_matrix"), b_matrix)
+            sys.exit()
+
         inv_cov_matrix[bad_pix] = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
         write_covariance_maps(inv_cov_matrix, "inverse_covariance_maps", recon_dir)
+
 
         cov_matrix = np.linalg.inv(inv_cov_matrix)
         write_covariance_maps(cov_matrix, "covariance_maps", recon_dir)
