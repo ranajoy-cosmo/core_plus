@@ -22,6 +22,7 @@ config.sim_tag = "sim_test"
 config.scan_tag = "scan_1"
 config.map_making_tag = "map_recon_1"
 
+config.stop_at_inv_cov_map = False
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Resolution
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
