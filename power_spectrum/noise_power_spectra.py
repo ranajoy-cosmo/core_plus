@@ -68,8 +68,8 @@ def get_noise_maps(map_noise_level, nside, pol=True):
     if pol:
         sky = np.empty((3, npix))
         sky[0] = np.random.normal(loc=0.0, scale=sigma_pix, size=npix)  
-        sky[1] = np.random.normal(loc=0.0, scale=sigma_pix/np.sqrt(2), size=npix)  
-        sky[2] = np.random.normal(loc=0.0, scale=sigma_pix/np.sqrt(2), size=npix)  
+        sky[1] = np.random.normal(loc=0.0, scale=sigma_pix*np.sqrt(2), size=npix)  
+        sky[2] = np.random.normal(loc=0.0, scale=sigma_pix*np.sqrt(2), size=npix)  
     else:
         sky = np.random.normal(loc=0.0, scale=map_noise_level, size=npix)  
 
