@@ -11,7 +11,7 @@ config.simulate_ts = True
 config.sim_tag = "test_runs"
 #if simulate_ts is True, this is where the timestream data will be written if it is asked for. If False, this is where the timestream data will be read from.
 #config.scan_tag = "full_sky_5.8_mark"
-config.map_making_tag = "test1"
+config.map_making_tag = "test_rec"
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Resolution
@@ -39,7 +39,7 @@ config.general_data_dir = global_paths.output_dir
 config.bolo_list = ['bolo_0001a']#, 'bolo_0001b']#, 'bolo_0002a', 'bolo_0002b']
 
 config.t_segment = 36*60*60.0                      #seconds
-config.segment_list = range(4)
+config.segment_list = range(240)
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Sim Action (Only if simulate_ts is True)
@@ -49,7 +49,7 @@ config.segment_list = range(4)
 #Default -> "TQU"
 config.sim_pol_type = "TQU"
 
-config.add_noise = True
+config.add_noise = False
 
 config.do_pencil_beam = True
 
@@ -85,7 +85,7 @@ config.noise_type = "white_noise"
 #Available options for timestream_data_products = ["timestream_data", "scanned_map", "grad_T_scan", "noise"]
 #"timestream_data" -> will write the simulated pointing, polarisation angle and the simulated signal in the scan data directory
 #"scanned_map" -> will write the input hitmap and scanned map in the scan data directory
-config.timestream_data_products = ["timestream_data", "grad_T_scan", "noise"]
+config.timestream_data_products = []#"timestream_data", "grad_T_scan", "noise"]
 
 config.write_beam = True
 config.beam_file_name = "sym_8"

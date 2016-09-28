@@ -37,7 +37,7 @@ def get_inv_cov_matrix(hitpix, pol):
     inv_cov_matrix[..., 2, 1] = inv_cov_matrix[..., 1, 2]
     inv_cov_matrix[..., 2, 2] = 0.5*(n - cos_4) 
 
-    return inv_cov_matrix
+    return 0.25*inv_cov_matrix
 
 
 def get_b_matrix(hitpix, pol, ts):
@@ -46,9 +46,9 @@ def get_b_matrix(hitpix, pol, ts):
     
     matrix = FSRBlockMatrix((nsamples, npix*3), (1, 3), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
     matrix.data.index[:, 0] = hitpix
-    matrix.data.value[:, 0, 0, 0] = 1.0
-    matrix.data.value[:, 0, 0, 1] = np.cos(2*pol)
-    matrix.data.value[:, 0, 0, 2] = np.sin(2*pol)
+    matrix.data.value[:, 0, 0, 0] = 0.5
+    matrix.data.value[:, 0, 0, 1] = 0.5*np.cos(2*pol)
+    matrix.data.value[:, 0, 0, 2] = 0.5*np.sin(2*pol)
 
     P = ProjectionOperator(matrix)
 
@@ -109,7 +109,7 @@ def run_mpi():
         else:
             signal_1, v, pol_ang = bolo.read_timestream(segment)
         
-        signal_diff = signal_1 - signal_2
+        signal_diff = 0.5*(signal_1 - signal_2)
         hitpix = hp.vec2pix(config.nside_out, v[...,0], v[...,1], v[...,2])
         b_matrix_local += get_b_matrix(hitpix, pol_ang, signal_diff)
         inv_cov_matrix_local += get_inv_cov_matrix(hitpix, pol_ang)
