@@ -7,12 +7,12 @@ import sys
 import shutil
 import time
 import importlib
-from memory_profiler import profile
+#from memory_profiler import profile
 from mpi4py import MPI
 from pysimulators.sparse import FSRBlockMatrix
 from pysimulators import ProjectionOperator
 from simulation.lib.data_management.data_utilities import get_local_bolo_segment_list
-from simulation.timestream_simulation.new_sim_timestream import Bolo
+from simulation.timestream_simulation.bolo import Bolo
 import simulation.lib.utilities.prompter as prompter
 from simulation.lib.utilities.time_util import get_time_stamp 
 
@@ -25,6 +25,9 @@ def get_inv_cov_matrix(hitpix, pol):
     sin_2 = np.bincount(hitpix, weights=np.sin(2*pol), minlength=npix)
     cos_4 = np.bincount(hitpix, weights=np.cos(4*pol), minlength=npix)
     sin_4 = np.bincount(hitpix, weights=np.sin(4*pol), minlength=npix)
+    #cos_p2 = np.bincount(hitpix, weights=(np.cos(2*pol))**2, minlength=npix)
+    #sin_p2 = np.bincount(hitpix, weights=(np.sin(2*pol))**2, minlength=npix) 
+    #sin_cos = np.bincount(hitpix, weights=(np.sin(2*pol)*np.cos(2*pol)), minlength=npix) 
 
     inv_cov_matrix = np.empty((npix, 3, 3))
     inv_cov_matrix[..., 0, 0] = n
@@ -33,9 +36,12 @@ def get_inv_cov_matrix(hitpix, pol):
     inv_cov_matrix[..., 1, 0] = inv_cov_matrix[..., 0, 1]
     inv_cov_matrix[..., 1, 1] = 0.5*(n + cos_4) 
     inv_cov_matrix[..., 1, 2] = 0.5*sin_4 
+    #inv_cov_matrix[..., 1, 1] = cos_p2                                                                                                                      
+    #inv_cov_matrix[..., 1, 2] = sin_cos
     inv_cov_matrix[..., 2, 0] = inv_cov_matrix[..., 0, 2]
     inv_cov_matrix[..., 2, 1] = inv_cov_matrix[..., 1, 2]
     inv_cov_matrix[..., 2, 2] = 0.5*(n - cos_4) 
+    #inv_cov_matrix[..., 2, 2] = sin_p2
 
     inv_cov_matrix *= 0.25
 
@@ -153,8 +159,8 @@ def make_data_dirs():
 
     recon_dir = os.path.join(config.general_data_dir, config.sim_tag, config.map_making_tag)
     config_dir = os.path.join(recon_dir, "config_files")
-    default_config_file = "/global/homes/b/banerji/simulation/map_maker/config_files/default_config.py"
-    current_config_file = os.path.join("/global/homes/b/banerji/simulation/map_maker/config_files", config_file + ".py")
+    default_config_file = os.path.join(config.base_dir, "map_maker/config_files/default_config.py")
+    current_config_file = os.path.join(config.base_dir, "map_maker/config_files", config_file + ".py")
 
     if os.path.exists(recon_dir):
         if config.map_making_action == "new":

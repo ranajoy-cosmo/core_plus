@@ -1,5 +1,5 @@
 import sys
-from termcolor import colored
+#from termcolor import colored
 
 def prompt(text, flush=True):
     print text
@@ -7,5 +7,7 @@ def prompt(text, flush=True):
         sys.stdout.flush()
 
 def prompt_warning(text):
-    print colored('WARNING :', 'red'), text
+    #print colored('WARNING :', 'red'), text
+    print text
+    sys.stdout.flush()
 
