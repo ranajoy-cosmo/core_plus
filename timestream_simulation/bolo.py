@@ -13,7 +13,7 @@ import simulation.lib.quaternion.quaternion as quaternion
 
 class Bolo:
 
-    def __init__(self, bolo_name, config, load_map=True):
+    def __init__(self, bolo_name, config):
         self.name = bolo_name
         bolo_config = importlib.import_module("simulation.timestream_simulation.bolo_config_files." + 
                 config.bolo_config_file).bolo_config.bolos[bolo_name]
@@ -23,8 +23,9 @@ class Bolo:
         self.calculate_params()
         self.beam = Beam(self.config, bolo_config)
         self.noise_class = Noise(self.config)
-        if load_map:
-            self.get_sky_map()
+        if config.simulate_ts:
+            if not config.sim_pol_type == "noise_only":
+                self.get_sky_map()
         self.get_initial_axes()
         self.get_nsamples()
         self.set_bolo_dirs()

@@ -55,12 +55,14 @@ def plot_theoretical(lmax, plot_log=True, plot_list=["TT", "EE", "BB"], lensed=T
     plt.show()
 
 
-def make_decorations(ylim=[1e-4, 100], xlim=[1,3000]):
+def make_decorations(ylim=[1e-4, 100], xlim=[1,3000], leg_loc=None):
     plt.ylim(ylim)
     plt.xlim(xlim)
-    plt.xlabel('l')
+    plt.xlabel('$l$')
     plt.ylabel('$\sqrt{l(l+1)C_l/2\pi}$ $[\mu K]$')
-    plt.legend(loc="lower right", prop={'size':12})
+    if leg_loc == None:
+        leg_loc = "upper left"
+    plt.legend(loc=leg_loc , prop={'size':12})
 
 
 def plot_spectra(cl, lmax=None, label=None, plot_log=True):
@@ -76,3 +78,27 @@ def plot_spectra(cl, lmax=None, label=None, plot_log=True):
         plotter(ell, np.sqrt(ell*(ell+1)*cl[:lmax+1]/2/np.pi), label=label)
     else:
         plotter(ell, np.sqrt(ell*(ell+1)*cl[:lmax+1]/2/np.pi))
+
+
+def plot_binned_spectra(cl, ell, label=None, plot_log=True):
+    if plot_log:
+        plotter = plt.loglog
+    else:
+        plotter = plt.plot
+
+    if label:
+        plotter(ell, np.sqrt(ell*(ell+1)*cl/2/np.pi), label=label)
+    else:
+        plotter(ell, np.sqrt(ell*(ell+1)*cl/2/np.pi))
+
+
+def plot_binned_spectra_with_error_bars(cl, ell, error, bin_width, label=None, plot_log=True):
+    ax = plt.subplot()
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+
+    if label:
+        ax.errorbar(ell, np.sqrt(ell*(ell+1)*cl/2/np.pi), fmt='o', label=label)
+    else:
+        ax.errorbar(ell, np.sqrt(ell*(ell+1)*cl/2/np.pi), fmt='o')
+

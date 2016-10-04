@@ -12,6 +12,7 @@ config = Generic()
 # Sim Action 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
+config.simulate_ts = True
 config.sim_tag = "sim_test"
 config.scan_tag = "scan_1"
 
