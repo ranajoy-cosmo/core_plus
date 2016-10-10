@@ -34,6 +34,21 @@ def mask_map(sky_map, binary_mask=None, pol=True, ret_mask=False, fill_zeros=Fal
     else:
         return sky_map_masked
 
+
+def mask_map_apodised(sky_map, apodised_mask, pol=True):
+    nside = hp.get_nside(sky_map)
+    if pol:
+        masked_map = np.empty((3, 12*nside**2))
+        for i in range(3):
+            masked_map[i] = sky_map[i]*apodised_mask
+    else:
+        masked_map = sky_map*apodised_mask
+
+    f_sky = np.mean(apodised_mask**2)
+
+    return masked_map, f_sky
+
+
 def estimate_cl(sky_map, lmax, binary_mask=None, fwhm=0.0, pol=True):
 
     sky_map_masked, binary_mask = mask_map(sky_map, binary_mask=binary_mask, pol=pol, ret_mask=True, fill_zeros=True)
