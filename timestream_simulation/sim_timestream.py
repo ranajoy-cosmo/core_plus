@@ -7,7 +7,7 @@ import os
 import shutil
 import importlib
 import time
-from memory_profiler import profile
+#from memory_profiler import profile
 from simulation.lib.data_management.data_utilities import get_local_bolo_segment_list
 import simulation.lib.utilities.prompter as prompter
 from simulation.timestream_simulation.bolo import Bolo
@@ -68,10 +68,10 @@ def make_data_dirs():
     config_dir = os.path.join(scan_dir, "config_files")
     if not os.path.exists(config_dir):
         os.makedirs(config_dir)
-    default_config_file = "/global/homes/b/banerji/simulation/timestream_simulation/config_files/default_config.py"
-    shutil.copy(default_config_file, config_dir)
-    current_config_file = os.path.join("/global/homes/b/banerji/simulation/timestream_simulation/config_files", config_file + '.py') 
-    shutil.copy(current_config_file, config_dir)
+    #default_config_file = "/global/homes/b/banerji/simulation/timestream_simulation/config_files/default_config.py"
+    #shutil.copy(default_config_file, config_dir)
+    #current_config_file = os.path.join("/global/homes/b/banerji/simulation/timestream_simulation/config_files", config_file + '.py') 
+    #shutil.copy(current_config_file, config_dir)
 
 
 def run_check(config, verbose=True):

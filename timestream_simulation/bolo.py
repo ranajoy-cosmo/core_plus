@@ -46,9 +46,9 @@ class Bolo:
         prompter.prompt("0.0")
         #Simulating the scan along the centre of the FOV
         v_init = self.get_initial_vec(0.0)
-        v_central, v_central_ecl = self.get_v_obv(v_init, rot_qt, ret_ecl=True)
+        v_central = self.get_v_obv(v_init, rot_qt)
 
-        pol_ang = self.get_pol_ang(rot_qt, v_central_ecl) 
+        pol_ang = self.get_pol_ang(rot_qt, v_central) 
         if self.config.sim_pol_type == "TQU":
             cos2 = np.cos(2*pol_ang)
             sin2 = np.sin(2*pol_ang)
@@ -250,8 +250,8 @@ class Bolo:
         pol_vec_ini = np.array([0.0, 1.0, 0.0])
 
         pol_vec = quaternion.transform(rot_qt, np.tile(pol_vec_ini, self.nsamples).reshape(-1,3))
-        #if self.config.gal_coords:
-        #    pol_vec = self.transform_to_gal_coords(pol_vec)
+        if self.config.gal_coords:
+            pol_vec = self.transform_to_gal_coords(pol_vec)
 
         theta, phi = hp.vec2ang(v_dir)
 
@@ -328,9 +328,12 @@ class Bolo:
                 np.save(os.path.join(write_dir, data_name), ts_data[self.pad:-self.pad][::self.config.oversampling_rate])
 
 
-    def read_timestream(self, segment):
+    def read_timestream(self, segment, noise=False):
         segment_dir = self.get_segment_dir(segment)
-        signal = np.load(os.path.join(segment_dir, "signal.npy"))
+        if noise:
+            signal = np.load(os.path.join(segment_dir, "noise.npy"))
+        else:
+            signal = np.load(os.path.join(segment_dir, "signal.npy"))
         v = np.load(os.path.join(segment_dir, "pointing_vec.npy"))
         pol_ang = np.load(os.path.join(segment_dir, "pol_ang.npy"))
 
