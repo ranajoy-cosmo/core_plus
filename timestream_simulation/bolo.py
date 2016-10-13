@@ -221,15 +221,11 @@ class Bolo:
         return r_total
 
 
-    def get_v_obv(self, v_init, rot_qt, ret_ecl=False):
+    def get_v_obv(self, v_init, rot_qt):
         v = quaternion.transform(rot_qt, v_init)
 
         if self.config.gal_coords:
-            if ret_ecl:
-                v_ecl = np.copy(v)
             v = self.transform_to_gal_coords(v)
-            if ret_ecl:
-                return v, v_ecl
 
         return v
 

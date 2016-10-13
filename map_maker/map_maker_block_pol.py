@@ -16,35 +16,40 @@ from simulation.timestream_simulation.new_sim_timestream import Bolo
 import simulation.lib.utilities.prompter as prompter
 from simulation.lib.utilities.time_util import get_time_stamp 
 
-
-def get_inv_cov_matrix(v, pol, ts, inv_cov_matrix, b_matrix):
+def get_inv_cov_matrix(hitpix, pol):
     nsamples = hitpix.size
     npix = hp.nside2npix(config.nside_out)
 
-    hitpix = hp.vec2pix(config.nside_out, v[...,0], v[...,1], v[...,2])
     n = np.bincount(hitpix, minlength=npix)
+    #cos_2 = np.bincount(hitpix, weights=np.cos(2*pol), minlength=npix)
+    #sin_2 = np.bincount(hitpix, weights=np.sin(2*pol), minlength=npix)
     cos_4 = np.bincount(hitpix, weights=np.cos(4*pol), minlength=npix)
-    cos_2_pol = np.cos(2*pol)
-    sin_2_pol = np.sin(2*pol)
+    sin_4 = np.bincount(hitpix, weights=np.sin(4*pol), minlength=npix)
 
-    #inv_cov_matrix = np.empty((npix, 6))
-    #b_matrix = np.empty((npix, 3))
+    inv_cov_matrix = np.empty((npix, 3, 3))
+    inv_cov_matrix[..., 0, 0] = 0.5*(n + cos_4) 
+    inv_cov_matrix[..., 0, 1] = 0.5*sin_4 
+    inv_cov_matrix[..., 1, 0] = inv_cov_matrix[..., 1, 2]
+    inv_cov_matrix[..., 1, 1] = 0.5*(n - cos_4) 
 
-    inv_cov_matrix[..., 0] += n
-    inv_cov_matrix[..., 1] += np.bincount(hitpix, weights=cos_2_pol, minlength=npix)
-    inv_cov_matrix[..., 2] += np.bincount(hitpix, weights=sin_2_pol, minlength=npix)
-    inv_cov_matrix[..., 3] += 0.5*(n + cos_4) 
-    inv_cov_matrix[..., 4] += 0.5*np.bincount(hitpix, weights=np.sin(4*pol), minlength=npix)
-    inv_cov_matrix[..., 5] += 0.5*(n - cos_4) 
+    inv_cov_matrix *= 0.25
 
-    b_matrix[..., 0] += np.bincount(hitpix, 0.5*ts, minlength=npix)
-    b_matrix[..., 1] += np.bincount(hitpix, 0.5*cos_2_pol*ts, minlength=npix)
-    b_matrix[..., 2] += np.bincount(hitpix, 0.5*sin_2_pol*ts, minlength=npix)
+    return inv_cov_matrix
 
-    #inv_cov_matrix *= 0.25
+def get_b_matrix(hitpix, pol, ts):
+    nsamples = hitpix.size
+    npix = hp.nside2npix(config.nside_out)
+    
+    matrix = FSRBlockMatrix((nsamples, npix*2), (1, 2), ncolmax=1, dtype=np.float32, dtype_index = np.int32)
+    matrix.data.index[:, 0] = hitpix
+    matrix.data.value[:, 0, 0, 0] = 0.5*np.cos(2*pol)
+    matrix.data.value[:, 0, 0, 1] = 0.5*np.sin(2*pol)
 
-    #return inv_cov_matrix, b_matrix
+    P = ProjectionOperator(matrix)
 
+    b = P.T(ts)
+
+    return b
 
 def write_maps_and_config(sky_map, hitmap, recon_dir):
     hp.write_map(os.path.join(recon_dir, "reconstructed_map.fits"), sky_map)
@@ -55,10 +60,7 @@ def write_covariance_maps(maps, map_type, recon_dir):
     out_dir = os.path.join(recon_dir, map_type)
     os.makedirs(out_dir)
 
-    if map_type == "partial_covariance_maps":
-        map_legends = {"QQ" : (0,0), "QU" : (0,1), "UU" : (1,1)}
-    else:
-        map_legends = {"TT" : (0,0), "TQ" : (0,1), "TU" : (0,2), "QQ" : (1,1), "QU" : (1,2), "UU" : (2,2)}
+    map_legends = {"QQ" : (0,0), "QU" : (0,1), "UQ" : (1,0), "UU" : (1,1)}
 
     for leg in map_legends.keys():
         hp.write_map(os.path.join(out_dir, "map_" + leg + ".fits"), maps[..., map_legends[leg][0], map_legends[leg][1]])
@@ -66,11 +68,12 @@ def write_covariance_maps(maps, map_type, recon_dir):
 
 
 def run_mpi():
-    #start_time = time.time()
+    start_time = time.time()
     npix = hp.nside2npix(config.nside_out)
 
-    inv_cov_matrix_local = np.zeros((npix, 6))
-    b_matrix_local = np.zeros((npix, 3))
+    inv_cov_matrix_local = np.zeros((npix, 2, 2))
+    b_matrix_local = np.zeros((npix, 2))
+    hitmap_local = np.zeros(npix)
 
     bolo_segment_dict = get_local_bolo_segment_list(rank, size, config.bolo_list, config.segment_list)
 
@@ -80,73 +83,69 @@ def run_mpi():
     if rank == 0:
         recon_dir = make_data_dirs() 
 
+
     for bolo_name in bolo_segment_dict.keys():
-        bolo = Bolo(bolo_name, config)
-        for segment in bolo_segment_dict[bolo_name]:
-            #segment_start = time.time()
-            prompter.prompt("Rank : %d doing Bolo : %s and segment : %d" % (rank, bolo_name, segment))
+        bolo_name_a = bolo_name + 'a'
+        bolo_name_b = bolo_name + 'b'
+        for segment in bolo_segment_dict[bolo]:
+            #Bolo 2
+            bolo = Bolo(bolo_name_b, config)
+            prompter.prompt("Rank : %d doing Bolo : %s and segment : %d" % (rank, bolo_name_b, segment))
             if config.simulate_ts:
-                signal, v, pol_ang = bolo.simulate_timestream(segment)
+                signal_2, v, pol_ang = bolo.simulate_timestream(segment)
             else:
-                signal, v, pol_ang = bolo.read_timestream(segment)
-            get_inv_cov_matrix(v, pol_ang, signal, inv_cov_matrix_local, b_matrix_local)
+                signal_2, v, pol_ang = bolo.read_timestream(segment)
+            #Bolo 1
+            bolo = Bolo(bolo_name_a, config)
+            prompter.prompt("Rank : %d doing Bolo : %s and segment : %d" % (rank, bolo_name_a, segment))
+            if config.simulate_ts:
+                signal_1, v, pol_ang = bolo.simulate_timestream(segment)
+            else:
+                signal_1, v, pol_ang = bolo.read_timestream(segment)
+            
+            signal_diff = 0.5*(signal_1 - signal_2)
+            hitpix = hp.vec2pix(config.nside_out, v[...,0], v[...,1], v[...,2])
+            hitmap_local = np.bincount(hitpix, minlength=npix)
+            b_matrix_local += get_b_matrix(hitpix, pol_ang, signal_diff)
+            inv_cov_matrix_local += get_inv_cov_matrix(hitpix, pol_ang)
 
-            #segment_stop = time.time()
-            #prompter.prompt("Rank : %d doing Bolo : %s and segment : %d and time taken : %d" % (rank, bolo_name, segment, segment_stop - segment_start))
+    inv_cov_matrix = np.zeros((npix, 2, 2))
+    b_matrix = np.zeros((npix, 2))
+    hitmap = np.zeros(npix)
 
-    inv_cov_matrix_local *= 0.25
-
-    inv_cov_matrix = np.zeros((npix, 6))
-    b_matrix = np.zeros((npix, 3))
-
-    #ar_start_1 = time.time()
-    comm.Allreduce(inv_cov_matrix_local, inv_cov_matrix, MPI.SUM)
+    ar_start_1 = time.time()
     comm.Allreduce(b_matrix_local, b_matrix, MPI.SUM)
-    #ar_stop_1 = time.time()
-    #prompter.prompt("Time taken to ALlreduce b_matrix and inv_cov_matrix : " + str(ar_stop_1 - ar_start_1))
-    del b_matrix_local, inv_cov_matrix_local
+    comm.Allreduce(inv_cov_matrix_local, inv_cov_matrix, MPI.SUM)
+    comm.Allreduce(hitmap_local, hitmap, MPI.SUM)
+    ar_stop_1 = time.time()
+    prompter.prompt("Time taken to ALlreduce b_matrix and inv_cov_matrix : " + str(ar_stop_1 - ar_start_1))
+    del b_matrix_local, inv_cov_matrix_local, hitmap_local
 
-    #cov_start = time.time()
-    hitmap = 4*inv_cov_matrix[..., 0]
-    inv_cov_matrix[hitmap<3] = np.array([[1.0, 0.0, 0.0, 1.0, 1.0])
+    cov_start = time.time()
+    inv_cov_matrix[hitmap<3] = np.array([[1.0, 0.0], [0.0, 1.0]])
     if rank == 0:
         write_covariance_maps(inv_cov_matrix, "inverse_covariance_maps", recon_dir)
-    comm.Barrier()
     
     start, stop = get_local_pix_range()
     prompter.prompt("Rank : %d. Start : %d  Stop : %d" % (rank, start, stop))
-    cov_matrix_local = np.zeros((npix, 3, 3))
-    #print "npix :", npix
-    #print "rank :", rank, "hitmap size :", hitmap.size
-    #print "rank :", rank, "inv_cov_matrix shape :", inv_cov_matrix.shape 
-    #print "rank :", rank, "cov_matrix shape :", cov_matrix_local.shape 
-    #print "rank :", rank, "cov_matrix TT shape :", cov_matrix_local[..., 0].shape 
+    cov_matrix_local = np.zeros((npix, 2, 2))
     cov_matrix_local[start:stop] = np.linalg.inv(inv_cov_matrix[start:stop]) 
-    recon_dir = os.path.join(config.general_data_dir, config.sim_tag, config.map_making_tag)
-    #hp.write_map(os.path.join(recon_dir, "inv_cov_TT_" + str(rank)), cov_matrix_local[..., 0, 0])
-    #print cov_matrix_local
-    #print b_matrix
-    #cov_stop = time.time()
-    #prompter.prompt("Time taken to invert covariance matrix : " + str(cov_stop - cov_start))
+    cov_stop = time.time()
+    prompter.prompt("Time taken to invert covariance matrix : " + str(cov_stop - cov_start))
 
-    #del inv_cov_matrix
+    del inv_cov_matrix
 
-    #map_start = time.time()
-    #sky_rec_local = np.zeros((3, npix))
-    sky_rec_local = np.sum(cov_matrix*b_matrix[..., None], axis=1).T
-    #sky_rec_local[..., start:stop] = np.sum(cov_matrix_local[start:stop]*b_matrix[start:stop, None], axis=1).T
-    #if rank==0:
-    #    np.save(os.path.join(recon_dir, "b_matrix"), b_matrix
+    map_start = time.time()
+    sky_rec_local = np.zeros((2, npix))
+    sky_rec_local[..., start:stop] = np.sum(cov_matrix_local[start:stop]*b_matrix[start:stop, None], axis=1).T
 
-    #hp.write_map(os.path.join(recon_dir, "map_local_" + str(rank)), sky_rec_local)
-
-    sky_rec = np.empty((3, npix))
+    sky_rec = np.empty((2, npix))
     comm.Reduce(sky_rec_local, sky_rec, MPI.SUM, 0)
-    cov_matrix = np.empty((npix, 3, 3))
-    comm.Reduce(cov_matrix_local, cov_matrix, MPI.SUM, 0)
+    cov_matrix = np.empty((npix, 2, 2))
+    comm.Reduce(cov_matrix, cov_matrix_local, MPI.SUM, 0)
     sky_rec[..., hitmap<3] = np.nan
-    #map_stop = time.time() 
-    #prompter.prompt("Time taken to make map : " + str(map_stop - map_start))
+    map_stop = time.time() 
+    prompter.prompt("Time taken to make map : " + str(map_stop - map_start))
 
     if rank==0:
         write_maps_and_config(sky_rec, hitmap, recon_dir)
@@ -157,9 +156,9 @@ def run_mpi():
             cov_matrix_partial = np.linalg.inv(inv_cov_matrix[..., 1:, 1:])
             write_covariance_maps(cov_matrix_partial, "partial_covariance_maps", recon_dir)
     """ 
-    #stop_time = time.time()
+    stop_time = time.time()
 
-    #prompter.prompt("Total time taken : %d" % (stop_time - start_time))
+    prompter.prompt("Total time taken : %d" % (stop_time - start_time))
 
 
 def make_data_dirs():

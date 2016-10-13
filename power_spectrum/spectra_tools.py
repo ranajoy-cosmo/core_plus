@@ -34,6 +34,21 @@ def mask_map(sky_map, binary_mask=None, pol=True, ret_mask=False, fill_zeros=Fal
     else:
         return sky_map_masked
 
+
+def mask_map_apodised(sky_map, apodised_mask, pol=True):
+    nside = hp.get_nside(sky_map)
+    if pol:
+        masked_map = np.empty((3, 12*nside**2))
+        for i in range(3):
+            masked_map[i] = sky_map[i]*apodised_mask
+    else:
+        masked_map = sky_map*apodised_mask
+
+    f_sky = np.mean(apodised_mask**2)
+
+    return masked_map, f_sky
+
+
 def estimate_cl(sky_map, lmax, binary_mask=None, fwhm=0.0, pol=True):
 
     sky_map_masked, binary_mask = mask_map(sky_map, binary_mask=binary_mask, pol=pol, ret_mask=True, fill_zeros=True)
@@ -170,3 +185,63 @@ def get_temp_gradient_map(T_sky, fwhm_in=0.0, fwhm_out=0.0, nside=None, lmax=Non
     grad_sky_T = hp.alm2map_der1(alm_dec, nside, lmax)
 
     return grad_sky_T[1:]
+
+
+def bin_spectra_old(spectra, bins, pol=False):
+    n_bins = len(bins) - 1
+    ell = np.arange(bins[-1] + 1)
+    ell_bins = np.empty(n_bins)
+    if pol:
+        binned_spectra = np.empty((3, n_bins))
+    else:
+        binned_spectra = np.empty(n_bins)
+
+    for i in range(n_bins):
+        bin_low = bins[i]
+        bin_high = bins[i+1]
+        if pol:
+            for j in range(3):
+                binned_spectra[j, i] = np.mean(spectra[j, bin_low:bin_high])
+        else:
+            binned_spectra[i] = np.mean(spectra[bin_low:bin_high])
+        ell_bins[i] = np.mean(ell[bin_low:bin_high])
+
+    return ell_bins, binned_spectra
+
+def bin_spectra(spectra, lmax, pol=False):
+    if pol:
+        binned_spectra = np.empty((3, lmax+1))
+    else:
+        binned_spectra = np.empty(lmax+1)
+
+    for ell in range(lmax+1):
+        ell_low = ell - 0.1*ell
+        ell_high = ell + 0.1*ell
+        if pol:
+            for j in range(3):
+                binned_spectra[j, ell] = np.mean(spectra[j, ell_low:ell_high])
+        else:
+            binned_spectra[ell] = np.mean(spectra[ell_low:ell_high])
+
+    return binned_spectra
+
+def bin_error_bar(error, bins, pol=False):
+    n_bins = len(bins) - 1
+    ell = np.arange(bins[-1] + 1)
+    bin_width = np.empty(n_bins)
+    if pol:
+        binned_error = np.empty((3, n_bins))
+    else:
+        binned_error = np.empty(n_bins)
+
+    for i in range(n_bins - 1):
+        bin_low = bins[i]
+        bin_high = bin[i+1]
+        bin_width[i] = bin_high - bin_low
+        if pol:
+            for j in range(3):
+                binned_error[j, i] = np.mean(error[j, bin_low:bin_high])/np.sqrt(bin_width[i])
+        else:
+            binned_error[i] = np.mean(error[bin_low:bin_high])/np.sqrt(bin_width[i])
+
+    return bin_width, binned_error
