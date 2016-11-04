@@ -68,25 +68,6 @@ class Bolo:
         hit_pix = hp.vec2pix(self.config.nside_in, v_central[...,0], v_central[...,1], v_central[...,2])
         signal = self.get_signal(hit_pix, beam_kernel_row, cos2, sin2)
 
-        if "grad_T_scan" in self.config.timestream_data_products:
-            T_signal = self.sky_map[0][hit_pix]
-            grad_T_par = (np.roll(T_signal, 1) - np.roll(T_signal, -1)) / (2*self.config.scan_resolution)
-            self.write_timestream_data(grad_T_par, "grad_T_par", segment)
-            del T_signal, grad_T_par
-            if self.config.do_pencil_beam:
-                del_beta_up, del_beta_down = -self.config.scan_resolution, self.config.scan_resolution
-                v_init = self.get_initial_vec(del_beta_up)
-                v = quaternion.transform(rot_qt, v_init)
-                hit_pix = hp.vec2pix(self.config.nside_in, v[...,0], v[...,1], v[...,2])
-                T_signal_up = self.sky_map[0][hit_pix]
-                v_init = self.get_initial_vec(del_beta_down)
-                v = quaternion.transform(rot_qt, v_init)
-                hit_pix = hp.vec2pix(self.config.nside_in, v[...,0], v[...,1], v[...,2])
-                T_signal_down = self.sky_map[0][hit_pix]
-                grad_T_perp = (T_signal_up - T_signal_down) / (2*self.config.scan_resolution)
-                self.write_timestream_data(grad_T_perp, "grad_T_perp", segment)
-                del grad_T_perp, v, hit_pix, T_signal_up, T_signal_down
-
         for del_beta in self.beam.del_beta:
             if del_beta == 0.0:
                 continue
@@ -96,14 +77,6 @@ class Bolo:
             v = quaternion.transform(rot_qt, v_init)
             hit_pix = hp.vec2pix(self.config.nside_in, v[...,0], v[...,1], v[...,2])
             signal += self.get_signal(hit_pix, beam_kernel_row, cos2, sin2)
-            if "grad_T_scan" in self.config.timestream_data_products:
-                if del_beta == -self.config.scan_resolution:
-                    T_signal_up = self.sky_map[0][hit_pix]
-                if del_beta == self.config.scan_resolution:
-                    T_signal_up = self.sky_map[0][hit_pix]
-                    grad_T = (T_signal_up - T_signal_down) / (2*self.config.scan_resolution)
-                    self.write_timestream_data(grad_T_perp, "grad_T_perp", segment)
-                    del T_signal_up, T_signal_down, grad_T
 
         beam_sum = np.sum(self.beam.beam_kernel[0])
         signal /= beam_sum
