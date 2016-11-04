@@ -16,7 +16,7 @@ config.simulate_ts = True
 config.sim_tag = "sim_test"
 config.scan_tag = "scan_1"
 
-#Options for input_pol_type = ["TQU", "T_only", "noise_only"]
+#Options for input_pol_type = ["TQU", "T_only", "pol_only", "noise_only"]
 #Default -> "TQU"
 config.sim_pol_type = "TQU"
 
