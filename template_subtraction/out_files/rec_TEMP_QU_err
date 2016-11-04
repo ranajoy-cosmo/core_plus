@@ -1,0 +1,5 @@
+/home/banerji/.bashrc: ligne 19 : bind: avertissement :édition de ligne non activée
+/home/banerji/.bashrc: ligne 20 : bind: avertissement :édition de ligne non activée
+WARNING: AstropyDeprecationWarning: The new_table function is deprecated and may be removed in a future version.
+        Use :meth:`BinTableHDU.from_columns` for new BINARY tables or :meth:`TableHDU.from_columns` for new ASCII tables instead. [astropy.utils.decorators]
+WARNING: AstropyDeprecationWarning: The use of header.update() to add new keywords to a header is deprecated.  Instead, use either header.set() or simply `header[keyword] = value` or `header[keyword] = (value, comment)`.  header.set() is only necessary to use if you also want to use the before/after keyword arguments. [astropy.io.fits.header]

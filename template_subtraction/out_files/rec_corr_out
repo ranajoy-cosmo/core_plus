@@ -1,0 +1,424 @@
+Rank : 6 started
+Rank : 4 started
+Rank : 14 started
+Rank : 8 started
+Rank : 2 started
+Rank : 10 started
+Rank : 0 started
+Rank : 0 , Bolos and Segments : {'bolo_0001': [0, 1, 2, 3, 4, 5, 6, 112]}
+Rank : 3 started
+Rank : 11 started
+Rank : 15 started
+Rank : 9 started
+Rank : 12 started
+Rank : 13 started
+Rank : 1 started
+Rank : 5 started
+Rank : 7 started
+Rank : 2 , Bolos and Segments : {'bolo_0001': [14, 15, 16, 17, 18, 19, 20, 114]}
+Rank : 1 , Bolos and Segments : {'bolo_0001': [7, 8, 9, 10, 11, 12, 13, 113]}
+Rank : 3 , Bolos and Segments : {'bolo_0001': [21, 22, 23, 24, 25, 26, 27, 115]}
+Rank : 4 , Bolos and Segments : {'bolo_0001': [28, 29, 30, 31, 32, 33, 34, 116]}
+Rank : 6 , Bolos and Segments : {'bolo_0001': [42, 43, 44, 45, 46, 47, 48, 118]}
+Rank : 5 , Bolos and Segments : {'bolo_0001': [35, 36, 37, 38, 39, 40, 41, 117]}
+Rank : 8 , Bolos and Segments : {'bolo_0001': [56, 57, 58, 59, 60, 61, 62]}
+Rank : 7 , Bolos and Segments : {'bolo_0001': [49, 50, 51, 52, 53, 54, 55, 119]}
+Rank : 10 , Bolos and Segments : {'bolo_0001': [70, 71, 72, 73, 74, 75, 76]}
+Rank : 9 , Bolos and Segments : {'bolo_0001': [63, 64, 65, 66, 67, 68, 69]}
+Rank : 11 , Bolos and Segments : {'bolo_0001': [77, 78, 79, 80, 81, 82, 83]}
+Rank : 12 , Bolos and Segments : {'bolo_0001': [84, 85, 86, 87, 88, 89, 90]}
+Rank : 14 , Bolos and Segments : {'bolo_0001': [98, 99, 100, 101, 102, 103, 104]}
+Rank : 13 , Bolos and Segments : {'bolo_0001': [91, 92, 93, 94, 95, 96, 97]}
+Rank : 15 , Bolos and Segments : {'bolo_0001': [105, 106, 107, 108, 109, 110, 111]}
+Rank : 11 Bolos class being generated
+Rank : 11 doing Bolo : bolo_0001 and segment : 77
+Rank : 6 Bolos class being generated
+Rank : 6 doing Bolo : bolo_0001 and segment : 42
+Rank : 12 Bolos class being generated
+Rank : 12 doing Bolo : bolo_0001 and segment : 84
+Rank : 8 Bolos class being generated
+Rank : 8 doing Bolo : bolo_0001 and segment : 56
+Rank : 13 Bolos class being generated
+Rank : 13 doing Bolo : bolo_0001 and segment : 91
+Rank : 4 Bolos class being generated
+Rank : 4 doing Bolo : bolo_0001 and segment : 28
+Rank : 1 Bolos class being generated
+Rank : 1 doing Bolo : bolo_0001 and segment : 7
+Rank : 10 Bolos class being generated
+Rank : 10 doing Bolo : bolo_0001 and segment : 70
+Rank : 5 Bolos class being generated
+Rank : 5 doing Bolo : bolo_0001 and segment : 35
+Rank : 14 Bolos class being generated
+Rank : 14 doing Bolo : bolo_0001 and segment : 98
+Rank : 3 Bolos class being generated
+Rank : 3 doing Bolo : bolo_0001 and segment : 21
+Rank : 15 Bolos class being generated
+Rank : 15 doing Bolo : bolo_0001 and segment : 105
+Rank : 9 Bolos class being generated
+Rank : 9 doing Bolo : bolo_0001 and segment : 63
+Rank : 2 Bolos class being generated
+Rank : 2 doing Bolo : bolo_0001 and segment : 14
+Rank : 7 Bolos class being generated
+Rank : 7 doing Bolo : bolo_0001 and segment : 49
+Rank : 0 Bolos class being generated
+Rank : 0 doing Bolo : bolo_0001 and segment : 0
+Rank : 12 Bolos signal read
+Rank : 14 Bolos signal read
+Rank : 8 Bolos signal read
+Rank : 10 Bolos signal read
+Rank : 6 Bolos signal read
+Rank : 11 Bolos signal read
+Rank : 9 Bolos signal read
+Rank : 3 Bolos signal read
+Rank : 7 Bolos signal read
+Rank : 5 Bolos signal read
+Rank : 4 Bolos signal read
+Rank : 15 Bolos signal read
+Rank : 13 Bolos signal read
+Rank : 1 Bolos signal read
+Rank : 0 Bolos signal read
+Rank : 2 Bolos signal read
+Rank : 12 Inverse covariance matrix generated
+Rank : 12 doing Bolo : bolo_0001 and segment : 85
+Rank : 11 Inverse covariance matrix generated
+Rank : 11 doing Bolo : bolo_0001 and segment : 78
+Rank : 14 Inverse covariance matrix generated
+Rank : 14 doing Bolo : bolo_0001 and segment : 99
+Rank : 6 Inverse covariance matrix generated
+Rank : 6 doing Bolo : bolo_0001 and segment : 43
+Rank : 7 Inverse covariance matrix generated
+Rank : 7 doing Bolo : bolo_0001 and segment : 50
+Rank : 10 Inverse covariance matrix generated
+Rank : 10 doing Bolo : bolo_0001 and segment : 71
+Rank : 8 Inverse covariance matrix generated
+Rank : 8 doing Bolo : bolo_0001 and segment : 57
+Rank : 3 Inverse covariance matrix generated
+Rank : 3 doing Bolo : bolo_0001 and segment : 22
+Rank : 4 Inverse covariance matrix generated
+Rank : 4 doing Bolo : bolo_0001 and segment : 29
+Rank : 15 Inverse covariance matrix generated
+Rank : 15 doing Bolo : bolo_0001 and segment : 106
+Rank : 5 Inverse covariance matrix generated
+Rank : 5 doing Bolo : bolo_0001 and segment : 36
+Rank : 9 Inverse covariance matrix generated
+Rank : 9 doing Bolo : bolo_0001 and segment : 64
+Rank : 13 Inverse covariance matrix generated
+Rank : 13 doing Bolo : bolo_0001 and segment : 92
+Rank : 0 Inverse covariance matrix generated
+Rank : 0 doing Bolo : bolo_0001 and segment : 1
+Rank : 1 Inverse covariance matrix generated
+Rank : 1 doing Bolo : bolo_0001 and segment : 8
+Rank : 2 Inverse covariance matrix generated
+Rank : 2 doing Bolo : bolo_0001 and segment : 15
+Rank : 12 Bolos signal read
+Rank : 11 Bolos signal read
+Rank : 6 Bolos signal read
+Rank : 8 Bolos signal read
+Rank : 5 Bolos signal read
+Rank : 9 Bolos signal read
+Rank : 10 Bolos signal read
+Rank : 7 Bolos signal read
+Rank : 13 Bolos signal read
+Rank : 14 Bolos signal read
+Rank : 15 Bolos signal read
+Rank : 0 Bolos signal read
+Rank : 3 Bolos signal read
+Rank : 4 Bolos signal read
+Rank : 12 Inverse covariance matrix generated
+Rank : 12 doing Bolo : bolo_0001 and segment : 86
+Rank : 2 Bolos signal read
+Rank : 1 Bolos signal read
+Rank : 11 Inverse covariance matrix generated
+Rank : 11 doing Bolo : bolo_0001 and segment : 79
+Rank : 6 Inverse covariance matrix generated
+Rank : 6 doing Bolo : bolo_0001 and segment : 44
+Rank : 5 Inverse covariance matrix generated
+Rank : 5 doing Bolo : bolo_0001 and segment : 37
+Rank : 8 Inverse covariance matrix generated
+Rank : 8 doing Bolo : bolo_0001 and segment : 58
+Rank : 9 Inverse covariance matrix generated
+Rank : 9 doing Bolo : bolo_0001 and segment : 65
+Rank : 7 Inverse covariance matrix generated
+Rank : 7 doing Bolo : bolo_0001 and segment : 51
+Rank : 10 Inverse covariance matrix generated
+Rank : 10 doing Bolo : bolo_0001 and segment : 72
+Rank : 13 Inverse covariance matrix generated
+Rank : 13 doing Bolo : bolo_0001 and segment : 93
+Rank : 12 Bolos signal read
+Rank : 14 Inverse covariance matrix generated
+Rank : 14 doing Bolo : bolo_0001 and segment : 100
+Rank : 15 Inverse covariance matrix generated
+Rank : 15 doing Bolo : bolo_0001 and segment : 107
+Rank : 3 Inverse covariance matrix generated
+Rank : 3 doing Bolo : bolo_0001 and segment : 23
+Rank : 11 Bolos signal read
+Rank : 0 Inverse covariance matrix generated
+Rank : 0 doing Bolo : bolo_0001 and segment : 2
+Rank : 4 Inverse covariance matrix generated
+Rank : 4 doing Bolo : bolo_0001 and segment : 30
+Rank : 1 Inverse covariance matrix generated
+Rank : 1 doing Bolo : bolo_0001 and segment : 9
+Rank : 2 Inverse covariance matrix generated
+Rank : 2 doing Bolo : bolo_0001 and segment : 16
+Rank : 7 Bolos signal read
+Rank : 12 Inverse covariance matrix generated
+Rank : 12 doing Bolo : bolo_0001 and segment : 87
+Rank : 10 Bolos signal read
+Rank : 11 Inverse covariance matrix generated
+Rank : 11 doing Bolo : bolo_0001 and segment : 80
+Rank : 9 Bolos signal read
+Rank : 8 Bolos signal read
+Rank : 6 Bolos signal read
+Rank : 5 Bolos signal read
+Rank : 13 Bolos signal read
+Rank : 7 Inverse covariance matrix generated
+Rank : 7 doing Bolo : bolo_0001 and segment : 52
+Rank : 12 Bolos signal read
+Rank : 9 Inverse covariance matrix generated
+Rank : 9 doing Bolo : bolo_0001 and segment : 66
+Rank : 15 Bolos signal read
+Rank : 11 Bolos signal read
+Rank : 10 Inverse covariance matrix generated
+Rank : 10 doing Bolo : bolo_0001 and segment : 73
+Rank : 8 Inverse covariance matrix generated
+Rank : 8 doing Bolo : bolo_0001 and segment : 59
+Rank : 3 Bolos signal read
+Rank : 1 Bolos signal read
+Rank : 14 Bolos signal read
+Rank : 0 Bolos signal read
+Rank : 4 Bolos signal read
+Rank : 2 Bolos signal read
+Rank : 6 Inverse covariance matrix generated
+Rank : 6 doing Bolo : bolo_0001 and segment : 45
+Rank : 5 Inverse covariance matrix generated
+Rank : 5 doing Bolo : bolo_0001 and segment : 38
+Rank : 9 Bolos signal read
+Rank : 13 Inverse covariance matrix generated
+Rank : 13 doing Bolo : bolo_0001 and segment : 94
+Rank : 10 Bolos signal read
+Rank : 12 Inverse covariance matrix generated
+Rank : 12 doing Bolo : bolo_0001 and segment : 88
+Rank : 11 Inverse covariance matrix generated
+Rank : 11 doing Bolo : bolo_0001 and segment : 81
+Rank : 15 Inverse covariance matrix generated
+Rank : 15 doing Bolo : bolo_0001 and segment : 108
+Rank : 7 Bolos signal read
+Rank : 3 Inverse covariance matrix generated
+Rank : 3 doing Bolo : bolo_0001 and segment : 24
+Rank : 1 Inverse covariance matrix generated
+Rank : 1 doing Bolo : bolo_0001 and segment : 10
+Rank : 0 Inverse covariance matrix generated
+Rank : 0 doing Bolo : bolo_0001 and segment : 3
+Rank : 4 Inverse covariance matrix generated
+Rank : 4 doing Bolo : bolo_0001 and segment : 31
+Rank : 14 Inverse covariance matrix generated
+Rank : 14 doing Bolo : bolo_0001 and segment : 101
+Rank : 2 Inverse covariance matrix generated
+Rank : 2 doing Bolo : bolo_0001 and segment : 17
+Rank : 9 Inverse covariance matrix generated
+Rank : 9 doing Bolo : bolo_0001 and segment : 67
+Rank : 8 Bolos signal read
+Rank : 10 Inverse covariance matrix generated
+Rank : 10 doing Bolo : bolo_0001 and segment : 74
+Rank : 7 Inverse covariance matrix generated
+Rank : 7 doing Bolo : bolo_0001 and segment : 53
+Rank : 11 Bolos signal read
+Rank : 12 Bolos signal read
+Rank : 6 Bolos signal read
+Rank : 5 Bolos signal read
+Rank : 13 Bolos signal read
+Rank : 8 Inverse covariance matrix generated
+Rank : 8 doing Bolo : bolo_0001 and segment : 60
+Rank : 11 Inverse covariance matrix generated
+Rank : 11 doing Bolo : bolo_0001 and segment : 82
+Rank : 15 Bolos signal read
+Rank : 12 Inverse covariance matrix generated
+Rank : 12 doing Bolo : bolo_0001 and segment : 89
+Rank : 14 Bolos signal read
+Rank : 0 Bolos signal read
+Rank : 1 Bolos signal read
+Rank : 5 Inverse covariance matrix generated
+Rank : 5 doing Bolo : bolo_0001 and segment : 39
+Rank : 3 Bolos signal read
+Rank : 6 Inverse covariance matrix generated
+Rank : 6 doing Bolo : bolo_0001 and segment : 46
+Rank : 4 Bolos signal read
+Rank : 13 Inverse covariance matrix generated
+Rank : 13 doing Bolo : bolo_0001 and segment : 95
+Rank : 2 Bolos signal read
+Rank : 9 Bolos signal read
+Rank : 10 Bolos signal read
+Rank : 7 Bolos signal read
+Rank : 15 Inverse covariance matrix generated
+Rank : 15 doing Bolo : bolo_0001 and segment : 109
+Rank : 14 Inverse covariance matrix generated
+Rank : 14 doing Bolo : bolo_0001 and segment : 102
+Rank : 1 Inverse covariance matrix generated
+Rank : 1 doing Bolo : bolo_0001 and segment : 11
+Rank : 8 Bolos signal read
+Rank : 3 Inverse covariance matrix generated
+Rank : 3 doing Bolo : bolo_0001 and segment : 25
+Rank : 0 Inverse covariance matrix generated
+Rank : 0 doing Bolo : bolo_0001 and segment : 4
+Rank : 4 Inverse covariance matrix generated
+Rank : 4 doing Bolo : bolo_0001 and segment : 32
+Rank : 9 Inverse covariance matrix generated
+Rank : 9 doing Bolo : bolo_0001 and segment : 68
+Rank : 2 Inverse covariance matrix generated
+Rank : 2 doing Bolo : bolo_0001 and segment : 18
+Rank : 10 Inverse covariance matrix generated
+Rank : 10 doing Bolo : bolo_0001 and segment : 75
+Rank : 7 Inverse covariance matrix generated
+Rank : 7 doing Bolo : bolo_0001 and segment : 54
+Rank : 11 Bolos signal read
+Rank : 6 Bolos signal read
+Rank : 8 Inverse covariance matrix generated
+Rank : 8 doing Bolo : bolo_0001 and segment : 61
+Rank : 5 Bolos signal read
+Rank : 13 Bolos signal read
+Rank : 12 Bolos signal read
+Rank : 11 Inverse covariance matrix generated
+Rank : 11 doing Bolo : bolo_0001 and segment : 83
+Rank : 15 Bolos signal read
+Rank : 5 Inverse covariance matrix generated
+Rank : 5 doing Bolo : bolo_0001 and segment : 40
+Rank : 13 Inverse covariance matrix generated
+Rank : 13 doing Bolo : bolo_0001 and segment : 96
+Rank : 14 Bolos signal read
+Rank : 1 Bolos signal read
+Rank : 12 Inverse covariance matrix generated
+Rank : 12 doing Bolo : bolo_0001 and segment : 90
+Rank : 6 Inverse covariance matrix generated
+Rank : 6 doing Bolo : bolo_0001 and segment : 47
+Rank : 3 Bolos signal read
+Rank : 0 Bolos signal read
+Rank : 4 Bolos signal read
+Rank : 9 Bolos signal read
+Rank : 2 Bolos signal read
+Rank : 7 Bolos signal read
+Rank : 10 Bolos signal read
+Rank : 15 Inverse covariance matrix generated
+Rank : 15 doing Bolo : bolo_0001 and segment : 110
+Rank : 8 Bolos signal read
+Rank : 1 Inverse covariance matrix generated
+Rank : 1 doing Bolo : bolo_0001 and segment : 12
+Rank : 14 Inverse covariance matrix generated
+Rank : 14 doing Bolo : bolo_0001 and segment : 103
+Rank : 3 Inverse covariance matrix generated
+Rank : 3 doing Bolo : bolo_0001 and segment : 26
+Rank : 11 Bolos signal read
+Rank : 4 Inverse covariance matrix generated
+Rank : 4 doing Bolo : bolo_0001 and segment : 33
+Rank : 0 Inverse covariance matrix generated
+Rank : 0 doing Bolo : bolo_0001 and segment : 5
+Rank : 9 Inverse covariance matrix generated
+Rank : 9 doing Bolo : bolo_0001 and segment : 69
+Rank : 2 Inverse covariance matrix generated
+Rank : 2 doing Bolo : bolo_0001 and segment : 19
+Rank : 7 Inverse covariance matrix generated
+Rank : 7 doing Bolo : bolo_0001 and segment : 55
+Rank : 10 Inverse covariance matrix generated
+Rank : 10 doing Bolo : bolo_0001 and segment : 76
+Rank : 5 Bolos signal read
+Rank : 8 Inverse covariance matrix generated
+Rank : 8 doing Bolo : bolo_0001 and segment : 62
+Rank : 13 Bolos signal read
+Rank : 6 Bolos signal read
+Rank : 12 Bolos signal read
+Rank : 11 Inverse covariance matrix generated
+Rank : 15 Bolos signal read
+Rank : 14 Bolos signal read
+Rank : 5 Inverse covariance matrix generated
+Rank : 5 doing Bolo : bolo_0001 and segment : 41
+Rank : 13 Inverse covariance matrix generated
+Rank : 13 doing Bolo : bolo_0001 and segment : 97
+Rank : 1 Bolos signal read
+Rank : 3 Bolos signal read
+Rank : 6 Inverse covariance matrix generated
+Rank : 6 doing Bolo : bolo_0001 and segment : 48
+Rank : 12 Inverse covariance matrix generated
+Rank : 15 Inverse covariance matrix generated
+Rank : 15 doing Bolo : bolo_0001 and segment : 111
+Rank : 4 Bolos signal read
+Rank : 9 Bolos signal read
+Rank : 10 Bolos signal read
+Rank : 2 Bolos signal read
+Rank : 0 Bolos signal read
+Rank : 14 Inverse covariance matrix generated
+Rank : 14 doing Bolo : bolo_0001 and segment : 104
+Rank : 7 Bolos signal read
+Rank : 3 Inverse covariance matrix generated
+Rank : 3 doing Bolo : bolo_0001 and segment : 27
+Rank : 1 Inverse covariance matrix generated
+Rank : 1 doing Bolo : bolo_0001 and segment : 13
+Rank : 8 Bolos signal read
+Rank : 5 Bolos signal read
+Rank : 4 Inverse covariance matrix generated
+Rank : 4 doing Bolo : bolo_0001 and segment : 34
+Rank : 13 Bolos signal read
+Rank : 9 Inverse covariance matrix generated
+Rank : 6 Bolos signal read
+Rank : 10 Inverse covariance matrix generated
+Rank : 0 Inverse covariance matrix generated
+Rank : 0 doing Bolo : bolo_0001 and segment : 6
+Rank : 2 Inverse covariance matrix generated
+Rank : 2 doing Bolo : bolo_0001 and segment : 20
+Rank : 7 Inverse covariance matrix generated
+Rank : 7 doing Bolo : bolo_0001 and segment : 119
+Rank : 8 Inverse covariance matrix generated
+Rank : 14 Bolos signal read
+Rank : 15 Bolos signal read
+Rank : 3 Bolos signal read
+Rank : 13 Inverse covariance matrix generated
+Rank : 1 Bolos signal read
+Rank : 5 Inverse covariance matrix generated
+Rank : 5 doing Bolo : bolo_0001 and segment : 117
+Rank : 6 Inverse covariance matrix generated
+Rank : 6 doing Bolo : bolo_0001 and segment : 118
+Rank : 4 Bolos signal read
+Rank : 0 Bolos signal read
+Rank : 14 Inverse covariance matrix generated
+Rank : 15 Inverse covariance matrix generated
+Rank : 2 Bolos signal read
+Rank : 7 Bolos signal read
+Rank : 3 Inverse covariance matrix generated
+Rank : 3 doing Bolo : bolo_0001 and segment : 115
+Rank : 1 Inverse covariance matrix generated
+Rank : 1 doing Bolo : bolo_0001 and segment : 113
+Rank : 5 Bolos signal read
+Rank : 6 Bolos signal read
+Rank : 4 Inverse covariance matrix generated
+Rank : 4 doing Bolo : bolo_0001 and segment : 116
+Rank : 0 Inverse covariance matrix generated
+Rank : 0 doing Bolo : bolo_0001 and segment : 112
+Rank : 2 Inverse covariance matrix generated
+Rank : 2 doing Bolo : bolo_0001 and segment : 114
+Rank : 7 Inverse covariance matrix generated
+Rank : 1 Bolos signal read
+Rank : 3 Bolos signal read
+Rank : 5 Inverse covariance matrix generated
+Rank : 6 Inverse covariance matrix generated
+Rank : 0 Bolos signal read
+Rank : 4 Bolos signal read
+Rank : 2 Bolos signal read
+Rank : 1 Inverse covariance matrix generated
+Rank : 3 Inverse covariance matrix generated
+Rank : 0 Inverse covariance matrix generated
+Rank : 4 Inverse covariance matrix generated
+Rank : 2 Inverse covariance matrix generated
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0000.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0001.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0002.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0003.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0004.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0005.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0006.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0007.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0008.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0009.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0010.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0011.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0012.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0013.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0014.npy True
+/workdir/banerji/core_output/bandpass_test_gal_5/rec_corrected/sky_map_segments/0015.npy True
