@@ -245,3 +245,26 @@ def bin_error_bar(error, bins, pol=False):
             binned_error[i] = np.mean(error[bin_low:bin_high])/np.sqrt(bin_width[i])
 
     return bin_width, binned_error
+
+def TQU_TO_TEB_maps(sky_TQU, lmax):
+    nside = hp.get_nside(sky_TQU)
+
+    alm_in = hp.map2alm(sky_TQU, lmax, pol=True)
+
+    sky_TEB = np.empty((3, 12*nside**2))
+    for i in range(3):
+        sky_TEB[i] = hp.alm2map(alm_in[i], nside, pol=False)
+
+    return sky_TEB
+
+def TEB_to_TQU_maps(sky_TEB, lmax):
+    nside = hp.get_nside(sky_TEB)
+
+    alm = np.empty((3, (lmax + 1)**2))
+    
+    for i in range(3):
+        alm[i] = hp.map2alm(sky_TEB[i], lmax, pol=False)
+
+    sky_TQU = hp.alm2map(alm, nside, lmax, pol=True)
+
+    return sky_TQU
