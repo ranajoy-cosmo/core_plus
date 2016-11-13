@@ -1,7 +1,7 @@
 import numpy as np
 import healpy as hp
 import os
-from simulation.params.custom_params import global_paths
+from simulation.global_config import global_paths
 
 OMEGA_SKY = 4*np.pi                         #radian^2
 OMEGA_ARCMIN_SQ = np.radians(1.0/60.0)**2   #radian^2

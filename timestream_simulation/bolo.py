@@ -15,19 +15,18 @@ class Bolo:
 
     def __init__(self, bolo_name, config):
         self.name = bolo_name
-        bolo_config = importlib.import_module("simulation.timestream_simulation.bolo_config_files." + 
-                config.bolo_config_file).bolo_config.bolos[bolo_name]
         self.config = Generic()
+        bolo_config = importlib.import_module(config.bolo_config_file).bolo_config.bolos[bolo_name]
         self.config.__dict__.update(config.__dict__)
         self.config.__dict__.update(bolo_config.__dict__)
-        self.calculate_params()
-        self.beam = Beam(self.config, bolo_config)
-        self.noise_class = Noise(self.config)
         if config.simulate_ts:
+            self.beam = Beam(self.config, bolo_config)
+            self.noise_class = Noise(self.config)
             if not config.sim_pol_type == "noise_only":
                 self.get_sky_map()
-        self.get_initial_axes()
-        self.get_nsamples()
+            self.calculate_params()
+            self.get_initial_axes()
+            self.get_nsamples()
         self.set_bolo_dirs()
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
@@ -37,11 +36,13 @@ class Bolo:
     #@profile
     def simulate_timestream(self, segment):
         if segment == 0:
-            self.display_params()
-            self.beam.display_beam_settings()
+            #self.display_params()
+            #self.beam.display_beam_settings()
             if self.config.write_beam:
                 self.beam.write_beam(self.bolo_dir)
         rot_qt = self.generate_quaternion(segment)
+
+        t_stream = {"signal" : None, "v" : None, "pol_ang" : None}
 
         prompter.prompt("0.0")
         #Simulating the scan along the centre of the FOV
@@ -49,12 +50,12 @@ class Bolo:
         v_central = self.get_v_obv(v_init, rot_qt)
 
         pol_ang = self.get_pol_ang(rot_qt, v_central) 
-        if self.config.sim_pol_type == "TQU":
-            cos2 = np.cos(2*pol_ang)
-            sin2 = np.sin(2*pol_ang)
-        else:
+        if self.config.sim_pol_type == "T":
             cos2=None
             sin2=None
+        else:
+            cos2 = np.cos(2*pol_ang)
+            sin2 = np.sin(2*pol_ang)
  
         if "timestream_data" in self.config.timestream_data_products:
             self.make_write_dir(segment)
@@ -92,9 +93,15 @@ class Bolo:
 
         if self.config.pipe_with_map_maker:
             if self.config.do_pencil_beam:
-                return signal, v_central, pol_ang
+                t_stream["signal"] = signal
+                t_stream["v"] = v_central
+                t_stream["pol_ang"] = pol_ang
+                return t_stream
             else:
-                return signal[::self.config.oversampling_rate], v_central[self.pad:-self.pad][::self.config.oversampling_rate], pol_ang[self.pad:-self.pad][::self.config.oversampling_rate]
+                t_stream["signal"] = signal[::self.config.oversampling_rate]
+                t_stream["v"] = v_central[self.pad:-self.pad][::self.config.oversampling_rate]
+                t_stream["pol_ang"] = pol_ang[self.pad:-self.pad][::self.config.oversampling_rate]
+                return t_stream
 
 
         if "hitmap" in self.config.timestream_data_products:
@@ -108,22 +115,23 @@ class Bolo:
         if self.config.sim_pol_type == "noise_only":
             signal = np.zeros(self.nsamples - 2*self.pad) 
 
-        elif self.config.sim_pol_type == "T_only":
-            signal = 0.5*self.sky_map[hit_pix]
-            if not self.config.do_pencil_beam:
-                signal = np.convolve(signal, beam_kernel_row[0], mode='valid')
+        elif self.config.sim_pol_type == "T":
+            if self.config.do_pencil_beam:
+                signal = 0.5*self.sky_map[hit_pix]
+            else: 
+                signal = np.convolve(0.5*self.sky_map[hit_pix], beam_kernel_row[0], mode='valid')
+
+        elif self.config.sim_pol_type in ["QU", "_QU"]:
+            if self.config.do_pencil_beam:
+                signal = 0.5*(self.sky_map[0][hit_pix]*cos2 + self.sky_map[1][hit_pix]*sin2) 
+            else:
+                signal = np.convolve(0.5*(self.sky_map[0][hit_pix]*cos2 + self.sky_map[1][hit_pix]*sin2), -1.0*beam_kernel_row[1], mode='valid')
+                signal += np.convolve(0.5*(self.sky_map[0][hit_pix]*sin2 + self.sky_map[1][hit_pix]*cos2), -1.0*beam_kernel_row[2], mode='valid')
 
         else:
             if self.config.do_pencil_beam:
                 signal = 0.5*(self.sky_map[0][hit_pix] + self.sky_map[1][hit_pix]*cos2 + self.sky_map[2][hit_pix]*sin2) 
             else:
-                """
-                signal = np.convolve(0.5*self.sky_map[0][hit_pix], beam_kernel_row[0], mode='valid')
-                signal += np.convolve(0.5*self.sky_map[1][hit_pix]*cos2, -1.0*beam_kernel_row[1], mode='valid')
-                #signal += np.convolve(0.5*self.sky_map[1][hit_pix]*sin2, -1.0*beam_kernel_row[2], mode='valid')
-                signal += np.convolve(0.5*self.sky_map[2][hit_pix]*sin2, -1.0*beam_kernel_row[1], mode='valid')
-                #signal += np.convolve(0.5*self.sky_map[2][hit_pix]*cos2, -1.0*beam_kernel_row[2], mode='valid')
-                """
                 signal = np.convolve(0.5*self.sky_map[0][hit_pix], beam_kernel_row[0], mode='valid')
                 signal += np.convolve(0.5*(self.sky_map[1][hit_pix]*cos2 + self.sky_map[2][hit_pix]*sin2), -1.0*beam_kernel_row[1], mode='valid')
                 signal += np.convolve(0.5*(self.sky_map[1][hit_pix]*sin2 + self.sky_map[2][hit_pix]*cos2), -1.0*beam_kernel_row[2], mode='valid')
@@ -249,8 +257,12 @@ class Bolo:
     def get_sky_map(self):
         if self.config.sim_pol_type == "noise_only":
             self.sky_map = None
-        elif self.config.sim_pol_type == "T_only":
+        elif self.config.sim_pol_type == "T":
             self.sky_map = hp.read_map(self.config.input_map)
+        elif self.config.sim_pol_type == "QU":
+            self.sky_map = hp.read_map(self.config.input_map, field=(0,1))
+        elif self.config.sim_pol_type == "_QU":
+            self.sky_map = hp.read_map(self.config.input_map, field=(1,2))
         else:
             self.sky_map = hp.read_map(self.config.input_map, field=(0,1,2))
 
@@ -297,16 +309,20 @@ class Bolo:
                 np.save(os.path.join(write_dir, data_name), ts_data[self.pad:-self.pad][::self.config.oversampling_rate])
 
 
-    def read_timestream(self, segment, noise=False):
+    def read_timestream(self, segment, noise_only=False, read_list=["signal", "v", "pol_ang"]):
         segment_dir = self.get_segment_dir(segment)
-        if noise:
-            signal = np.load(os.path.join(segment_dir, "noise.npy"))
-        else:
-            signal = np.load(os.path.join(segment_dir, "signal.npy"))
-        v = np.load(os.path.join(segment_dir, "pointing_vec.npy"))
-        pol_ang = np.load(os.path.join(segment_dir, "pol_ang.npy"))
+        t_stream = {"signal" : None, "v" : None, "pol_ang" : None}  
+        if "signal" in read_list:
+            if noise_only:
+                t_stream["signal"] = np.load(os.path.join(segment_dir, "noise.npy"))
+            else:
+                t_stream["signal"] = np.load(os.path.join(segment_dir, "signal.npy"))
+        if "v" in read_list:
+            t_stream["v"] = np.load(os.path.join(segment_dir, "pointing_vec.npy"))
+        if "pol_ang" in read_list:
+            t_stream["pol_ang"] = np.load(os.path.join(segment_dir, "pol_ang.npy"))
 
-        return signal, v, pol_ang
+        return t_stream 
 
 
     def display_params(self):

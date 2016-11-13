@@ -1,62 +1,69 @@
-#!/usr/bin/env python
-
 import numpy as np
 import healpy as hp
-import simulation.lib.quaternion.quaternion as qt
+import sys
+from simulation.lib.utilities.generic_class import Generic
+import simulation.lib.utilities.prompter as prompter
+import simulation.lib.quaternion.quaternion as quaternion
 
-class Pointing:
+class Pointing():
+    
+    def __init__(self, config, segment, beam_width):
+        self.config = Generic()
+        self.config.__dict__.update(config.__dict__)
+        self.set_sim_time_and_samples(segment, beam_width)
 
-
-    def __init__(self, bolo_params, scan_params):
-        self._set_pointing_params(bolo_params, scan_params)
-        self.get_initial_axes()
-
-    def _set_pointing_params(self, bolo_params, scan_params):
-        self._alpha = np.radians(scan_params.alpha)                         #radians
-        self._beta = np.radians(scan_params.beta)                           #radians
-        self._t_year = scan_params.t_year                                   #seconds
-        self._t_prec = scan_params.t_prec                                  #seconds   
-        self._t_spin = scan_params.t_spin                                   #seconds
-        self._t_segment = scan_params.t_segment                             #seconds
-        self._oversampling_rate = scan_params.oversampling_rate
-        self._pol_phase_ini = np.radians(bolo_params.pol_phase_ini)         #radians
-        self._pointing_offset_x = bolo_params.pointing_offset_x
-        self._pointing_offset_y = bolo_params.pointing_offset_y
+    def set_sim_time_and_samples(self, segment, beam_width):
+        self.t_start = segment*self.config.t_segment
+        self.t_stop = (segment + 1)*self.config.t_segment
+        self.delta_t = 1.0/self.config.sampling_rate/self.config.oversampling_rate
+        self.pad = beam_width/2
+        self.n_samples = self.config.t_segment*self.config.sampling_rate*self.config.oversampling_rate + 2*self.pad
 
     def get_initial_axes(self):
-        self._x_axis = np.array([1.0, 0.0, 0.0])
-        self._y_axis = np.array([0.0, 1.0, 0.0])
-        self._z_axis = np.array([0.0, 0.0, 1.0])
-        self._axis_rev = self._z_axis
-        self._axis_prec = self._x_axis
-        self._axis_spin = np.array([np.cos(self._alpha), 0.0, np.sin(self._alpha)])
+        alpha = np.deg2rad(self.config.alpha)                                   #radians
+        beta = np.deg2rad(self.config.beta)                                     #radians
 
-    def get_initial_vector(self, beta_offset):
-        beta_offset_rad = np.radians(beta_offset)
-        theta = self._alpha + self._beta + beta_offset_rad
-        v_ini = np.array([np.cos(theta), 0.0, np.sin(theta)])
+        self.axis_spin = np.array([np.cos(alpha), 0.0, np.sin(alpha)])
+        self.axis_prec = np.array([1.0, 0.0, 0.0])
+        self.axis_rev = np.array([0.0, 0.0, 1.0])
 
-        return v_ini
 
-    def get_local_axes_S2(self, v_pointing):
-        theta, phi = hp.vec2dir(v_pointing)
-        x_local = np.array(zip(np.cos(theta)*np.cos(phi), np.cos(theta)*np.sin(phi), -np.sin(theta)))
-        y_local = np.array(zip(-np.sin(phi), np.cos(phi), np.zeros(phi.size)))
+    def get_initial_vec(self, del_beta):
+        alpha = np.deg2rad(self.config.alpha)                                   #radians
+        beta = np.deg2rad(self.config.beta)                                     #radians
+        if self.config.do_pencil_beam:
+            del_x = np.deg2rad(self.config.offset_x/60.0/60.0)    #radians
+            del_y = np.deg2rad(self.config.offset_y/60.0/60.0)    #radians
+        else:
+            del_x = 0.0
+            del_y = 0.0
+        del_beta_rad = np.deg2rad(del_beta/60.0)                                #radians
+        total_opening = alpha + beta + del_beta_rad
 
-        return x_local, y_local
+        u_view = np.array([np.cos(total_opening), 0.0, np.sin(total_opening)])
+        
+        x_roll_axis = np.array([0.0, 1.0, 0.0])
+        y_roll_axis = np.array([-np.sin(total_opening), 0.0, np.cos(total_opening)])
 
-    def get_boresight_initial_vectors(self):
-        theta = self._alpha + self._beta
+        q_x_roll = quaternion.make_quaternion(del_x, x_roll_axis)
+        q_y_roll = quaternion.make_quaternion(del_y, y_roll_axis)
+        q_offset = quaternion.multiply(q_x_roll, q_y_roll)
+        u_view = quaternion.transform(q_offset, u_view)
 
-        self._v_boresight_ini = get_initial_vectors(0)
-        self._pol_vector_ini = np.array([np.sin(theta), 0.0, -np.cos(theta)])
+        return u_view
 
-    def generate_quaternion_boresight(pad_length=0):
-        n_steps = self._t_segment*self._sampling_rate*self._oversampling_rate + 2*pad_length
-        t_steps = t_start + np.arange(-pad_length, n_steps - pad_length, dtype=np.float)/(self._sampling_rate*self._oversampling_rate)
 
-        w_spin = 2*np.pi/self._t_spin
-        w_prec = 2*np.pi/self._t_prec
-        w_rev = 2*np.pi/self._t_year
+    def generate_quaternion(self, segment):
 
-        self.quat_tot = qt.multiply(qt.make_quaternion(), qt.multiply(qt.make_quaternion(), qt.make_quaternion()))
+        t_steps = t_start + (1.0/self.config.sampling_rate/self.config.oversampling_rate)*np.arange(-self.pad, self.nsamples - self.pad)
+
+        w_spin = -2*np.pi/self.config.t_spin
+        w_prec = -2*np.pi/self.config.t_prec
+        w_rev = -2*np.pi/self.config.t_year
+
+        r_total = quaternion.multiply(quaternion.make_quaternion(w_rev*t_steps, self.axis_rev), quaternion.multiply(quaternion.make_quaternion(w_prec*t_steps, self.axis_prec), quaternion.make_quaternion(w_spin*t_steps, self.axis_spin)))
+        #r_total = quaternion.multiply(quaternion.make_quaternion(w_prec*t_steps, self.axis_prec), quaternion.make_quaternion(w_spin*t_steps, self.axis_spin))
+
+        return r_total
+
+

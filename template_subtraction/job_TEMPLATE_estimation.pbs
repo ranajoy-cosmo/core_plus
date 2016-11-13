@@ -11,7 +11,13 @@ export SCRATCH="/scratch/$USER.$PBS_JOBID"
 source activate cmb_core
 
 RUN_DIR=$HOME/simulation/template_subtraction
-cd $RUN_DIR
-REC_CODE_DIR="/home/banerji/simulation/map_maker/"
+OUT_FILES_DIR=$RUN_DIR/out_files
+CONFIG_FILES_DIR=simulation.template_subtraction.config_files
+SIM_CODE_DIR=$HOME/simulation/timestream_simulation
+REC_CODE_DIR=$HOME/simulation/map_maker
 
-/usr/local/openmpi/bin/mpirun -np 16 python $REC_CODE_DIR/y_estimator.py 120
+CONFIG_FILE=$CONFIG_FILES_DIR.default_config
+
+cd $RUN_DIR
+
+/usr/local/openmpi/bin/mpirun -np 16 python $REC_CODE_DIR/y_estimator_new.py $CONFIG_FILE 120

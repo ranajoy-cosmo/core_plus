@@ -4,20 +4,21 @@ import numpy as np
 from simulation.lib.utilities.time_util import get_time_stamp
 from simulation.lib.utilities.generic_class import Generic
 from simulation.lib.utilities.time_util import get_time_stamp
-from simulation.params.custom_params import global_paths, global_scanning, global_system
+from simulation.global_config import global_paths
 
 config = Generic()
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Sim Action 
+# Sim Action
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 config.simulate_ts = True
 config.sim_tag = "sim_test"
 config.scan_tag = "scan_1"
 
-#Options for input_pol_type = ["TQU", "T_only", "noise_only"]
+#Options for input_pol_type = ["TQU", "QU", "T", "_QU", "noise_only"]
 #Default -> "TQU"
+# A _ means that the input map has a component which will not be read"
 config.sim_pol_type = "TQU"
 
 config.add_noise = False

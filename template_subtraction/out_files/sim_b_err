@@ -1,13 +1,2 @@
 /home/banerji/.bashrc: ligne 19 : bind: avertissement :édition de ligne non activée
 /home/banerji/.bashrc: ligne 20 : bind: avertissement :édition de ligne non activée
-Traceback (most recent call last):
-  File "/home/banerji/simulation/timestream_simulation/sim_timestream.py", line 109, in <module>
-    run_mpi()
-  File "/home/banerji/simulation/timestream_simulation/sim_timestream.py", line 23, in run_mpi
-    make_data_dirs()
-  File "/home/banerji/simulation/timestream_simulation/sim_timestream.py", line 67, in make_data_dirs
-    os.makedirs(scan_dir)
-  File "/home/banerji/miniconda2/envs/cmb_core/lib/python2.7/os.py", line 157, in makedirs
-    mkdir(name, mode)
-OSError: [Errno 17] File exists: '/workdir/banerji/core_output/bandpass_test_gal_6/first_scan'
-=>> PBS: job killed: walltime 5424 exceeded limit 5400

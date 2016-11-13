@@ -7,7 +7,7 @@ import os
 import shutil
 import importlib
 import time
-#from memory_profiler import profile
+from memory_profiler import profile
 from simulation.lib.data_management.data_utilities import get_local_bolo_segment_list
 import simulation.lib.utilities.prompter as prompter
 from simulation.timestream_simulation.bolo import Bolo
@@ -22,9 +22,12 @@ def run_mpi():
     if rank == 0:
         make_data_dirs()
 
+    bolo_segment_dict = get_local_bolo_segment_list(rank, size, config.bolo_list, config.segment_list)
+    comm.Barrier()
+    time.sleep(0.1*rank)
+    print "Rank :", rank, "Local bolo segment list :\n", bolo_segment_dict
     comm.Barrier()
 
-    bolo_segment_dict = get_local_bolo_segment_list(rank, size, config.bolo_list, config.segment_list)
     tot_seg = 0
     for keys in bolo_segment_dict.keys():
         tot_seg += len(bolo_segment_dict[keys])
@@ -96,7 +99,7 @@ if __name__=="__main__":
     config_file = sys.argv[1]
     run_type = sys.argv[2]
 
-    config = importlib.import_module("simulation.timestream_simulation.config_files." + config_file).config
+    config = importlib.import_module(config_file).config
 
     if run_type=='run_check':
         run_check()

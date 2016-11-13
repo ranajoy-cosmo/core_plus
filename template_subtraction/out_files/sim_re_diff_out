@@ -1,6 +1,56 @@
 Running sim job for rescan of diff
+Rank : 0 Local bolo segment list :
+{'bolo_0001a': [0, 1, 2, 3, 4, 5, 6, 112]}
+Rank : 1 Local bolo segment list :
+{'bolo_0001a': [7, 8, 9, 10, 11, 12, 13, 113]}
+Rank : 2 Local bolo segment list :
+{'bolo_0001a': [14, 15, 16, 17, 18, 19, 20, 114]}
+Rank : 3 Local bolo segment list :
+{'bolo_0001a': [21, 22, 23, 24, 25, 26, 27, 115]}
+Rank : 4 Local bolo segment list :
+{'bolo_0001a': [28, 29, 30, 31, 32, 33, 34, 116]}
+Rank : 5 Local bolo segment list :
+{'bolo_0001a': [35, 36, 37, 38, 39, 40, 41, 117]}
+Rank : 6 Local bolo segment list :
+{'bolo_0001a': [42, 43, 44, 45, 46, 47, 48, 118]}
+Rank : 7 Local bolo segment list :
+{'bolo_0001a': [49, 50, 51, 52, 53, 54, 55, 119]}
+Rank : 8 Local bolo segment list :
+{'bolo_0001a': [56, 57, 58, 59, 60, 61, 62]}
+Rank : 9 Local bolo segment list :
+{'bolo_0001a': [63, 64, 65, 66, 67, 68, 69]}
+Rank : 10 Local bolo segment list :
+{'bolo_0001a': [70, 71, 72, 73, 74, 75, 76]}
+Rank : 11 Local bolo segment list :
+{'bolo_0001a': [77, 78, 79, 80, 81, 82, 83]}
+Rank : 12 Local bolo segment list :
+{'bolo_0001a': [84, 85, 86, 87, 88, 89, 90]}
+Rank : 13 Local bolo segment list :
+{'bolo_0001a': [91, 92, 93, 94, 95, 96, 97]}
+Rank : 14 Local bolo segment list :
+{'bolo_0001a': [98, 99, 100, 101, 102, 103, 104]}
+Rank : 15 Local bolo segment list :
+{'bolo_0001a': [105, 106, 107, 108, 109, 110, 111]}
 NSIDE = 1024
 ORDERING = RING in fits file
+INDXSCHM = IMPLICIT
+NSIDE = 1024
+ORDERING = RING in fits file
+INDXSCHM = IMPLICIT
+NSIDE = 1024
+ORDERING = RING in fits file
+INDXSCHM = IMPLICIT
+NSIDE = 1024
+ORDERING = RING in fits file
+INDXSCHM = IMPLICIT
+NSIDE = 1024
+ORDERING = RING in fits file
+INDXSCHM = IMPLICIT
+NSIDE = 1024
+NSIDE = 1024
+ORDERING = RING in fits file
+ORDERING = RING in fits file
+INDXSCHM = IMPLICIT
 INDXSCHM = IMPLICIT
 NSIDE = 1024
 ORDERING = RING in fits file
@@ -25,44 +75,26 @@ ORDERING = RING in fits file
 INDXSCHM = IMPLICIT
 NSIDE = 1024
 ORDERING = RING in fits file
-INDXSCHM = IMPLICIT
 NSIDE = 1024
 ORDERING = RING in fits file
 INDXSCHM = IMPLICIT
-NSIDE = 1024
-ORDERING = RING in fits file
 INDXSCHM = IMPLICIT
-NSIDE = 1024
-ORDERING = RING in fits file
-INDXSCHM = IMPLICIT
-NSIDE = 1024
-ORDERING = RING in fits file
-INDXSCHM = IMPLICIT
-NSIDE = 1024
-ORDERING = RING in fits file
-INDXSCHM = IMPLICIT
-NSIDE = 1024
-NSIDE = 1024
-ORDERING = RING in fits file
-ORDERING = RING in fits file
-INDXSCHM = IMPLICIT
-INDXSCHM = IMPLICIT
-Doing Bolo : bolo_0001a Segment : 85 Rank : 12
-Doing Bolo : bolo_0001a Segment : 57 Rank : 8
 Doing Bolo : bolo_0001a Segment : 1 Rank : 0
-Doing Bolo : bolo_0001a Segment : 99 Rank : 14
-Doing Bolo : bolo_0001a Segment : 22 Rank : 3
+Doing Bolo : bolo_0001a Segment : 85 Rank : 12
 Doing Bolo : bolo_0001a Segment : 29 Rank : 4
-Doing Bolo : bolo_0001a Segment : 78 Rank : 11
-Doing Bolo : bolo_0001a Segment : 43 Rank : 6
-Doing Bolo : bolo_0001a Segment : 50 Rank : 7
-Doing Bolo : bolo_0001a Segment : 36 Rank : 5
-Doing Bolo : bolo_0001a Segment : 106 Rank : 15
-Doing Bolo : bolo_0001a Segment : 8 Rank : 1
-Doing Bolo : bolo_0001a Segment : 92 Rank : 13
-Doing Bolo : bolo_0001a Segment : 64 Rank : 9
 Doing Bolo : bolo_0001a Segment : 15 Rank : 2
+Doing Bolo : bolo_0001a Segment : 43 Rank : 6
 Doing Bolo : bolo_0001a Segment : 71 Rank : 10
+Doing Bolo : bolo_0001a Segment : 22 Rank : 3
+Doing Bolo : bolo_0001a Segment : 50 Rank : 7
+Doing Bolo : bolo_0001a Segment : 78 Rank : 11
+Doing Bolo : bolo_0001a Segment : 8 Rank : 1
+Doing Bolo : bolo_0001a Segment : 64 Rank : 9
+Doing Bolo : bolo_0001a Segment : 36 Rank : 5
+Doing Bolo : bolo_0001a Segment : 92 Rank : 13
+Doing Bolo : bolo_0001a Segment : 106 Rank : 15
+Doing Bolo : bolo_0001a Segment : 99 Rank : 14
+Doing Bolo : bolo_0001a Segment : 57 Rank : 8
 0.0
 0.0
 0.0
@@ -79,347 +111,347 @@ Doing Bolo : bolo_0001a Segment : 71 Rank : 10
 0.0
 0.0
 0.0
-Time taken : 220.549432039. Projected time : 1764.39545631
-Doing Bolo : bolo_0001a Segment : 2 Rank : 0
-Time taken : 232.489437103. Projected time : 1627.42605972
-Doing Bolo : bolo_0001a Segment : 58 Rank : 8
-Time taken : 232.961567879. Projected time : 1863.69254303
-Doing Bolo : bolo_0001a Segment : 9 Rank : 1
-0.0
-Time taken : 238.296275139. Projected time : 1668.07392597
-Doing Bolo : bolo_0001a Segment : 107 Rank : 15
-Time taken : 238.853980064. Projected time : 1671.97786045
-Doing Bolo : bolo_0001a Segment : 79 Rank : 11
-Time taken : 240.541157961. Projected time : 1683.78810573
-Doing Bolo : bolo_0001a Segment : 72 Rank : 10
-Time taken : 244.464722872. Projected time : 1955.71778297
-Doing Bolo : bolo_0001a Segment : 44 Rank : 6
-Time taken : 246.655458927. Projected time : 1973.24367142
+Time taken : 199.209106922. Projected time : 1593.67285538
 Doing Bolo : bolo_0001a Segment : 30 Rank : 4
-0.0
-Time taken : 247.729079008. Projected time : 1981.83263206
+Time taken : 199.208570957. Projected time : 1593.66856766
+Doing Bolo : bolo_0001a Segment : 9 Rank : 1
+Time taken : 199.296883821. Projected time : 1594.37507057
+Doing Bolo : bolo_0001a Segment : 2 Rank : 0
+Time taken : 200.640984058. Projected time : 1605.12787247
 Doing Bolo : bolo_0001a Segment : 51 Rank : 7
-0.0
-Time taken : 252.403586149. Projected time : 1766.82510304
+Time taken : 202.737280846. Projected time : 1419.16096592
 Doing Bolo : bolo_0001a Segment : 100 Rank : 14
-0.0
-0.0
-Time taken : 255.442342043. Projected time : 2043.53873634
-Doing Bolo : bolo_0001a Segment : 16 Rank : 2
-0.0
-Time taken : 258.756621122. Projected time : 1811.29634786
-Doing Bolo : bolo_0001a Segment : 86 Rank : 12
-Time taken : 260.29738903. Projected time : 2082.37911224
+Time taken : 204.959954023. Projected time : 1434.71967816
+Doing Bolo : bolo_0001a Segment : 58 Rank : 8
+Time taken : 208.659600973. Projected time : 1669.27680779
 Doing Bolo : bolo_0001a Segment : 23 Rank : 3
-Time taken : 262.797049999. Projected time : 1839.57934999
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+Time taken : 227.791848898. Projected time : 1822.33479118
+Doing Bolo : bolo_0001a Segment : 16 Rank : 2
+Time taken : 234.48417902. Projected time : 1875.87343216
+Doing Bolo : bolo_0001a Segment : 44 Rank : 6
+Time taken : 238.960011005. Projected time : 1672.72007704
 Doing Bolo : bolo_0001a Segment : 65 Rank : 9
-Time taken : 264.865803957. Projected time : 2118.92643166
+0.0
+Time taken : 247.34811306. Projected time : 1731.43679142
+Doing Bolo : bolo_0001a Segment : 86 Rank : 12
+0.0
+0.0
+Time taken : 263.316823006. Projected time : 2106.53458405
 Doing Bolo : bolo_0001a Segment : 37 Rank : 5
-Time taken : 264.998589993. Projected time : 1854.99012995
+0.0
+Time taken : 266.138705015. Projected time : 1862.97093511
 Doing Bolo : bolo_0001a Segment : 93 Rank : 13
+Time taken : 267.606801033. Projected time : 1873.24760723
+Doing Bolo : bolo_0001a Segment : 72 Rank : 10
+Time taken : 276.715944052. Projected time : 1937.01160836
+Doing Bolo : bolo_0001a Segment : 107 Rank : 15
+0.0
+0.0
+Time taken : 284.836796045. Projected time : 1993.85757232
+Doing Bolo : bolo_0001a Segment : 79 Rank : 11
 0.0
 0.0
 0.0
-0.0
-0.0
-0.0
-0.0
-0.0
-0.0
-0.0
-Time taken : 118.131989002. Projected time : 945.055912018
-Doing Bolo : bolo_0001a Segment : 3 Rank : 0
-Time taken : 119.792829037. Projected time : 838.549803257
-Doing Bolo : bolo_0001a Segment : 59 Rank : 8
-Time taken : 122.446543217. Projected time : 979.572345734
+Time taken : 108.356927872. Projected time : 866.855422974
 Doing Bolo : bolo_0001a Segment : 10 Rank : 1
 0.0
-Time taken : 128.268975973. Projected time : 897.882831812
-Doing Bolo : bolo_0001a Segment : 73 Rank : 10
-Time taken : 129.981587887. Projected time : 909.871115208
-Doing Bolo : bolo_0001a Segment : 80 Rank : 11
-Time taken : 130.796956062. Projected time : 915.578692436
-Doing Bolo : bolo_0001a Segment : 108 Rank : 15
-Time taken : 128.996526003. Projected time : 1031.97220802
-Doing Bolo : bolo_0001a Segment : 45 Rank : 6
-0.0
-Time taken : 129.153948069. Projected time : 1033.23158455
-Doing Bolo : bolo_0001a Segment : 31 Rank : 4
-0.0
-Time taken : 129.207548857. Projected time : 1033.66039085
+Time taken : 124.724260092. Projected time : 997.794080734
 Doing Bolo : bolo_0001a Segment : 52 Rank : 7
-Time taken : 127.496415854. Projected time : 892.474910975
-Doing Bolo : bolo_0001a Segment : 87 Rank : 12
-Time taken : 131.157798052. Projected time : 1049.26238441
-Doing Bolo : bolo_0001a Segment : 17 Rank : 2
-Time taken : 134.264713049. Projected time : 939.852991343
-Doing Bolo : bolo_0001a Segment : 101 Rank : 14
-0.0
-0.0
-0.0
-Time taken : 130.802294016. Projected time : 1046.41835213
+Time taken : 130.051316977. Projected time : 1040.41053581
+Doing Bolo : bolo_0001a Segment : 31 Rank : 4
+Time taken : 121.014625788. Projected time : 968.117006302
 Doing Bolo : bolo_0001a Segment : 24 Rank : 3
-Time taken : 129.172728062. Projected time : 904.209096432
-Doing Bolo : bolo_0001a Segment : 66 Rank : 9
+Time taken : 130.518004179. Projected time : 1044.14403343
+Doing Bolo : bolo_0001a Segment : 3 Rank : 0
 0.0
-Time taken : 130.060420036. Projected time : 1040.48336029
+0.0
+0.0
+0.0
+Time taken : 144.471991777. Projected time : 1011.30394244
+Doing Bolo : bolo_0001a Segment : 59 Rank : 8
+Time taken : 150.476341963. Projected time : 1053.33439374
+Doing Bolo : bolo_0001a Segment : 101 Rank : 14
+Time taken : 137.214222908. Projected time : 1097.71378326
+Doing Bolo : bolo_0001a Segment : 17 Rank : 2
+0.0
+0.0
+Time taken : 141.510371208. Projected time : 1132.08296967
+Doing Bolo : bolo_0001a Segment : 45 Rank : 6
+Time taken : 139.703811884. Projected time : 977.926683187
+Doing Bolo : bolo_0001a Segment : 66 Rank : 9
+Time taken : 133.916927099. Projected time : 937.418489695
+Doing Bolo : bolo_0001a Segment : 87 Rank : 12
+0.0
+Time taken : 125.934957981. Projected time : 1007.47966385
 Doing Bolo : bolo_0001a Segment : 38 Rank : 5
 0.0
 0.0
-Time taken : 131.491096973. Projected time : 920.437678814
+Time taken : 127.946442127. Projected time : 895.625094891
+Doing Bolo : bolo_0001a Segment : 73 Rank : 10
+Time taken : 130.407662868. Projected time : 912.853640079
 Doing Bolo : bolo_0001a Segment : 94 Rank : 13
 0.0
+Time taken : 128.172024965. Projected time : 897.204174757
+Doing Bolo : bolo_0001a Segment : 108 Rank : 15
+0.0
+Time taken : 129.216291904. Projected time : 904.514043331
+Doing Bolo : bolo_0001a Segment : 80 Rank : 11
 0.0
 0.0
-0.0
-0.0
-0.0
-0.0
-Time taken : 128.103118181. Projected time : 1024.82494545
-Doing Bolo : bolo_0001a Segment : 4 Rank : 0
-Time taken : 130.768202066. Projected time : 915.377414465
-Doing Bolo : bolo_0001a Segment : 60 Rank : 8
-0.0
-Time taken : 134.843704939. Projected time : 1078.74963951
+Time taken : 111.882240057. Projected time : 895.057920456
 Doing Bolo : bolo_0001a Segment : 11 Rank : 1
-Time taken : 128.016342878. Projected time : 896.114400148
-Doing Bolo : bolo_0001a Segment : 74 Rank : 10
-Time taken : 129.438255787. Projected time : 906.067790508
-Doing Bolo : bolo_0001a Segment : 81 Rank : 11
 0.0
-Time taken : 129.826357126. Projected time : 1038.61085701
-Doing Bolo : bolo_0001a Segment : 46 Rank : 6
-Time taken : 127.559685946. Projected time : 1020.47748756
-Doing Bolo : bolo_0001a Segment : 32 Rank : 4
-Time taken : 134.475174904. Projected time : 941.326224327
-Doing Bolo : bolo_0001a Segment : 109 Rank : 15
 0.0
-Time taken : 135.110893011. Projected time : 1080.88714409
+0.0
+Time taken : 120.151990891. Projected time : 961.215927124
 Doing Bolo : bolo_0001a Segment : 53 Rank : 7
-Time taken : 127.738847971. Projected time : 1021.91078377
+Time taken : 119.448956966. Projected time : 955.591655731
+Doing Bolo : bolo_0001a Segment : 25 Rank : 3
+Time taken : 122.846876144. Projected time : 982.775009155
+Doing Bolo : bolo_0001a Segment : 4 Rank : 0
+Time taken : 123.418958902. Projected time : 987.351671219
+Doing Bolo : bolo_0001a Segment : 32 Rank : 4
+0.0
+0.0
+0.0
+0.0
+Time taken : 125.480118036. Projected time : 878.360826254
+Doing Bolo : bolo_0001a Segment : 60 Rank : 8
+Time taken : 121.910305977. Projected time : 853.372141838
+Doing Bolo : bolo_0001a Segment : 102 Rank : 14
+Time taken : 116.181865931. Projected time : 929.454927444
 Doing Bolo : bolo_0001a Segment : 18 Rank : 2
 0.0
 0.0
-Time taken : 131.41254282. Projected time : 919.88779974
-Doing Bolo : bolo_0001a Segment : 102 Rank : 14
-Time taken : 133.011238098. Projected time : 931.078666687
+0.0
+Time taken : 128.76805687. Projected time : 901.376398087
+Doing Bolo : bolo_0001a Segment : 67 Rank : 9
+Time taken : 131.444602966. Projected time : 1051.55682373
+Doing Bolo : bolo_0001a Segment : 46 Rank : 6
+Time taken : 139.962091923. Projected time : 979.734643459
 Doing Bolo : bolo_0001a Segment : 88 Rank : 12
 0.0
 0.0
-0.0
-Time taken : 134.522891998. Projected time : 1076.18313599
-Doing Bolo : bolo_0001a Segment : 25 Rank : 3
-Time taken : 133.786924839. Projected time : 936.508473873
-Doing Bolo : bolo_0001a Segment : 67 Rank : 9
-Time taken : 131.972615004. Projected time : 1055.78092003
-Doing Bolo : bolo_0001a Segment : 39 Rank : 5
-Time taken : 133.059082031. Projected time : 931.413574219
+Time taken : 143.315178156. Projected time : 1003.20624709
 Doing Bolo : bolo_0001a Segment : 95 Rank : 13
+Time taken : 145.552654028. Projected time : 1018.8685782
+Doing Bolo : bolo_0001a Segment : 74 Rank : 10
+Time taken : 136.479173183. Projected time : 955.354212284
+Doing Bolo : bolo_0001a Segment : 109 Rank : 15
+Time taken : 152.134657145. Projected time : 1217.07725716
+Doing Bolo : bolo_0001a Segment : 39 Rank : 5
 0.0
-0.0
-0.0
-0.0
-0.0
-0.0
-0.0
-0.0
-Time taken : 126.98846817. Projected time : 1015.90774536
-Doing Bolo : bolo_0001a Segment : 5 Rank : 0
-Time taken : 124.682738066. Projected time : 872.77916646
-Doing Bolo : bolo_0001a Segment : 61 Rank : 8
-0.0
-Time taken : 125.893401861. Projected time : 1007.14721489
+Time taken : 138.269751072. Projected time : 967.888257504
+Doing Bolo : bolo_0001a Segment : 81 Rank : 11
+Time taken : 132.983921051. Projected time : 1063.87136841
 Doing Bolo : bolo_0001a Segment : 12 Rank : 1
 0.0
-Time taken : 132.263281822. Projected time : 925.842972755
-Doing Bolo : bolo_0001a Segment : 75 Rank : 10
-Time taken : 132.154158115. Projected time : 925.079106808
-Doing Bolo : bolo_0001a Segment : 82 Rank : 11
-Time taken : 130.017686844. Projected time : 1040.14149475
-Doing Bolo : bolo_0001a Segment : 47 Rank : 6
 0.0
-Time taken : 132.252643108. Projected time : 1058.02114487
-Doing Bolo : bolo_0001a Segment : 33 Rank : 4
-Time taken : 134.32919693. Projected time : 940.30437851
-Doing Bolo : bolo_0001a Segment : 110 Rank : 15
-Time taken : 129.700285912. Projected time : 1037.60228729
+0.0
+0.0
+0.0
+0.0
+Time taken : 145.875438929. Projected time : 1167.00351143
+Doing Bolo : bolo_0001a Segment : 26 Rank : 3
+Time taken : 142.343102932. Projected time : 1138.74482346
+Doing Bolo : bolo_0001a Segment : 5 Rank : 0
+Time taken : 149.504907131. Projected time : 1196.03925705
 Doing Bolo : bolo_0001a Segment : 54 Rank : 7
-Time taken : 130.368177891. Projected time : 1042.94542313
+Time taken : 142.450148821. Projected time : 1139.60119057
+Doing Bolo : bolo_0001a Segment : 33 Rank : 4
+Time taken : 127.182435036. Projected time : 890.27704525
+Doing Bolo : bolo_0001a Segment : 61 Rank : 8
+Time taken : 129.795934916. Projected time : 908.571544409
+Doing Bolo : bolo_0001a Segment : 103 Rank : 14
+Time taken : 132.562912941. Projected time : 1060.50330353
 Doing Bolo : bolo_0001a Segment : 19 Rank : 2
 0.0
 0.0
-Time taken : 130.950417995. Projected time : 916.652925968
-Doing Bolo : bolo_0001a Segment : 103 Rank : 14
-Time taken : 130.393817902. Projected time : 912.756725311
+0.0
+0.0
+0.0
+0.0
+0.0
+Time taken : 128.601104975. Projected time : 900.207734823
+Doing Bolo : bolo_0001a Segment : 68 Rank : 9
+Time taken : 128.747671127. Projected time : 1029.98136902
+Doing Bolo : bolo_0001a Segment : 47 Rank : 6
+Time taken : 131.431200981. Projected time : 920.018406868
 Doing Bolo : bolo_0001a Segment : 89 Rank : 12
 0.0
-Time taken : 128.949805975. Projected time : 1031.5984478
-Doing Bolo : bolo_0001a Segment : 26 Rank : 3
 0.0
-Time taken : 131.307577133. Projected time : 919.153039932
-Doing Bolo : bolo_0001a Segment : 68 Rank : 9
 0.0
-Time taken : 131.491555929. Projected time : 1051.93244743
-Doing Bolo : bolo_0001a Segment : 40 Rank : 5
-Time taken : 132.380663157. Projected time : 926.664642096
+Time taken : 136.692317009. Projected time : 956.846219063
 Doing Bolo : bolo_0001a Segment : 96 Rank : 13
+Time taken : 135.553395987. Projected time : 948.873771906
+Doing Bolo : bolo_0001a Segment : 75 Rank : 10
+Time taken : 141.082515001. Projected time : 987.577605009
+Doing Bolo : bolo_0001a Segment : 110 Rank : 15
+Time taken : 141.241075993. Projected time : 1129.92860794
+Doing Bolo : bolo_0001a Segment : 40 Rank : 5
+Time taken : 144.07396698. Projected time : 1008.51776886
+Doing Bolo : bolo_0001a Segment : 82 Rank : 11
 0.0
 0.0
-0.0
-0.0
-0.0
-0.0
-0.0
-0.0
-Time taken : 123.764590979. Projected time : 990.116727829
-Doing Bolo : bolo_0001a Segment : 6 Rank : 0
-Time taken : 130.750977993. Projected time : 915.256845951
-Doing Bolo : bolo_0001a Segment : 62 Rank : 8
-0.0
-Time taken : 127.738557816. Projected time : 1021.90846252
+Time taken : 145.897310019. Projected time : 1167.17848015
 Doing Bolo : bolo_0001a Segment : 13 Rank : 1
 0.0
-Time taken : 131.946040154. Projected time : 923.622281075
-Doing Bolo : bolo_0001a Segment : 76 Rank : 10
-Time taken : 130.66111207. Projected time : 1045.28889656
-Doing Bolo : bolo_0001a Segment : 48 Rank : 6
 0.0
-Time taken : 136.763741016. Projected time : 957.346187115
-Doing Bolo : bolo_0001a Segment : 83 Rank : 11
-Time taken : 132.402271986. Projected time : 1059.21817589
-Doing Bolo : bolo_0001a Segment : 34 Rank : 4
-Time taken : 132.628519058. Projected time : 1061.02815247
+0.0
+0.0
+Time taken : 135.998898983. Projected time : 1087.99119186
 Doing Bolo : bolo_0001a Segment : 55 Rank : 7
-Time taken : 130.396847963. Projected time : 1043.17478371
-Doing Bolo : bolo_0001a Segment : 20 Rank : 2
-Time taken : 137.332402945. Projected time : 961.326820612
-Doing Bolo : bolo_0001a Segment : 111 Rank : 15
-0.0
-Time taken : 134.147846937. Projected time : 939.03492856
-Doing Bolo : bolo_0001a Segment : 104 Rank : 14
-0.0
-Time taken : 133.921341896. Projected time : 937.449393272
-Doing Bolo : bolo_0001a Segment : 90 Rank : 12
-0.0
-Time taken : 134.469467878. Projected time : 1075.75574303
+Time taken : 140.164957047. Projected time : 1121.31965637
 Doing Bolo : bolo_0001a Segment : 27 Rank : 3
+Time taken : 148.674288988. Projected time : 1189.3943119
+Doing Bolo : bolo_0001a Segment : 34 Rank : 4
+Time taken : 149.262683868. Projected time : 1194.10147095
+Doing Bolo : bolo_0001a Segment : 6 Rank : 0
 0.0
-Time taken : 133.61027503. Projected time : 935.271925211
+Time taken : 151.617661953. Projected time : 1061.32363367
+Doing Bolo : bolo_0001a Segment : 62 Rank : 8
+0.0
+Time taken : 150.625801086. Projected time : 1054.3806076
+Doing Bolo : bolo_0001a Segment : 104 Rank : 14
+Time taken : 141.824149132. Projected time : 1134.59319305
+Doing Bolo : bolo_0001a Segment : 20 Rank : 2
+0.0
+0.0
+Time taken : 130.370652914. Projected time : 912.594570398
 Doing Bolo : bolo_0001a Segment : 69 Rank : 9
 0.0
-Time taken : 137.222468138. Projected time : 1097.7797451
-Doing Bolo : bolo_0001a Segment : 41 Rank : 5
+Time taken : 138.421061993. Projected time : 1107.36849594
+Doing Bolo : bolo_0001a Segment : 48 Rank : 6
 0.0
 0.0
-Time taken : 135.802463055. Projected time : 950.617241383
+0.0
+Time taken : 138.425819159. Projected time : 968.98073411
+Doing Bolo : bolo_0001a Segment : 90 Rank : 12
+0.0
+Time taken : 129.908957958. Projected time : 909.362705708
+Doing Bolo : bolo_0001a Segment : 76 Rank : 10
+Time taken : 134.47933507. Projected time : 941.355345488
 Doing Bolo : bolo_0001a Segment : 97 Rank : 13
 0.0
 0.0
+Time taken : 145.170014143. Projected time : 1161.36011314
+Doing Bolo : bolo_0001a Segment : 41 Rank : 5
 0.0
-0.0
-0.0
-0.0
-Time taken : 129.936646938. Projected time : 1039.49317551
-Doing Bolo : bolo_0001a Segment : 7 Rank : 0
-0.0
-Time taken : 126.673263073. Projected time : 886.712841511
-Doing Bolo : bolo_0001a Segment : 63 Rank : 8
-Time taken : 128.841536999. Projected time : 1030.73229599
+Time taken : 145.593041897. Projected time : 1019.15129328
+Doing Bolo : bolo_0001a Segment : 111 Rank : 15
+Time taken : 136.325978994. Projected time : 954.281852961
+Doing Bolo : bolo_0001a Segment : 83 Rank : 11
+Time taken : 138.085747004. Projected time : 1104.68597603
 Doing Bolo : bolo_0001a Segment : 14 Rank : 1
 0.0
 0.0
-Time taken : 133.827893019. Projected time : 936.795251131
-Doing Bolo : bolo_0001a Segment : 77 Rank : 10
-Time taken : 133.874396086. Projected time : 1070.99516869
-Doing Bolo : bolo_0001a Segment : 49 Rank : 6
-Time taken : 132.382339954. Projected time : 1059.05871964
-Doing Bolo : bolo_0001a Segment : 35 Rank : 4
-Time taken : 135.237218142. Projected time : 946.660526991
-Doing Bolo : bolo_0001a Segment : 84 Rank : 11
-Time taken : 136.375290155. Projected time : 1091.00232124
+0.0
+Time taken : 128.715460062. Projected time : 1029.7236805
 Doing Bolo : bolo_0001a Segment : 56 Rank : 7
-Time taken : 136.938318968. Projected time : 1095.50655174
+0.0
+Time taken : 131.0008111. Projected time : 1048.0064888
+Doing Bolo : bolo_0001a Segment : 28 Rank : 3
+0.0
+Time taken : 137.058521032. Projected time : 1096.46816826
+Doing Bolo : bolo_0001a Segment : 7 Rank : 0
+0.0
+Time taken : 148.546066999. Projected time : 1188.368536
+Doing Bolo : bolo_0001a Segment : 35 Rank : 4
+Time taken : 142.60590601. Projected time : 998.241342068
+Doing Bolo : bolo_0001a Segment : 63 Rank : 8
+0.0
+Time taken : 147.600862026. Projected time : 1033.20603418
+Doing Bolo : bolo_0001a Segment : 105 Rank : 14
+Time taken : 147.596722841. Projected time : 1180.77378273
 Doing Bolo : bolo_0001a Segment : 21 Rank : 2
 0.0
-Time taken : 138.445835114. Projected time : 969.120845795
-Doing Bolo : bolo_0001a Segment : 112 Rank : 15
-0.0
-Time taken : 135.623285055. Projected time : 949.362995386
-Doing Bolo : bolo_0001a Segment : 91 Rank : 12
-Time taken : 136.041355848. Projected time : 952.289490938
-Doing Bolo : bolo_0001a Segment : 105 Rank : 14
-0.0
-0.0
-Time taken : 136.18404007. Projected time : 1089.47232056
-Doing Bolo : bolo_0001a Segment : 28 Rank : 3
-Time taken : 134.892640114. Projected time : 944.248480797
+Time taken : 144.00485611. Projected time : 1008.03399277
 Doing Bolo : bolo_0001a Segment : 70 Rank : 9
 0.0
 0.0
-Time taken : 135.437458038. Projected time : 1083.49966431
-Doing Bolo : bolo_0001a Segment : 42 Rank : 5
-Time taken : 134.687648058. Projected time : 942.813536406
+0.0
+Time taken : 151.420097828. Projected time : 1211.36078262
+Doing Bolo : bolo_0001a Segment : 49 Rank : 6
+0.0
+Time taken : 142.533285856. Projected time : 997.733000994
+Doing Bolo : bolo_0001a Segment : 91 Rank : 12
+Time taken : 129.251459837. Projected time : 904.760218859
+Doing Bolo : bolo_0001a Segment : 77 Rank : 10
+0.0
+Time taken : 138.161077023. Projected time : 967.127539158
 Doing Bolo : bolo_0001a Segment : 98 Rank : 13
 0.0
+Time taken : 135.26770997. Projected time : 1082.14167976
+Doing Bolo : bolo_0001a Segment : 42 Rank : 5
 0.0
+Time taken : 142.359086037. Projected time : 996.513602257
+Doing Bolo : bolo_0001a Segment : 112 Rank : 15
 0.0
-0.0
-0.0
-0.0
-0.0
-Time taken : 123.069091082. Projected time : 984.552728653
-Doing Bolo : bolo_0001a Segment : 113 Rank : 0
-0.0
-Time taken : 124.239501953. Projected time : 869.676513672
-Done simulating
-Time taken : 128.38788414. Projected time : 1027.10307312
+Time taken : 140.708053112. Projected time : 984.956371784
+Doing Bolo : bolo_0001a Segment : 84 Rank : 11
+Time taken : 139.250577927. Projected time : 1114.00462341
 Doing Bolo : bolo_0001a Segment : 114 Rank : 1
 0.0
-Time taken : 130.643320084. Projected time : 1045.14656067
-Doing Bolo : bolo_0001a Segment : 119 Rank : 6
-Time taken : 133.884922028. Projected time : 937.194454193
-Done simulating
-Time taken : 128.906810045. Projected time : 1031.25448036
-Doing Bolo : bolo_0001a Segment : 117 Rank : 4
-Time taken : 128.10708189. Projected time : 896.749573231
-Done simulating
-Time taken : 125.417544842. Projected time : 1003.34035873
-Doing Bolo : bolo_0001a Segment : 115 Rank : 2
-Time taken : 128.490067005. Projected time : 1027.92053604
+Time taken : 127.510432005. Projected time : 1020.08345604
 Doing Bolo : bolo_0001a Segment : 120 Rank : 7
-Time taken : 121.613605976. Projected time : 851.295241833
-Done simulating
 0.0
-0.0
-Time taken : 128.98218298. Projected time : 902.875280857
-Done simulating
-Time taken : 134.527456999. Projected time : 941.692198992
-Done simulating
-Time taken : 126.898989916. Projected time : 1015.19191933
+Time taken : 125.623921871. Projected time : 1004.99137497
 Doing Bolo : bolo_0001a Segment : 116 Rank : 3
-Time taken : 127.139827967. Projected time : 889.978795767
+0.0
+0.0
+Time taken : 125.875959158. Projected time : 1007.00767326
+Doing Bolo : bolo_0001a Segment : 113 Rank : 0
+0.0
+0.0
+Time taken : 128.203536987. Projected time : 1025.6282959
+Doing Bolo : bolo_0001a Segment : 117 Rank : 4
+0.0
+Time taken : 138.542855978. Projected time : 969.799991846
 Done simulating
 0.0
+Time taken : 136.164886951. Projected time : 1089.31909561
+Doing Bolo : bolo_0001a Segment : 115 Rank : 2
+Time taken : 144.280958891. Projected time : 1009.96671224
+Done simulating
+Time taken : 139.177088976. Projected time : 974.239622831
+Done simulating
 0.0
-Time taken : 129.652747869. Projected time : 1037.22198296
+Time taken : 132.954138994. Projected time : 1063.63311195
+Doing Bolo : bolo_0001a Segment : 119 Rank : 6
+Time taken : 138.665313005. Projected time : 970.657191038
+Done simulating
+0.0
+Time taken : 148.583626986. Projected time : 1040.0853889
+Done simulating
+Time taken : 136.686209917. Projected time : 956.803469419
+Done simulating
+Time taken : 123.731513977. Projected time : 989.852111816
 Doing Bolo : bolo_0001a Segment : 118 Rank : 5
-Time taken : 133.158703089. Projected time : 932.110921621
+Time taken : 125.451860905. Projected time : 878.163026333
 Done simulating
 0.0
-0.0
-Time taken : 118.487958193. Projected time : 947.903665543
+Time taken : 133.378913164. Projected time : 1067.03130531
 Done simulating
-Time taken : 115.990245104. Projected time : 927.921960831
+Time taken : 135.702731848. Projected time : 949.919122934
 Done simulating
-Time taken : 108.349755764. Projected time : 866.798046112
+Time taken : 136.076445818. Projected time : 1088.61156654
 Done simulating
-Time taken : 108.486231089. Projected time : 867.889848709
+Time taken : 134.661242962. Projected time : 1077.2899437
 Done simulating
-Time taken : 108.873281002. Projected time : 870.986248016
+Time taken : 132.519651175. Projected time : 1060.1572094
 Done simulating
-Time taken : 110.919842958. Projected time : 887.358743668
+Time taken : 119.339437008. Projected time : 954.715496063
 Done simulating
-Time taken : 108.15257597. Projected time : 865.220607758
+Time taken : 113.38824892. Projected time : 907.105991364
 Done simulating
-Time taken : 108.917510033. Projected time : 871.340080261
+Time taken : 106.48487401. Projected time : 851.878992081
+Done simulating
+Time taken : 107.160718918. Projected time : 857.285751343
 Done simulating

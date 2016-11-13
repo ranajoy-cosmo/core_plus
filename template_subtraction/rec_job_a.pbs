@@ -11,9 +11,14 @@ export SCRATCH="/scratch/$USER.$PBS_JOBID"
 source activate cmb_core
 
 RUN_DIR=$HOME/simulation/template_subtraction
+OUT_FILES_DIR=$RUN_DIR/out_files
+CONFIG_FILES_DIR=simulation.template_subtraction.config_files
+SIM_CODE_DIR=$HOME/simulation/timestream_simulation
+REC_CODE_DIR=$HOME/simulation/map_maker
+
+CONFIG_FILE=$CONFIG_FILES_DIR.rec_config_a
+
 cd $RUN_DIR
-REC_CODE_DIR="/home/banerji/simulation/map_maker/"
-CONFIG_FILE="simulation.template_subtraction.config_files.rec_config_a"
 
 echo "Running rec job for bolo_0001a"
 /usr/local/openmpi/bin/mpirun -np 16 python $REC_CODE_DIR/map_maker.py $CONFIG_FILE run_mpi
