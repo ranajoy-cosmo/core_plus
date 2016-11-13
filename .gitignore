@@ -13,4 +13,3 @@ custom*
 *.out
 *test*
 batch.slurm
-config*
