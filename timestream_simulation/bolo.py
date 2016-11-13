@@ -93,7 +93,6 @@ class Bolo:
 
         if self.config.pipe_with_map_maker:
             if self.config.do_pencil_beam:
-<<<<<<< HEAD
                 t_stream["signal"] = signal
                 t_stream["v"] = v_central
                 t_stream["pol_ang"] = pol_ang
@@ -103,18 +102,6 @@ class Bolo:
                 t_stream["v"] = v_central[self.pad:-self.pad][::self.config.oversampling_rate]
                 t_stream["pol_ang"] = pol_ang[self.pad:-self.pad][::self.config.oversampling_rate]
                 return t_stream
-=======
-                if return_field == ["signal"]:
-                    return signal
-                else:
-                    return signal, v_central, pol_ang
-            else:
-                if return_field == ["signal"]:
-                    return signal[::self.config.oversampling_rate]
-                else:
-                    return signal[::self.config.oversampling_rate], v_central[self.pad:-self.pad][::self.config.oversampling_rate], pol_ang[self.pad:-self.pad][::self.config.oversampling_rate]
->>>>>>> ebefaac9d61e24bda10f077c00b7a153e9574f50
-
 
         if "hitmap" in self.config.timestream_data_products:
             del signal
@@ -328,7 +315,6 @@ class Bolo:
                 np.save(os.path.join(write_dir, data_name), ts_data[self.pad:-self.pad][::self.config.oversampling_rate])
 
 
-<<<<<<< HEAD
     def read_timestream(self, segment, noise_only=False, read_list=["signal", "v", "pol_ang"]):
         segment_dir = self.get_segment_dir(segment)
         t_stream = {"signal" : None, "v" : None, "pol_ang" : None}  
@@ -343,21 +329,6 @@ class Bolo:
             t_stream["pol_ang"] = np.load(os.path.join(segment_dir, "pol_ang.npy"))
 
         return t_stream 
-=======
-    def read_timestream(self, segment, noise=False, return_field=["signal", "v", "pol_ang"]):
-        segment_dir = self.get_segment_dir(segment)
-        if noise:
-            signal = np.load(os.path.join(segment_dir, "noise.npy"))
-        else:
-            signal = np.load(os.path.join(segment_dir, "signal.npy"))
-        if return_field == ["signal"]:
-            return signal
-        else:
-            v = np.load(os.path.join(segment_dir, "pointing_vec.npy"))
-            pol_ang = np.load(os.path.join(segment_dir, "pol_ang.npy"))
-
-            return signal, v, pol_ang
->>>>>>> ebefaac9d61e24bda10f077c00b7a153e9574f50
 
 
     def display_params(self):
