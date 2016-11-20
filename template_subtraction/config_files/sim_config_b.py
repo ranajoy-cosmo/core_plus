@@ -12,9 +12,12 @@ config.scan_tag = "scan"
 #Default -> "TQU"
 # A _ means that the input map has a component which will not be read"
 #config.sim_pol_type = "TQU"
-config.sim_pol_type = "T"
+config.sim_pol_type = "TQU"
 
 config.bolo_config_file = BOLO_CONFIG_FOLDER + "bolo_config" 
+
+config.add_noise = True
+config.noise_type = "white_noise"
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Data selection

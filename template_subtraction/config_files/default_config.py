@@ -11,13 +11,15 @@ BOLO_CONFIG_FOLDER = "simulation.template_subtraction.bolo_config_files."
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Sim Action 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-config.sim_tag = "orth_test_2"
+config.sim_tag = "bandpass_correction_TQU_noise_t350_noise"
 
 config.add_noise = False
 
 config.do_pencil_beam = True
 
 config.gal_coords = True 
+
+config.noise_only_map = False
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Scan 

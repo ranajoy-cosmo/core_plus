@@ -6,7 +6,7 @@ from default_config import *
 #config.simulate_ts = True/False. True means it will simulate the entire timestream signal and pointing from scratch
 config.simulate_ts = False
 
-config.scan_tag = "first_scan" 
+config.scan_tag = "scan" 
 
 #Options for input_pol_type = ["TQU", "QU", "T"]
 #Default -> "TQU"

@@ -64,7 +64,10 @@ def run_mpi():
 def make_data_dirs():
     sim_dir = os.path.join(config.general_data_dir, config.sim_tag)
     if not os.path.exists(sim_dir):
-        os.makedirs(sim_dir)
+        try:
+            os.makedirs(sim_dir)
+        except OSError:
+            pass
     scan_dir = os.path.join(sim_dir, config.scan_tag)
     if not os.path.exists(scan_dir):
         os.makedirs(scan_dir)

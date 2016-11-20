@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import sys
-from simulation.params.custom_params import global_paths
+from simulation.global_config import global_paths
 
 spectra_folder = os.path.join(global_paths.base_dir, "spectra")
 

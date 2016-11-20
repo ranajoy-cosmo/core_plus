@@ -15,23 +15,6 @@ import simulation.lib.utilities.prompter as prompter
 from simulation.lib.utilities.time_util import get_time_stamp 
 import simulation.map_maker.covariance_matrix_utils as cov_ut
 
-def get_signal(segment, bolo_a, bolo_b):
-    if config.mode == "single_bolo"
-        if config.simulate_ts:
-            signal, v, pol_ang = bolo_a.simulate_timestream(segment)
-        else:
-            signal, v, pol_ang = bolo_a.read_timestream(segment)
-    else:
-        if config.simulate_ts:
-            signal, v, pol_ang = bolo_a.simulate_timestream(segment)
-            signal -= bolo_b.simulate_timestream(segment, return_field=["signal"])
-        else:
-            signal, v, pol_ang = bolo_a.read_timestream(segment)
-            signal -= bolo_b.read_timestream(segment, return_field=["signal"])
-
-    return signal, v, pol_ang
-
-
 def run_mpi():
     print "Rank :", rank, "started"
     npix = hp.nside2npix(config.nside_out)
@@ -53,7 +36,7 @@ def run_mpi():
 
     if config.subtract_template:
         bolo_TEMPLATE = Bolo("bolo_TEMPLATE", config)
-        estimated_y = np.load("estimated_y.npy")
+        estimated_y = np.load(os.path.join(config.general_data_dir, config.sim_tag, "estimated_y.npy"))
 
     for bolo_name in bolo_segment_dict.keys():
         print "Rank :", rank, "Bolos class being generated"
@@ -65,9 +48,9 @@ def run_mpi():
         for segment in bolo_segment_dict[bolo_name]:
             prompter.prompt("Rank : %d doing Bolo : %s and segment : %d" % (rank, bolo_name, segment))
             if config.take_diff_signal:
-                signal, v, pol_ang = acquire_difference_signal(bolo_a, bolo_b, segment)
+                signal, v, pol_ang = acquire_difference_signal(bolo_a, bolo_b, segment, config.noise_only_map)
             else:
-                signal, v, pol_ang = acquire_signal(bolo, segment)
+                signal, v, pol_ang = acquire_signal(bolo, segment, config.noise_only_map)
             if config.subtract_template:
                 signal_TEMPLATE = bolo_TEMPLATE.read_timestream(segment, read_list=["signal"])["signal"]
                 signal -= estimated_y*signal_TEMPLATE
@@ -100,22 +83,22 @@ def run_mpi():
     write_segments(sky_map_local_segment, "sky_map", recon_dir) 
 
 
-def acquire_signal(bolo, segment):
+def acquire_signal(bolo, segment, noise_only=False):
     if config.simulate_ts:
         t_stream = bolo.simulate_timestream(segment)
     else:
-        t_stream = bolo.read_timestream(segment)
+        t_stream = bolo.read_timestream(segment, noise_only=noise_only)
 
     return t_stream["signal"], t_stream["v"], t_stream["pol_ang"]
  
 
-def acquire_difference_signal(bolo_a, bolo_b, segment):
+def acquire_difference_signal(bolo_a, bolo_b, segment, noise_only=False):
     if config.simulate_ts:
         t_stream_a = bolo_a.simulate_timestream(segment)
-        t_stream_b = bolo_b.simulate_timestream(segment)
+        t_stream_b = bolo_b.simulate_timestream(segment, noise_only=noise_only)
     else:
         t_stream_a = bolo_a.read_timestream(segment)
-        t_stream_b = bolo_b.read_timestream(segment, read_list=["signal"])
+        t_stream_b = bolo_b.read_timestream(segment, read_list=["signal"], noise_only=noise_only)
 
     signal = 0.5*(t_stream_a["signal"] - t_stream_b["signal"])
 

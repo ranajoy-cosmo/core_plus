@@ -84,7 +84,7 @@ class Bolo:
 
         if self.config.add_noise:
             noise = self.noise_class.simulate_timestream_noise_from_parameters()
-            if "noise" in self.config.timestream_data_products:
+            if "timestream_data" in self.config.timestream_data_products:
                 self.write_timestream_data(noise, "noise", segment)
             signal[::self.config.oversampling_rate] += noise 
 
@@ -282,7 +282,10 @@ class Bolo:
 
     def make_write_dir(self, segment):
         if not os.path.exists(self.bolo_dir):
-            os.makedirs(self.bolo_dir)
+            try:
+                os.makedirs(self.bolo_dir)
+            except OSError:
+                pass
 
         segment_dir = self.get_segment_dir(segment) 
         if os.path.exists(segment_dir):

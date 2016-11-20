@@ -12,10 +12,11 @@ config.scan_tag = "scan"
 #Default -> "TQU"
 # A _ means that the input map has a component which will not be read"
 config.pol_type = "TQU"
-config.map_making_tag = "rec_TEMPLATE"
+config.map_making_tag = "rec_b_noise"
 
 config.take_diff_signal = False
 config.subtract_template = False
+config.noise_only_map = True
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Data selection
@@ -24,6 +25,6 @@ config.subtract_template = False
 #If simulate_ts is true, this is used for simulation as well as map_making, otherwise these are the data segments that are read.
 
 config.bolo_config_file = BOLO_CONFIG_FOLDER + "bolo_config" 
-config.bolo_list = ['bolo_TEMPLATE']
+config.bolo_list = ['bolo_0001b']
 
 config.segment_list = range(120)
