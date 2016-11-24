@@ -33,7 +33,24 @@ class Bolo:
 # Simulating the time-ordered data for a given bolo with any beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-    #@profile
+#    def get_timestream(self, segment, 
+
+    def read_timestream(self, segment, noise_only=False, read_list=["signal", "v", "pol_ang"]):
+        segment_dir = self.get_segment_dir(segment)
+        t_stream = {"signal" : None, "v" : None, "pol_ang" : None}  
+        if "signal" in read_list:
+            if noise_only:
+                t_stream["signal"] = np.load(os.path.join(segment_dir, "noise.npy"))
+            else:
+                t_stream["signal"] = np.load(os.path.join(segment_dir, "signal.npy"))
+        if "v" in read_list:
+            t_stream["v"] = np.load(os.path.join(segment_dir, "pointing_vec.npy"))
+        if "pol_ang" in read_list:
+            t_stream["pol_ang"] = np.load(os.path.join(segment_dir, "pol_ang.npy"))
+
+        return t_stream 
+
+
     def simulate_timestream(self, segment, return_field=["signal", "v", "pol_ang"]):
         if segment == 0:
             #self.display_params()
@@ -42,7 +59,7 @@ class Bolo:
                 self.beam.write_beam(self.bolo_dir)
         rot_qt = self.generate_quaternion(segment)
 
-        t_stream = {"signal" : None, "v" : None, "pol_ang" : None}
+        t_stream = {"signal" : None, "v" : None, "pol_ang" : None, "noise" : None}
 
         prompter.prompt("0.0")
         #Simulating the scan along the centre of the FOV
@@ -67,7 +84,7 @@ class Bolo:
 
         beam_kernel_row = self.beam.get_beam_row(0.0)                       #The input argument is the beam offset from the centre
         hit_pix = hp.vec2pix(self.config.nside_in, v_central[...,0], v_central[...,1], v_central[...,2])
-        signal = self.get_signal(hit_pix, beam_kernel_row, cos2, sin2)
+        signal = self.generate_signal(hit_pix, beam_kernel_row, cos2, sin2)
 
         for del_beta in self.beam.del_beta:
             if del_beta == 0.0:
@@ -77,7 +94,7 @@ class Bolo:
             v_init = self.get_initial_vec(del_beta)
             v = quaternion.transform(rot_qt, v_init)
             hit_pix = hp.vec2pix(self.config.nside_in, v[...,0], v[...,1], v[...,2])
-            signal += self.get_signal(hit_pix, beam_kernel_row, cos2, sin2)
+            signal += self.generate_signal(hit_pix, beam_kernel_row, cos2, sin2)
 
         beam_sum = np.sum(self.beam.beam_kernel[0])
         signal /= beam_sum
@@ -110,7 +127,7 @@ class Bolo:
             return hitmap 
     
 
-    def get_signal(self, hit_pix, beam_kernel_row, cos2, sin2):
+    def generate_signal(self, hit_pix, beam_kernel_row, cos2, sin2):
         if self.config.sim_pol_type == "noise_only":
             signal = np.zeros(self.nsamples - 2*self.pad) 
 
@@ -316,22 +333,6 @@ class Bolo:
                 np.save(os.path.join(write_dir, data_name), ts_data)
             else:
                 np.save(os.path.join(write_dir, data_name), ts_data[self.pad:-self.pad][::self.config.oversampling_rate])
-
-
-    def read_timestream(self, segment, noise_only=False, read_list=["signal", "v", "pol_ang"]):
-        segment_dir = self.get_segment_dir(segment)
-        t_stream = {"signal" : None, "v" : None, "pol_ang" : None}  
-        if "signal" in read_list:
-            if noise_only:
-                t_stream["signal"] = np.load(os.path.join(segment_dir, "noise.npy"))
-            else:
-                t_stream["signal"] = np.load(os.path.join(segment_dir, "signal.npy"))
-        if "v" in read_list:
-            t_stream["v"] = np.load(os.path.join(segment_dir, "pointing_vec.npy"))
-        if "pol_ang" in read_list:
-            t_stream["pol_ang"] = np.load(os.path.join(segment_dir, "pol_ang.npy"))
-
-        return t_stream 
 
 
     def display_params(self):

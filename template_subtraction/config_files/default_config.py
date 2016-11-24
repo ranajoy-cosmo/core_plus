@@ -11,7 +11,7 @@ BOLO_CONFIG_FOLDER = "simulation.template_subtraction.bolo_config_files."
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Sim Action 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-config.sim_tag = "bandpass_correction_TQU_noise_t350_noise"
+config.sim_tag = "noise_projection_test"
 
 config.add_noise = False
 

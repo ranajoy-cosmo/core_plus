@@ -95,6 +95,16 @@ def sensitivity_to_variance_Cl(det_sens, beam_fwhm, lmax, t_mission=T_YEAR, n_de
     return variance
 
 
+def sensitivity_to_noise_power_spectra(det_sens, beam_fwhm, lmax, t_mission=T_YEAR, n_det=N_DET_145, f_sky=1.0):
+    ell = np.arange(lmax+1)
+    w_inv = sensitivity_to_noise_solid_angle(det_sens, t_mission, n_det)**2
+    Bl = hp.gauss_beam(fwhm=beam_fwhm, lmax=lmax, pol=True)
+    variance = np.empty((3, lmax+1))
+    for i in range(3):
+        variance[i] = (2.0/(2.0*ell+1)/f_sky)*(w_inv[i]/Bl[...,i]**2)**2
+    return variance
+
+
 def sensitivity_to_fractional_noise_per_multipole(det_sens, beam_fwhm, lmax, t_mission=T_YEAR, n_det=N_DET_145, f_sky=1.0, spectra_fid=None):
     if spectra_fid == None:
         spectra_fid = spectra_file
