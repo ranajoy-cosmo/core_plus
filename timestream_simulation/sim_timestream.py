@@ -45,7 +45,7 @@ def run_mpi():
             else:
                 bolo.simulate_timestream(segment)
             stop_seg = time.time()
-            prompter.prompt("Time taken : " + str(stop_seg - start_seg) + ". Projected time : " + str((stop_seg - start_seg)*tot_seg))
+            prompter.prompt("Rank : " + str(rank) + " Time taken : " + str(stop_seg - start_seg) + ". Projected time : " + str((stop_seg - start_seg)*tot_seg))
 
     prompter.prompt("Done simulating")
 

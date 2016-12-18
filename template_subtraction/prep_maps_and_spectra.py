@@ -10,6 +10,8 @@ from distutils.util import strtobool
 sim_dir_name = sys.argv[1]
 action = sys.argv[2]
 noise = strtobool(sys.argv[3])
+if action=="create":
+    beam_fwhm = float(sys.argv[4])
 
 scratch_dir = "/scratch1/scratchdirs/banerji" 
 sim_dir = os.path.join(scratch_dir, "core_output", sim_dir_name)
@@ -30,7 +32,7 @@ if noise:
     sky_b_noise = hp.read_map(os.path.join(sim_dir, "rec_b_noise", "sky_map.fits"), field=(0,1,2), verbose=verbose)
     sky_diff_noise = hp.read_map(os.path.join(sim_dir, "rec_diff_QU_noise", "sky_map.fits"), field=(0,1), verbose=verbose)
     sky_pair_noise = hp.read_map(os.path.join(sim_dir, "rec_pair_noise", "sky_map.fits"), field=(0,1,2), verbose=verbose)
-est_y = np.load(os.path.join(sim_dir, "estimated_y.npy"))
+#est_y = np.load(os.path.join(sim_dir, "estimated_y.npy"))
 
 sky_avg = np.empty((3, 12*1024**2))
 sky_leak = np.empty((3, 12*1024**2))
@@ -53,9 +55,10 @@ if action=="load":
     spectra_leak = np.load(os.path.join(sim_dir, "spectra_leak.npy"))
     spectra_res_leak = np.load(os.path.join(sim_dir, "spectra_residual_leak.npy"))
 elif action=="create":
-    spectra_leak = st.estimate_cl(sky_map=sky_leak, lmax=2000, binary_mask=sky_mask, fwhm=np.radians(7.68/60.0), pol=True) 
-    spectra_res_leak = st.estimate_cl(sky_map=sky_res_leak, lmax=2000, binary_mask=sky_mask, fwhm=np.radians(7.68/60.0), pol=True) 
+    spectra_leak = st.estimate_cl(sky_map=sky_leak, lmax=2000, binary_mask=sky_mask, fwhm=np.radians(beam_fwhm/60.0), pol=True) 
+    spectra_res_leak = st.estimate_cl(sky_map=sky_res_leak, lmax=2000, binary_mask=sky_mask, fwhm=np.radians(beam_fwhm/60.0), pol=True) 
     np.save(os.path.join(sim_dir, "spectra_leak"), spectra_leak)
     np.save(os.path.join(sim_dir, "spectra_residual_leak"), spectra_res_leak)
+    pass
 else:
     print "Provide correct action : (load/create)"

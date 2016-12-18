@@ -11,7 +11,7 @@ BOLO_CONFIG_FOLDER = "simulation.template_subtraction.bolo_config_files."
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Sim Action 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-config.sim_tag = "bandpass_correction_CORE_M5_300"
+config.sim_tag = "bandpass_pair_comparison_LiteBird_3"
 
 config.add_noise = False
 
@@ -25,38 +25,38 @@ config.noise_only_map = False
 # Scan COrE
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-config.t_year = 360*24*60*60.0                    #seconds
-config.t_prec = 4*24*60*60.0                     #seconds
-config.t_spin = 120.0                             #seconds
-config.sampling_rate = 85                          #Hz
-
-config.alpha = 30.0                                #degrees
-config.beta = 65.0                                #degrees
-
-config.oversampling_rate = 1
-
-config.nside_in = 1024
-config.nside_out = 1024
-
-#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Scan LiteBird 
-#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-
 #config.t_year = 360*24*60*60.0                    #seconds
-#config.t_prec = 93*60.0                     #seconds
-#config.t_spin = 600.0                             #seconds
-##config.t_spin = 200.0                             #seconds
-#config.sampling_rate = 10                          #Hz
+#config.t_prec = 4*24*60*60.0                     #seconds
+#config.t_spin = 120.0                             #seconds
+#config.sampling_rate = 85                          #Hz
 #
-#config.alpha = 65.0                                #degrees
-#config.beta = 30.0                                #degrees
-##config.alpha = 50.0                                #degrees
-##config.beta = 45.0                                #degrees
+#config.alpha = 30.0                                #degrees
+#config.beta = 65.0                                #degrees
 #
 #config.oversampling_rate = 1
 #
 #config.nside_in = 1024
 #config.nside_out = 1024
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+# Scan LiteBird 
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+
+config.t_year = 360*24*60*60.0                    #seconds
+config.t_prec = 93*60.0                     #seconds
+config.t_spin = 600.0                             #seconds
+#config.t_spin = 200.0                             #seconds
+config.sampling_rate = 10                          #Hz
+
+config.alpha = 65.0                                #degrees
+config.beta = 30.0                                #degrees
+#config.alpha = 50.0                                #degrees
+#config.beta = 45.0                                #degrees
+
+config.oversampling_rate = 1
+
+config.nside_in = 1024
+config.nside_out = 1024
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read & Write

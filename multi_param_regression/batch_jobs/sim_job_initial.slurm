@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH -p debug
-#SBATCH -N 45
-#SBATCH -t 00:06:00
+#SBATCH -N 30
+#SBATCH -t 00:10:00
 #SBATCH -J sim_init
 #SBATCH -o out_files/sim_init.out
 
@@ -10,9 +10,4 @@ SIM_CODE_DIR=$HOME/simulation/timestream_simulation
 REC_CODE_DIR=$HOME/simulation/map_maker
 
 CONFIG_FILE=$CONFIG_FILES_DIR.sim_config_init
-srun -N 30 -n 240 python $SIM_CODE_DIR/sim_timestream.py $CONFIG_FILE run_mpi &
-
-CONFIG_FILE=$CONFIG_FILES_DIR.sim_config_TEMPLATE
-srun -N 15 -n 120 python $SIM_CODE_DIR/sim_timestream.py $CONFIG_FILE run_mpi &
-
-wait
+srun -n 240 python $SIM_CODE_DIR/sim_timestream.py $CONFIG_FILE run_mpi

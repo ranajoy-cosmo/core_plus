@@ -1,79 +1,86 @@
 import healpy as hp
 import os
 import numpy as np
+from simulation.lib.utilities.time_util import get_time_stamp
 from simulation.lib.utilities.generic_class import Generic
+from simulation.lib.utilities.time_util import get_time_stamp
 from simulation.global_config import global_paths
 
 config = Generic()
 
-BOLO_CONFIG_FOLDER = "simulation.template_subtraction.bolo_config_files."
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+# Sim Action
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Sim Action 
-#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-config.sim_tag = "bandpass_correction_CORE_M5_300"
+config.simulate_ts = True
+config.sim_tag = "sim_test"
+config.scan_tag = "scan_2"
+
+#Options for input_pol_type = ["TQU", "QU", "T", "_QU", "noise_only"]
+#Default -> "TQU"
+# A _ means that the input map has a component which will not be read"
+config.sim_pol_type = "T"
 
 config.add_noise = False
 
 config.do_pencil_beam = True
 
-config.gal_coords = True 
+config.gal_coords = False
 
-config.noise_only_map = False
+config.bolo_config_file = "simulation.timestream_simulation.bolo_config_files.4_bolos_optimal"
+
+config.pipe_with_map_maker = False
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Scan COrE
+# Scan 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-config.t_year = 360*24*60*60.0                    #seconds
+config.t_year = 366*24*60*60.0                    #seconds
 config.t_prec = 4*24*60*60.0                     #seconds
 config.t_spin = 120.0                             #seconds
-config.sampling_rate = 85                          #Hz
+config.sampling_rate = 400                                  #Hz
 
-config.alpha = 30.0                                #degrees
-config.beta = 65.0                                #degrees
+config.alpha = 45.0                                #degrees
+config.beta = 45.0                                #degrees
 
 config.oversampling_rate = 1
 
-config.nside_in = 1024
-config.nside_out = 1024
+config.nside_in = 4096
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Scan LiteBird 
+# Noise 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-#config.t_year = 360*24*60*60.0                    #seconds
-#config.t_prec = 93*60.0                     #seconds
-#config.t_spin = 600.0                             #seconds
-##config.t_spin = 200.0                             #seconds
-#config.sampling_rate = 10                          #Hz
-#
-#config.alpha = 65.0                                #degrees
-#config.beta = 30.0                                #degrees
-##config.alpha = 50.0                                #degrees
-##config.beta = 45.0                                #degrees
-#
-#config.oversampling_rate = 1
-#
-#config.nside_in = 1024
-#config.nside_out = 1024
+#Options for noise_type = ["white", "1_over_f"]
+config.noise_type = "white"
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+# Data selection
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+
+config.bolo_list = ['bolo_0001a']#, 'bolo_0001b', 'bolo_0002a', 'bolo_0002b']
+
+config.t_segment = 1*60*60.0                      #seconds
+config.segment_list = range(1)
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read & Write
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-#Available options for timestream_data_products = ["timestream_data", "scanned_map"]
+#Available options for timestream_data_products = ["timestream_data", "scanned_map", "grad_T_scan", "noise"]
 #"timestream_data" -> will write the simulated pointing, polarisation angle and the simulated signal in the scan data directory
 #"scanned_map" -> will write the input hitmap and scanned map in the scan data directory
-config.timestream_data_products = ["timestream_data"]
+config.timestream_data_products = ["timestream_data", "hitmap"]
 
 config.base_dir = global_paths.base_dir 
 config.general_data_dir = global_paths.output_dir
-config.write_beam = False
+config.write_beam = True
+config.beam_file_name = "test_beam"
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Beam Parameters
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 config.simulate_beam = True
-config.display_beam_settings = False
+config.beam_cutoff = 4                                                             #fwhm
+config.check_normalisation = True

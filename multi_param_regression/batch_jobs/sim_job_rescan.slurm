@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH -p debug
 #SBATCH -N 30
-#SBATCH -t 00:06:00
+#SBATCH -t 00:10:00
 #SBATCH -J sim_rescan
 #SBATCH -o out_files/sim_rescan.out
 

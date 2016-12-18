@@ -20,11 +20,11 @@ class Bolo:
         self.config.__dict__.update(config.__dict__)
         self.config.__dict__.update(bolo_config.__dict__)
         if config.simulate_ts:
+            self.calculate_params()
             self.beam = Beam(self.config, bolo_config)
             self.noise_class = Noise(self.config)
             if not config.sim_pol_type == "noise_only":
                 self.get_sky_map()
-            self.calculate_params()
             self.get_initial_axes()
             self.get_nsamples()
         self.set_bolo_dirs()
@@ -33,7 +33,8 @@ class Bolo:
 # Simulating the time-ordered data for a given bolo with any beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-#    def get_timestream(self, segment, 
+#    def get_timestream(self, segment, read_list=["signal", "v", "pol_ang"]):
+#        if config.simulate
 
     def read_timestream(self, segment, noise_only=False, read_list=["signal", "v", "pol_ang"]):
         segment_dir = self.get_segment_dir(segment)
@@ -57,6 +58,7 @@ class Bolo:
             #self.beam.display_beam_settings()
             if self.config.write_beam:
                 self.beam.write_beam(self.bolo_dir)
+
         rot_qt = self.generate_quaternion(segment)
 
         t_stream = {"signal" : None, "v" : None, "pol_ang" : None, "noise" : None}
@@ -65,8 +67,10 @@ class Bolo:
         #Simulating the scan along the centre of the FOV
         v_init = self.get_initial_vec(0.0)
         v_central = self.get_v_obv(v_init, rot_qt)
+        t_stream['v'] = v_central
 
         pol_ang = self.get_pol_ang(rot_qt, v_central) 
+        t_stream['pol_ang'] = pol_ang
         if self.config.sim_pol_type == "T":
             cos2=None
             sin2=None
@@ -281,13 +285,13 @@ class Bolo:
         if self.config.sim_pol_type == "noise_only":
             self.sky_map = None
         elif self.config.sim_pol_type == "T":
-            self.sky_map = hp.read_map(self.config.input_map)
+            self.sky_map = hp.read_map(self.config.input_map, verbose=False)
         elif self.config.sim_pol_type == "QU":
-            self.sky_map = hp.read_map(self.config.input_map, field=(0,1))
+            self.sky_map = hp.read_map(self.config.input_map, field=(0,1), verbose=False)
         elif self.config.sim_pol_type == "_QU":
-            self.sky_map = hp.read_map(self.config.input_map, field=(1,2))
+            self.sky_map = hp.read_map(self.config.input_map, field=(1,2), verbose=False)
         else:
-            self.sky_map = hp.read_map(self.config.input_map, field=(0,1,2))
+            self.sky_map = hp.read_map(self.config.input_map, field=(0,1,2), verbose=False)
 
         if not self.config.sim_pol_type == "noise_only":
             map_nside = hp.get_nside(self.sky_map)

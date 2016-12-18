@@ -65,7 +65,7 @@ def make_decorations(ylim=[1e-4, 100], xlim=[1,3000], leg_loc=None):
     plt.legend(loc=leg_loc , prop={'size':12})
 
 
-def plot_spectra(cl, lmax=None, label=None, plot_log=True):
+def plot_spectra(cl, lmax=None, label=None, plot_log=True, color='b'):
     if plot_log:
         plotter = plt.loglog
     else:
@@ -75,9 +75,9 @@ def plot_spectra(cl, lmax=None, label=None, plot_log=True):
         lmax = cl.size - 1
     ell = np.arange(lmax+1)
     if label:
-        plotter(ell, np.sqrt(ell*(ell+1)*cl[:lmax+1]/2/np.pi), label=label)
+        plotter(ell, np.sqrt(ell*(ell+1)*cl[:lmax+1]/2/np.pi), label=label, color=color)
     else:
-        plotter(ell, np.sqrt(ell*(ell+1)*cl[:lmax+1]/2/np.pi))
+        plotter(ell, np.sqrt(ell*(ell+1)*cl[:lmax+1]/2/np.pi), color=color)
 
 
 def plot_binned_spectra(cl, ell, label=None, plot_log=True):
@@ -102,3 +102,9 @@ def plot_binned_spectra_with_error_bars(cl, ell, error, bin_width, label=None, p
     else:
         ax.errorbar(ell, np.sqrt(ell*(ell+1)*cl/2/np.pi), fmt='o')
 
+def annotate_params():
+    plt.annotate(r'$\alpha$ $=$ $65$', xy=(15, 6), size=11)
+    plt.annotate(r'$\beta$ $=$ $30$', xy=(15, 4), size=11)
+    plt.annotate("$T_{precession}$ $=$ $93$ $mins$", xy=(15, 2.6), size=11)
+    plt.annotate("$T_{spin}$ $=$ $600s$", xy=(15, 1.6), size=11)
+    plt.annotate("$f_{sampling}$ $=$ $10Hz$", xy=(15, 1.1), size=11)

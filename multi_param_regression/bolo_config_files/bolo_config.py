@@ -6,7 +6,7 @@ from simulation.template_subtraction.config_files.default_config import config
 bolo_config = generic_class.Generic()
 bolo_config.bolos = {}
 
-map_folder = "/scratch1/scratchdirs/banerji/PSM_OUTPUT/bandpass_mismatch_maps/observations/CORE"
+map_folder = "/scratch1/scratchdirs/banerji/PSM_OUTPUT/bandpass_mismatch_maps/observations/LiteBird"
 scratch_dir = "/scratch1/scratchdirs/banerji/core_output"
 sim_folder = os.path.join(scratch_dir, config.sim_tag)
 
@@ -25,7 +25,7 @@ bolo_config.bolos[bolo_name].pol_phase_ini = 0.0                             #de
 bolo_config.bolos[bolo_name].offset_x = 0.0 
 bolo_config.bolos[bolo_name].offset_y = 0.0
 
-bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "145.63GHz", "group2_map_145.63GHz.fits")
+bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "143.8GHz", "group2_map_143.8GHz.fits")
 
 bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
 
@@ -42,7 +42,7 @@ bolo_config.bolos[bolo_name].pol_phase_ini = 90.0                            #de
 bolo_config.bolos[bolo_name].offset_x = 0.0 
 bolo_config.bolos[bolo_name].offset_y = 0.0
 
-bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "146.8GHz", "group2_map_146.8GHz.fits")
+bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "144.09GHz", "group2_map_144.09GHz.fits")
 
 bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
 
@@ -59,7 +59,7 @@ bolo_config.bolos[bolo_name].pol_phase_ini = 45.0                             #d
 bolo_config.bolos[bolo_name].offset_x = 0.0 
 bolo_config.bolos[bolo_name].offset_y = 0.0
 
-bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "143.8GHz", "group2_map_143.8GHz.fits")
+bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "145.63GHz", "group2_map_145.63GHz.fits")
 
 bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
 
@@ -76,7 +76,7 @@ bolo_config.bolos[bolo_name].pol_phase_ini = 135.0                            #d
 bolo_config.bolos[bolo_name].offset_x = 0.0 
 bolo_config.bolos[bolo_name].offset_y = 0.0
 
-bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "144.09GHz", "group2_map_144.09GHz.fits")
+bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "146.8GHz", "group2_map_146.8GHz.fits")
 
 bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
 
@@ -128,7 +128,7 @@ bolo_config.bolos[bolo_name].offset_x = 0.0
 bolo_config.bolos[bolo_name].offset_y = 0.0
 
 #bolo_config.bolos[bolo_name].input_map = os.path.join("/scratch1/scratchdirs/banerji/core_maps/perfect_template_144.fits")
-bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "300GHz", "group2_map_300GHz.fits")
+bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "COrE", "350GHz", "group2_map_350GHz.fits")
 #bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "COrE_350", "350GHz", "group2_map_350GHz.fits")
 #bolo_config.bolos[bolo_name].input_map = os.path.join("/scratch1/scratchdirs/banerji/core_maps/sky_average.fits")
 

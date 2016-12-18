@@ -20,6 +20,10 @@ def run_mpi():
     npix = hp.nside2npix(config.nside_out)
     dim, ind_elements = cov_ut.get_dim(config.pol_type)
 
+    recon_dir = get_recon_dir()
+    if rank == 0:
+        make_data_dirs() 
+
     inv_cov_matrix_local = np.zeros((npix, ind_elements), dtype=np.float)
     b_matrix_local = np.zeros((npix, dim), dtype=np.float)
     hitmap_local = np.zeros(npix, dtype=np.float)
@@ -30,16 +34,11 @@ def run_mpi():
     print "Rank :", rank, ", Bolos and Segments :", bolo_segment_dict
     comm.Barrier()
 
-    recon_dir = get_recon_dir()
-    if rank == 0:
-        make_data_dirs() 
-
     if config.subtract_template:
         bolo_TEMPLATE = Bolo("bolo_TEMPLATE", config)
         estimated_y = np.load(os.path.join(config.general_data_dir, config.sim_tag, "estimated_y.npy"))
 
     for bolo_name in bolo_segment_dict.keys():
-        print "Rank :", rank, "Bolos class being generated"
         if config.take_diff_signal:
             bolo_a = Bolo(bolo_name + 'a', config)
             bolo_b = Bolo(bolo_name + 'b', config)
@@ -54,11 +53,9 @@ def run_mpi():
             if config.subtract_template:
                 signal_TEMPLATE = bolo_TEMPLATE.read_timestream(segment, read_list=["signal"])["signal"]
                 signal -= estimated_y*signal_TEMPLATE
-            print "Rank :", rank, "Bolos signal read"
             hitpix = hp.vec2pix(config.nside_out, v[...,0], v[...,1], v[...,2])
             del v
             cov_ut.get_inv_cov_matrix(hitpix, pol_ang, signal, inv_cov_matrix_local, b_matrix_local, hitmap_local, npix, config.pol_type)
-            print "Rank :", rank, "Inverse covariance matrix generated"
 
     if config.subtract_template:
         del signal_TEMPLATE
@@ -200,9 +197,14 @@ def accumulate_segments(size):
     for i in range(size):
         start = i*npix_segment
         stop = (i+1)*npix_segment
-        print os.path.join(recon_dir, map_segment_dir, str(i).zfill(4) + '.npy'), os.path.exists(os.path.join(recon_dir, map_segment_dir, str(i).zfill(4) + '.npy'))
+        #print os.path.join(recon_dir, map_segment_dir, str(i).zfill(4) + '.npy'), os.path.exists(os.path.join(recon_dir, map_segment_dir, str(i).zfill(4) + '.npy'))
         sky_map_segment = np.load(os.path.join(recon_dir, map_segment_dir, str(i).zfill(4) + '.npy')) 
         sky_map[..., start:stop] = sky_map_segment
+
+    #if config.pol_type == 'T':
+    #    sky_map[np.isnan(sky_map)] = 0.0
+    #else:
+    #    sky_map[..., np.isnan(sky_map[0])] = 0.0
 
     hp.write_map(os.path.join(recon_dir, "sky_map.fits"), sky_map)
     del sky_map
