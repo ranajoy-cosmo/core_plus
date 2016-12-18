@@ -15,7 +15,7 @@ config.sim_pol_type = "TQU"
 
 config.add_noise = False
 
-config.do_pencil_beam = True
+config.do_pencil_beam = False
 
 config.gal_coords = False 
 
@@ -77,6 +77,6 @@ config.beam_file_name = "test_beam"
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 config.simulate_beam = True
-config.beam_cutoff = 4                                                             #fwhm
+config.beam_cutoff = 3                                                             #fwhm
 config.check_normalisation = True
 config.display_beam_settings = True
