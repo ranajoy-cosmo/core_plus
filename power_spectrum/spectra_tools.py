@@ -4,7 +4,7 @@ import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
 import simulation.lib.numericals.filters as fl
-from simulation.params.custom_params import global_paths
+from simulation.global_config import global_paths
 import os
 
 def mask_map(sky_map, binary_mask=None, pol=True, ret_mask=False, fill_zeros=False):

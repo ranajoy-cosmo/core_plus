@@ -9,10 +9,12 @@ import os
 import importlib
 from simulation.lib.plotting.my_imshow import new_imshow
 from simulation.lib.utilities.generic_class import Generic
+from simulation.lib.utilities.generic_class import Generic
 
 class Beam():
     def __init__(self, config, bolo_config):
-        self.config = config
+        self.config = Generic()
+        self.config.__dict__.update(config.__dict__)
         self.config.__dict__.update(bolo_config.__dict__)
         self.get_beam()
 

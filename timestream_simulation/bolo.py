@@ -15,33 +15,51 @@ class Bolo:
 
     def __init__(self, bolo_name, config):
         self.name = bolo_name
-        bolo_config = importlib.import_module("simulation.timestream_simulation.bolo_config_files." + 
-                config.bolo_config_file).bolo_config.bolos[bolo_name]
         self.config = Generic()
+        bolo_config = importlib.import_module(config.bolo_config_file).bolo_config.bolos[bolo_name]
         self.config.__dict__.update(config.__dict__)
         self.config.__dict__.update(bolo_config.__dict__)
-        self.calculate_params()
-        self.beam = Beam(self.config, bolo_config)
-        self.noise_class = Noise(self.config)
         if config.simulate_ts:
+            self.beam = Beam(self.config, bolo_config)
+            self.noise_class = Noise(self.config)
             if not config.sim_pol_type == "noise_only":
                 self.get_sky_map()
-        self.get_initial_axes()
-        self.get_nsamples()
+            self.calculate_params()
+            self.get_initial_axes()
+            self.get_nsamples()
         self.set_bolo_dirs()
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Simulating the time-ordered data for a given bolo with any beam
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-    #@profile
+#    def get_timestream(self, segment, 
+
+    def read_timestream(self, segment, noise_only=False, read_list=["signal", "v", "pol_ang"]):
+        segment_dir = self.get_segment_dir(segment)
+        t_stream = {"signal" : None, "v" : None, "pol_ang" : None}  
+        if "signal" in read_list:
+            if noise_only:
+                t_stream["signal"] = np.load(os.path.join(segment_dir, "noise.npy"))
+            else:
+                t_stream["signal"] = np.load(os.path.join(segment_dir, "signal.npy"))
+        if "v" in read_list:
+            t_stream["v"] = np.load(os.path.join(segment_dir, "pointing_vec.npy"))
+        if "pol_ang" in read_list:
+            t_stream["pol_ang"] = np.load(os.path.join(segment_dir, "pol_ang.npy"))
+
+        return t_stream 
+
+
     def simulate_timestream(self, segment, return_field=["signal", "v", "pol_ang"]):
         if segment == 0:
-            self.display_params()
-            self.beam.display_beam_settings()
+            #self.display_params()
+            #self.beam.display_beam_settings()
             if self.config.write_beam:
                 self.beam.write_beam(self.bolo_dir)
         rot_qt = self.generate_quaternion(segment)
+
+        t_stream = {"signal" : None, "v" : None, "pol_ang" : None, "noise" : None}
 
         prompter.prompt("0.0")
         #Simulating the scan along the centre of the FOV
@@ -49,12 +67,12 @@ class Bolo:
         v_central = self.get_v_obv(v_init, rot_qt)
 
         pol_ang = self.get_pol_ang(rot_qt, v_central) 
-        if bool(set(self.config.sim_pol_type) & set("TQU", "pol_only")):
-            cos2 = np.cos(2*pol_ang)
-            sin2 = np.sin(2*pol_ang)
-        else:
+        if self.config.sim_pol_type == "T":
             cos2=None
             sin2=None
+        else:
+            cos2 = np.cos(2*pol_ang)
+            sin2 = np.sin(2*pol_ang)
  
         if "timestream_data" in self.config.timestream_data_products:
             self.make_write_dir(segment)
@@ -66,7 +84,7 @@ class Bolo:
 
         beam_kernel_row = self.beam.get_beam_row(0.0)                       #The input argument is the beam offset from the centre
         hit_pix = hp.vec2pix(self.config.nside_in, v_central[...,0], v_central[...,1], v_central[...,2])
-        signal = self.get_signal(hit_pix, beam_kernel_row, cos2, sin2)
+        signal = self.generate_signal(hit_pix, beam_kernel_row, cos2, sin2)
 
         for del_beta in self.beam.del_beta:
             if del_beta == 0.0:
@@ -76,14 +94,14 @@ class Bolo:
             v_init = self.get_initial_vec(del_beta)
             v = quaternion.transform(rot_qt, v_init)
             hit_pix = hp.vec2pix(self.config.nside_in, v[...,0], v[...,1], v[...,2])
-            signal += self.get_signal(hit_pix, beam_kernel_row, cos2, sin2)
+            signal += self.generate_signal(hit_pix, beam_kernel_row, cos2, sin2)
 
         beam_sum = np.sum(self.beam.beam_kernel[0])
         signal /= beam_sum
 
         if self.config.add_noise:
             noise = self.noise_class.simulate_timestream_noise_from_parameters()
-            if "noise" in self.config.timestream_data_products:
+            if "timestream_data" in self.config.timestream_data_products:
                 self.write_timestream_data(noise, "noise", segment)
             signal[::self.config.oversampling_rate] += noise 
 
@@ -92,16 +110,15 @@ class Bolo:
 
         if self.config.pipe_with_map_maker:
             if self.config.do_pencil_beam:
-                if return_field == ["signal"]:
-                    return signal
-                else:
-                    return signal, v_central, pol_ang
+                t_stream["signal"] = signal
+                t_stream["v"] = v_central
+                t_stream["pol_ang"] = pol_ang
+                return t_stream
             else:
-                if return_field == ["signal"]:
-                    return signal[::self.config.oversampling_rate]
-                else:
-                    return signal[::self.config.oversampling_rate], v_central[self.pad:-self.pad][::self.config.oversampling_rate], pol_ang[self.pad:-self.pad][::self.config.oversampling_rate]
-
+                t_stream["signal"] = signal[::self.config.oversampling_rate]
+                t_stream["v"] = v_central[self.pad:-self.pad][::self.config.oversampling_rate]
+                t_stream["pol_ang"] = pol_ang[self.pad:-self.pad][::self.config.oversampling_rate]
+                return t_stream
 
         if "hitmap" in self.config.timestream_data_products:
             del signal
@@ -110,14 +127,22 @@ class Bolo:
             return hitmap 
     
 
-    def get_signal(self, hit_pix, beam_kernel_row, cos2, sin2):
+    def generate_signal(self, hit_pix, beam_kernel_row, cos2, sin2):
         if self.config.sim_pol_type == "noise_only":
             signal = np.zeros(self.nsamples - 2*self.pad) 
 
-        elif self.config.sim_pol_type == "T_only":
-            signal = 0.5*self.sky_map[hit_pix]
-            if not self.config.do_pencil_beam:
-                signal = np.convolve(signal, beam_kernel_row[0], mode='valid')
+        elif self.config.sim_pol_type == "T":
+            if self.config.do_pencil_beam:
+                signal = 0.5*self.sky_map[hit_pix]
+            else: 
+                signal = np.convolve(0.5*self.sky_map[hit_pix], beam_kernel_row[0], mode='valid')
+
+        elif self.config.sim_pol_type in ["QU", "_QU"]:
+            if self.config.do_pencil_beam:
+                signal = 0.5*(self.sky_map[0][hit_pix]*cos2 + self.sky_map[1][hit_pix]*sin2) 
+            else:
+                signal = np.convolve(0.5*(self.sky_map[0][hit_pix]*cos2 + self.sky_map[1][hit_pix]*sin2), -1.0*beam_kernel_row[1], mode='valid')
+                signal += np.convolve(0.5*(self.sky_map[0][hit_pix]*sin2 + self.sky_map[1][hit_pix]*cos2), -1.0*beam_kernel_row[2], mode='valid')
 
         elif self.config.sim_pol_type == "pol_only":
             if self.config.do_pencil_beam:
@@ -130,13 +155,6 @@ class Bolo:
             if self.config.do_pencil_beam:
                 signal = 0.5*(self.sky_map[0][hit_pix] + self.sky_map[1][hit_pix]*cos2 + self.sky_map[2][hit_pix]*sin2) 
             else:
-                """
-                signal = np.convolve(0.5*self.sky_map[0][hit_pix], beam_kernel_row[0], mode='valid')
-                signal += np.convolve(0.5*self.sky_map[1][hit_pix]*cos2, -1.0*beam_kernel_row[1], mode='valid')
-                #signal += np.convolve(0.5*self.sky_map[1][hit_pix]*sin2, -1.0*beam_kernel_row[2], mode='valid')
-                signal += np.convolve(0.5*self.sky_map[2][hit_pix]*sin2, -1.0*beam_kernel_row[1], mode='valid')
-                #signal += np.convolve(0.5*self.sky_map[2][hit_pix]*cos2, -1.0*beam_kernel_row[2], mode='valid')
-                """
                 signal = np.convolve(0.5*self.sky_map[0][hit_pix], beam_kernel_row[0], mode='valid')
                 signal += np.convolve(0.5*(self.sky_map[1][hit_pix]*cos2 + self.sky_map[2][hit_pix]*sin2), -1.0*beam_kernel_row[1], mode='valid')
                 signal += np.convolve(0.5*(self.sky_map[1][hit_pix]*sin2 + self.sky_map[2][hit_pix]*cos2), -1.0*beam_kernel_row[2], mode='valid')
@@ -262,8 +280,12 @@ class Bolo:
     def get_sky_map(self):
         if self.config.sim_pol_type == "noise_only":
             self.sky_map = None
-        elif self.config.sim_pol_type == "T_only":
+        elif self.config.sim_pol_type == "T":
             self.sky_map = hp.read_map(self.config.input_map)
+        elif self.config.sim_pol_type == "QU":
+            self.sky_map = hp.read_map(self.config.input_map, field=(0,1))
+        elif self.config.sim_pol_type == "_QU":
+            self.sky_map = hp.read_map(self.config.input_map, field=(1,2))
         else:
             self.sky_map = hp.read_map(self.config.input_map, field=(0,1,2))
 
@@ -277,7 +299,10 @@ class Bolo:
 
     def make_write_dir(self, segment):
         if not os.path.exists(self.bolo_dir):
-            os.makedirs(self.bolo_dir)
+            try:
+                os.makedirs(self.bolo_dir)
+            except OSError:
+                pass
 
         segment_dir = self.get_segment_dir(segment) 
         if os.path.exists(segment_dir):
@@ -308,21 +333,6 @@ class Bolo:
                 np.save(os.path.join(write_dir, data_name), ts_data)
             else:
                 np.save(os.path.join(write_dir, data_name), ts_data[self.pad:-self.pad][::self.config.oversampling_rate])
-
-
-    def read_timestream(self, segment, noise=False, return_field=["signal", "v", "pol_ang"]):
-        segment_dir = self.get_segment_dir(segment)
-        if noise:
-            signal = np.load(os.path.join(segment_dir, "noise.npy"))
-        else:
-            signal = np.load(os.path.join(segment_dir, "signal.npy"))
-        if return_field == ["signal"]:
-            return signal
-        else:
-            v = np.load(os.path.join(segment_dir, "pointing_vec.npy"))
-            pol_ang = np.load(os.path.join(segment_dir, "pol_ang.npy"))
-
-            return signal, v, pol_ang
 
 
     def display_params(self):

@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import sys
 import shutil
 import simulation.lib.utilities.prompter as prompter
 
@@ -8,19 +9,24 @@ def get_local_bolo_segment_list(rank, num_processes, bolo_list, segment_list):
     num_segments_per_bolo = len(segment_list)
     num_total_segments = num_bolos*num_segments_per_bolo
 
-    if num_total_segments % num_processes != 0:
-        num_segments_per_process = num_total_segments/num_processes + 1
-    else:
-        num_segments_per_process = num_total_segments/num_processes
+    num_segments_per_process = num_total_segments/num_processes
 
     bolo_list_deg = []
     for bolo_name in bolo_list:
         bolo_list_deg.extend([bolo_name]*num_segments_per_bolo)
 
-    segment_list_deg = np.arange(num_total_segments) % num_segments_per_bolo
+    segment_list_deg = list(np.arange(num_total_segments) % num_segments_per_bolo)
 
     local_bolo_list = bolo_list_deg[rank*num_segments_per_process : (rank + 1)*num_segments_per_process]
     local_segment_list = segment_list_deg[rank*num_segments_per_process : (rank + 1)*num_segments_per_process]
+
+    if num_total_segments % num_processes != 0:
+        num_extra_segments = num_total_segments%num_processes
+        extra_bolo_list = bolo_list_deg[-num_extra_segments:]
+        extra_segment_list = segment_list_deg[-num_extra_segments:]
+        if rank<num_extra_segments:
+            local_bolo_list.extend([extra_bolo_list[rank]])
+            local_segment_list.extend([extra_segment_list[rank]])
 
     bolo_segment_dict = dict.fromkeys(set(local_bolo_list), None)
 

@@ -1,5 +1,5 @@
 import numpy as np
-from simulation.lib.geometry.conversions import deg2rad
+#from simulation.lib.geometry.conversions import deg2rad
 #from .euler_to_quaternion import *
 
 def make_quaternion(thetas, vectors, degree=False):
@@ -15,7 +15,7 @@ def make_quaternion(thetas, vectors, degree=False):
     """
 
     if degree is True:
-        thetas_rad = deg2rad(thetas)
+        thetas_rad = np.radians(thetas)
     else:
         thetas_rad=thetas
     return np.insert(np.sin(thetas_rad/2)[...,None]*vectors, 0, np.cos(thetas_rad/2), axis=-1)

@@ -1,7 +1,7 @@
 import numpy as np
 import healpy as hp
 import os
-from simulation.params.custom_params import global_paths
+from simulation.global_config import global_paths
 
 """
 This module calculates and converts the noise parameters for a CMB experiment and also generates the noise power spectra given such parameters.
@@ -227,28 +227,3 @@ def sensitivity_to_variance_Cl(det_sens, beam_fwhm, lmax, t_mission=T_MISSION, n
         variance[i] = (2.0/(2.0*ell + 1)/f_sky)*(Cl[i] + w_inv[i]/Bl_squared[...,i])**2
         variance[i][:2] = 0.0
     return variance
-
-"""
-def noise_arcmin_to_variance_Cl(noise_arcmin, beam_fwhm, lmax, f_sky=1.0, spectra_fid=None):
-    if spectra_fid == None:
-        spectra_fid = spectra_file
-    Cl = np.load(spectra_fid)[..., :lmax+1]
-    ell = np.arange(lmax+1)
-    w_inv = noise_arcmin_to_noise_solid_angle(noise_arcmin)**2
-    Bl = hp.gauss_beam(fwhm=beam_fwhm, lmax=lmax, pol=True)
-    variance = np.empty((3, lmax+1))
-    for i in range(3):
-        variance[i] = (2.0/(2.0*ell+1)/f_sky)*(Cl[i] + w_inv[i]/Bl[...,i]**2)**2
-    return variance
-
-
-def noise_arcmin_to_fractional_noise_per_multipole(noise_arcmin, beam_fwhm, lmax, f_sky=1.0, spectra_fid=None):
-    if spectra_fid == None:
-        spectra_fid = spectra_file
-    Cl = np.load(spectra_fid)[..., :lmax+1]
-    variance = noise_arcmin_to_variance_Cl(noise_arcmin, beam_fwhm, lmax, f_sky, spectra_fid)
-    fractional_noise = np.empty(variance.shape)
-    for i in range(3):
-        fractional_noise[i] = np.sqrt(variance[i]) / Cl[i] 
-    return fractional_noise
-"""

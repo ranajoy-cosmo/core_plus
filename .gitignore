@@ -13,4 +13,4 @@ custom*
 *.out
 *test*
 batch.slurm
-config*
+out_files

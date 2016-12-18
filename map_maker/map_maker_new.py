@@ -15,10 +15,12 @@ import simulation.lib.utilities.prompter as prompter
 from simulation.lib.utilities.time_util import get_time_stamp 
 import simulation.map_maker.covariance_matrix_utils as cov_ut
 
+
 def run_mpi():
     print "Rank :", rank, "started"
     npix = hp.nside2npix(config.nside_out)
     dim, ind_elements = cov_ut.get_dim(config.pol_type)
+    bolo_list = [None, None, None]
 
     inv_cov_matrix_local = np.zeros((npix, ind_elements), dtype=np.float)
     b_matrix_local = np.zeros((npix, dim), dtype=np.float)
@@ -34,23 +36,15 @@ def run_mpi():
     if rank == 0:
         make_data_dirs() 
 
-    if config.subtract_template:
-        bolo_TEMPLATE = Bolo("bolo_TEMPLATE", config)
-        estimated_y = np.load(os.path.join(config.general_data_dir, config.sim_tag, "estimated_y.npy"))
-
     for bolo_name in bolo_segment_dict.keys():
         print "Rank :", rank, "Bolos class being generated"
-        if config.take_diff_signal:
-            bolo_a = Bolo(bolo_name + 'a', config)
-            bolo_b = Bolo(bolo_name + 'b', config)
-        else:
-            bolo = Bolo(bolo_name, config)
+        bolo_list = initialise_bolo(bolo_name, bolo_list)
         for segment in bolo_segment_dict[bolo_name]:
             prompter.prompt("Rank : %d doing Bolo : %s and segment : %d" % (rank, bolo_name, segment))
             if config.take_diff_signal:
-                signal, v, pol_ang = acquire_difference_signal(bolo_a, bolo_b, segment, config.noise_only_map)
+                signal, v, pol_ang = acquire_difference_signal(bolo_a, bolo_b, segment)
             else:
-                signal, v, pol_ang = acquire_signal(bolo, segment, config.noise_only_map)
+                signal, v, pol_ang = acquire_signal(bolo, segment)
             if config.subtract_template:
                 signal_TEMPLATE = bolo_TEMPLATE.read_timestream(segment, read_list=["signal"])["signal"]
                 signal -= estimated_y*signal_TEMPLATE
@@ -83,22 +77,37 @@ def run_mpi():
     write_segments(sky_map_local_segment, "sky_map", recon_dir) 
 
 
-def acquire_signal(bolo, segment, noise_only=False):
+def initialise_bolo(bolo_name, bolo_list):
+    if config.take_ind_bolo:
+        bolo_list[0] = Bolo(bolo_name, config)
+    if config.take_diff_signal:
+        bolo_name_a = bolo_name + 'a'
+        bolo_name_b = bolo_name + 'b'
+        bolo_list[0] = Bolo(bolo_name_a, config)
+        bolo_list[1] = Bolo(bolo_name_b, config)
+    if config.subtract_template:
+        bolo_list[2] = Bolo(bolo_name_TEMPLATE, config)
+
+    return bolo_list
+
+def acquire_signal(bolo_list, segment):
     if config.simulate_ts:
-        t_stream = bolo.simulate_timestream(segment)
-    else:
-        t_stream = bolo.read_timestream(segment, noise_only=noise_only)
+        if config.take_ind_bolo:
+            t_stream = bolo.simulate_timestream(segment)
+        if config.take_diff_signal:
+            t_stream_a = bolo_a.simulate_timestream(segment)
+            t_stream_b = bolo_b.simulate_timestream(segment)
 
     return t_stream["signal"], t_stream["v"], t_stream["pol_ang"]
  
 
-def acquire_difference_signal(bolo_a, bolo_b, segment, noise_only=False):
+def acquire_difference_signal(bolo_a, bolo_b, segment):
     if config.simulate_ts:
         t_stream_a = bolo_a.simulate_timestream(segment)
-        t_stream_b = bolo_b.simulate_timestream(segment, noise_only=noise_only)
+        t_stream_b = bolo_b.simulate_timestream(segment)
     else:
         t_stream_a = bolo_a.read_timestream(segment)
-        t_stream_b = bolo_b.read_timestream(segment, read_list=["signal"], noise_only=noise_only)
+        t_stream_b = bolo_b.read_timestream(segment, read_list=["signal"])
 
     signal = 0.5*(t_stream_a["signal"] - t_stream_b["signal"])
 
