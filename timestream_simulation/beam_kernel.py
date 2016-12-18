@@ -145,6 +145,7 @@ class Beam():
         sys.stdout.flush()
 
 
+    """
     def plot_beam(self):
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
         n = self.beam_kernel[0].shape[0]/2
@@ -163,6 +164,13 @@ class Beam():
         fig.colorbar(im, ax=ax4)
         fig.suptitle("Rescaled Plack 217_5a, FWHM : 7.68', Resol : 0.96', Extent : 3.85*FWHM")
         plt.show()
+    """
+    def plot_beam(self):
+        fig, ax= plt.subplots()
+        n = self.beam_kernel[0].shape[0]/2
+        extent = np.arange(-n, n+1)*self.config.scan_resolution
+        im = new_imshow(ax, 10*self.beam_kernel[0], x=extent, y=extent, interpolation="nearest", cmap='gray')
+        plt.show()
 
 
     def write_beam(self, out_dir=None):
@@ -178,7 +186,7 @@ if __name__=="__main__":
     config_file = sys.argv[1]
     bolo_name = sys.argv[2]
     config = importlib.import_module("simulation.timestream_simulation.config_files." + config_file).config
-    config.scan_resolution = 0.959620009804 
+    config.scan_resolution = 1.5 #0.959620009804 
     bolo_config = importlib.import_module("simulation.timestream_simulation.bolo_config_files." + config.bolo_config_file).bolo_config
 
     bolo_beam = Beam(config, bolo_config.bolos[bolo_name])

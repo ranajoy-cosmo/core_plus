@@ -15,7 +15,7 @@ config.sim_tag = "bandpass_correction_CORE_M5_300"
 
 config.add_noise = False
 
-config.do_pencil_beam = True
+config.do_pencil_beam = False
 
 config.gal_coords = True 
 
