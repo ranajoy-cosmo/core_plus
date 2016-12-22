@@ -30,6 +30,10 @@ def run_mpi():
 
     bolo_segment_dict = get_local_bolo_segment_list(rank, size, config.bolo_list, config.segment_list)
 
+    tot_seg = 0
+    for keys in bolo_segment_dict.keys():
+        tot_seg += len(bolo_segment_dict[keys])
+
     time.sleep(0.1*rank)
     print "Rank :", rank, ", Bolos and Segments :", bolo_segment_dict
     comm.Barrier()
@@ -45,6 +49,7 @@ def run_mpi():
         else:
             bolo = Bolo(bolo_name, config)
         for segment in bolo_segment_dict[bolo_name]:
+            start_seg = time.time()
             prompter.prompt("Rank : %d doing Bolo : %s and segment : %d" % (rank, bolo_name, segment))
             if config.take_diff_signal:
                 signal, v, pol_ang = acquire_difference_signal(bolo_a, bolo_b, segment, config.noise_only_map)
@@ -56,12 +61,16 @@ def run_mpi():
             hitpix = hp.vec2pix(config.nside_out, v[...,0], v[...,1], v[...,2])
             del v
             cov_ut.get_inv_cov_matrix(hitpix, pol_ang, signal, inv_cov_matrix_local, b_matrix_local, hitmap_local, npix, config.pol_type)
+            stop_seg = time.time()
+            prompter.prompt("Rank : " + str(rank) + " Time taken : " + str(stop_seg - start_seg) + ". Projected time : " + str((stop_seg - start_seg)*tot_seg))
 
     if config.subtract_template:
         del signal_TEMPLATE
     del signal
     del pol_ang
     del hitpix
+        
+    start_dist_inv = time.time()
 
     inv_cov_matrix_local_segment = distribute_matrix(inv_cov_matrix_local, "cov_matrix")
     del inv_cov_matrix_local
@@ -73,6 +82,9 @@ def run_mpi():
     cov_matrix_local_segment = cov_ut.get_covariance_matrix(inv_cov_matrix_local_segment, hitmap_local_segment, config.pol_type)
 
     sky_map_local_segment = cov_ut.get_sky_map(cov_matrix_local_segment, b_matrix_local_segment, hitmap_local_segment, config.pol_type)
+
+    stop_dist_inv = time.time()
+    prompter.prompt("Rank : " + str(rank) + " Time taken to distribute and invert: " + str(stop_dist_inv - start_dist_inv))
 
     write_segments(hitmap_local_segment, "hitmap", recon_dir) 
     write_segments(inv_cov_matrix_local_segment, "inverse_covariance_matrix", recon_dir) 
@@ -261,7 +273,7 @@ if __name__=="__main__":
     config_file = sys.argv[1]
     run_type = sys.argv[2]
 
-    config = importlib.import_module(config_file).config
+    config = importlib.import_module("simulation.map_maker.config_files." + config_file).config
 
     if run_type=='accumulate_segments':
         size = int(sys.argv[3])

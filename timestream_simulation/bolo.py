@@ -53,9 +53,9 @@ class Bolo:
 
 
     def simulate_timestream(self, segment, return_field=["signal", "v", "pol_ang"]):
-        if segment == 0:
-            #self.display_params()
-            #self.beam.display_beam_settings()
+        if self.name == "bolo_0001a" and segment == 0:
+            self.display_params()
+            self.beam.display_beam_settings()
             if self.config.write_beam:
                 self.beam.write_beam(self.bolo_dir)
 
@@ -145,23 +145,16 @@ class Bolo:
             if self.config.do_pencil_beam:
                 signal = 0.5*(self.sky_map[0][hit_pix]*cos2 + self.sky_map[1][hit_pix]*sin2) 
             else:
-                signal = np.convolve(0.5*(self.sky_map[0][hit_pix]*cos2 + self.sky_map[1][hit_pix]*sin2), -1.0*beam_kernel_row[1], mode='valid')
-                signal += np.convolve(0.5*(self.sky_map[0][hit_pix]*sin2 + self.sky_map[1][hit_pix]*cos2), -1.0*beam_kernel_row[2], mode='valid')
-
-        elif self.config.sim_pol_type == "pol_only":
-            if self.config.do_pencil_beam:
-                signal = 0.5*(self.sky_map[1][hit_pix]*cos2 + self.sky_map[2][hit_pix]*sin2)
-            else:
-                signal = np.convolve(0.5*(self.sky_map[1][hit_pix]*cos2 + self.sky_map[2][hit_pix]*sin2), -1.0*beam_kernel_row[1], mode='valid')
-                signal += np.convolve(0.5*(self.sky_map[1][hit_pix]*sin2 + self.sky_map[2][hit_pix]*cos2), -1.0*beam_kernel_row[2], mode='valid')
+                signal = np.convolve(0.5*(self.sky_map[0][hit_pix]*cos2 + self.sky_map[1][hit_pix]*sin2), beam_kernel_row[1], mode='valid')
+                signal += np.convolve(0.5*(-1.0*self.sky_map[0][hit_pix]*sin2 + self.sky_map[1][hit_pix]*cos2), beam_kernel_row[2], mode='valid')
 
         else:
             if self.config.do_pencil_beam:
                 signal = 0.5*(self.sky_map[0][hit_pix] + self.sky_map[1][hit_pix]*cos2 + self.sky_map[2][hit_pix]*sin2) 
             else:
                 signal = np.convolve(0.5*self.sky_map[0][hit_pix], beam_kernel_row[0], mode='valid')
-                signal += np.convolve(0.5*(self.sky_map[1][hit_pix]*cos2 + self.sky_map[2][hit_pix]*sin2), -1.0*beam_kernel_row[1], mode='valid')
-                signal += np.convolve(0.5*(self.sky_map[1][hit_pix]*sin2 + self.sky_map[2][hit_pix]*cos2), -1.0*beam_kernel_row[2], mode='valid')
+                signal += np.convolve(0.5*(self.sky_map[1][hit_pix]*cos2 + self.sky_map[2][hit_pix]*sin2), beam_kernel_row[1], mode='valid')
+                signal += np.convolve(0.5*(-1.0*self.sky_map[1][hit_pix]*sin2 + self.sky_map[2][hit_pix]*cos2), beam_kernel_row[2], mode='valid')
 
         return signal
 
@@ -219,9 +212,9 @@ class Bolo:
 
         t_steps = t_start + (1.0/self.config.sampling_rate/self.config.oversampling_rate)*np.arange(-self.pad, self.nsamples - self.pad)
 
-        w_spin = -2*np.pi/self.config.t_spin
-        w_prec = -2*np.pi/self.config.t_prec
-        w_rev = -2*np.pi/self.config.t_year
+        w_spin = 2*np.pi/self.config.t_spin
+        w_prec = 2*np.pi/self.config.t_prec
+        w_rev = 2*np.pi/self.config.t_year
 
         r_total = quaternion.multiply(quaternion.make_quaternion(w_rev*t_steps, self.axis_rev), quaternion.multiply(quaternion.make_quaternion(w_prec*t_steps, self.axis_prec), quaternion.make_quaternion(w_spin*t_steps, self.axis_spin)))
         #r_total = quaternion.multiply(quaternion.make_quaternion(w_prec*t_steps, self.axis_prec), quaternion.make_quaternion(w_spin*t_steps, self.axis_spin))
@@ -265,7 +258,8 @@ class Bolo:
         proj_x = np.sum(pol_vec*x_local, axis=-1)
         proj_y = np.sum(pol_vec*y_local, axis=-1)
 
-        pol_ang = np.pi - (np.arctan2(proj_y, proj_x) + pol_ini) % np.pi 
+        #pol_ang = np.pi - (np.arctan2(proj_y, proj_x) + pol_ini) % np.pi 
+        pol_ang = (np.arctan2(proj_y, proj_x) + pol_ini) % np.pi 
 
         return pol_ang 
 

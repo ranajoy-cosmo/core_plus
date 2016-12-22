@@ -13,17 +13,17 @@ config = Generic()
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 config.simulate_ts = True
-config.sim_tag = "sim_test"
-config.scan_tag = "scan_2"
+config.sim_tag = "beam_test"
+config.scan_tag = "scan_ecl_nuim_centre"
 
 #Options for input_pol_type = ["TQU", "QU", "T", "_QU", "noise_only"]
 #Default -> "TQU"
 # A _ means that the input map has a component which will not be read"
-config.sim_pol_type = "T"
+config.sim_pol_type = "TQU"
 
 config.add_noise = False
 
-config.do_pencil_beam = True
+config.do_pencil_beam = False
 
 config.gal_coords = False
 
@@ -38,10 +38,10 @@ config.pipe_with_map_maker = False
 config.t_year = 366*24*60*60.0                    #seconds
 config.t_prec = 4*24*60*60.0                     #seconds
 config.t_spin = 120.0                             #seconds
-config.sampling_rate = 400                                  #Hz
+config.sampling_rate = 170                                  #Hz
 
-config.alpha = 45.0                                #degrees
-config.beta = 45.0                                #degrees
+config.alpha = 30.0                                #degrees
+config.beta = 65.0                                #degrees
 
 config.oversampling_rate = 1
 
@@ -58,10 +58,11 @@ config.noise_type = "white"
 # Data selection
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-config.bolo_list = ['bolo_0001a']#, 'bolo_0001b', 'bolo_0002a', 'bolo_0002b']
+config.bolo_list = ['bolo_0001a', 'bolo_0001b']
 
-config.t_segment = 1*60*60.0                      #seconds
-config.segment_list = range(1)
+config.t_segment = 0.5083333*24*60*60.0                      #seconds
+config.segment_list = range(720)
+
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read & Write
@@ -81,6 +82,6 @@ config.beam_file_name = "test_beam"
 # Beam Parameters
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-config.simulate_beam = True
+config.simulate_beam = False
 config.beam_cutoff = 4                                                             #fwhm
 config.check_normalisation = True

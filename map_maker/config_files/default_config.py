@@ -4,7 +4,7 @@ import numpy as np
 from simulation.lib.utilities.time_util import get_time_stamp
 from simulation.lib.utilities.generic_class import Generic
 from simulation.lib.utilities.time_util import get_time_stamp
-from simulation.params.custom_params import global_paths
+from simulation.global_config import global_paths
 
 config = Generic()
 
@@ -21,9 +21,9 @@ config.sim_tag = "sim_test"
 config.scan_tag = "scan_1"
 config.map_making_tag = "map_recon_1"
 
-config.stop_at_inv_cov_map = False
-
 config.take_diff_signal = False
+config.subtract_template = False
+config.noise_only_map = False
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Resolution
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*

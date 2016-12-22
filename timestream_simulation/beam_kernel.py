@@ -37,7 +37,8 @@ class Beam():
         beam_kernel = beam_kernel.reshape((4, mark_orig_dim, mark_orig_dim))
         mark_fwhm_major = 7.68                   #arc-mins
         mark_fwhm_minor = 7.68                   #arc-mins
-        mark_resolution = 0.39523370660946627            #arc-mins
+        #mark_resolution = 0.39523370660946627            #arc-mins
+        mark_resolution = 0.6                   #arc-mins
 
         new_dim = int(mark_orig_dim * mark_resolution / self.config.scan_resolution)
         if new_dim%2 == 0:
