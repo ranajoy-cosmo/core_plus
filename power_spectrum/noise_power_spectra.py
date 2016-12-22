@@ -16,7 +16,7 @@ T_MISSION = 4*365*24*60*60.0                     #seconds : 4 years
 N_DET_145 = 144                                     #for 145GHz
 
 spectra_folder = os.path.join(global_paths.base_dir, "spectra")
-spectra_file = os.path.join(spectra_folder, "r_0001/unlensed_cls.npy")              #Fiducial spectra
+spectra_file = os.path.join(spectra_folder, "r_0001/lensedtot_cls.npy")              #Fiducial spectra
 
 
 def pixel_solid_angle(nside, arcmin=False):

@@ -49,8 +49,9 @@ bolo_config.bolos[bolo_name].one_over_f_seed = 1234
 
 bolo_config.bolos[bolo_name].input_beam_file = os.path.join(bolo_config.input_beam_folder, "DRAG_CENTRAL_GRID_linxpol.fits")
 
-bolo_config.bolos[bolo_name].beam_angle = 0.0                                  #degrees
+#bolo_config.bolos[bolo_name].beam_angle = 0.0                                  #degrees
 
+"""
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Bolo 0001b
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
@@ -190,4 +191,4 @@ bolo_config.bolos[bolo_name].one_over_f_seed = 4567
 bolo_config.bolos[bolo_name].input_beam_file = os.path.join(bolo_config.input_beam_folder, "beam_217-6b_uv_rescaled_fwhm_7.68_arcmin.fits")
 
 bolo_config.bolos[bolo_name].beam_angle = 0.0      #degrees
-
+"""

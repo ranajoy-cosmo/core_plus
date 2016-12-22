@@ -45,7 +45,7 @@ config.beta = 65.0                                #degrees
 
 config.oversampling_rate = 1
 
-config.nside_in = 4096
+config.nside_in = 1024
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Noise 
@@ -62,7 +62,6 @@ config.bolo_list = ['bolo_0001a', 'bolo_0001b']
 
 config.t_segment = 0.5083333*24*60*60.0                      #seconds
 config.segment_list = range(720)
-
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read & Write
