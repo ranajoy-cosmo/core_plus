@@ -219,9 +219,9 @@ class Bolo:
 
         t_steps = t_start + (1.0/self.config.sampling_rate/self.config.oversampling_rate)*np.arange(-self.pad, self.nsamples - self.pad)
 
-        w_spin = -2*np.pi/self.config.t_spin
-        w_prec = -2*np.pi/self.config.t_prec
-        w_rev = -2*np.pi/self.config.t_year
+        w_spin = 2*np.pi/self.config.t_spin
+        w_prec = 2*np.pi/self.config.t_prec
+        w_rev = 2*np.pi/self.config.t_year
 
         r_total = quaternion.multiply(quaternion.make_quaternion(w_rev*t_steps, self.axis_rev), quaternion.multiply(quaternion.make_quaternion(w_prec*t_steps, self.axis_prec), quaternion.make_quaternion(w_spin*t_steps, self.axis_spin)))
         #r_total = quaternion.multiply(quaternion.make_quaternion(w_prec*t_steps, self.axis_prec), quaternion.make_quaternion(w_spin*t_steps, self.axis_spin))
@@ -265,7 +265,8 @@ class Bolo:
         proj_x = np.sum(pol_vec*x_local, axis=-1)
         proj_y = np.sum(pol_vec*y_local, axis=-1)
 
-        pol_ang = np.pi - (np.arctan2(proj_y, proj_x) + pol_ini) % np.pi 
+        #pol_ang = np.pi - (np.arctan2(proj_y, proj_x) + pol_ini) % np.pi 
+        pol_ang = (np.arctan2(proj_y, proj_x) + pol_ini) % np.pi 
 
         return pol_ang 
 

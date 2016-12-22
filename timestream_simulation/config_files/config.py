@@ -13,8 +13,8 @@ config = Generic()
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 config.simulate_ts = True
-config.sim_tag = "sim_test"
-config.scan_tag = "scan_2"
+config.sim_tag = "pointing_test"
+config.scan_tag = "scan_1"
 
 #Options for input_pol_type = ["TQU", "QU", "T", "_QU", "noise_only"]
 #Default -> "TQU"
@@ -38,14 +38,14 @@ config.pipe_with_map_maker = False
 config.t_year = 366*24*60*60.0                    #seconds
 config.t_prec = 4*24*60*60.0                     #seconds
 config.t_spin = 120.0                             #seconds
-config.sampling_rate = 400                                  #Hz
+config.sampling_rate = 85                                  #Hz
 
-config.alpha = 45.0                                #degrees
-config.beta = 45.0                                #degrees
+config.alpha = 30.0                                #degrees
+config.beta = 65.0                                #degrees
 
 config.oversampling_rate = 1
 
-config.nside_in = 4096
+config.nside_in = 1024
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Noise 
@@ -60,8 +60,8 @@ config.noise_type = "white"
 
 config.bolo_list = ['bolo_0001a']#, 'bolo_0001b', 'bolo_0002a', 'bolo_0002b']
 
-config.t_segment = 1*60*60.0                      #seconds
-config.segment_list = range(1)
+config.t_segment = 24*60*60.0                      #seconds
+config.segment_list = range(366)
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read & Write

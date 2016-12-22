@@ -5,10 +5,10 @@ from simulation.lib.utilities import generic_class
 bolo_config = generic_class.Generic()
 bolo_config.bolos = {}
 
-bolo_config.common_input_map = "/global/homes/b/banerji/simulation/maps/r_001/sky_map_4096_8.fits"
-map_folder = "/home/banerji/simulation/maps/bandpass_set_1"
-bolo_config.input_beam_folder = "/project/projectdirs/core/sim/beams/planck_7.68_arcmin/square"
-bolo_config.common_input_beam = os.path.join(bolo_config.input_beam_folder, "beam_217-5a_uv_rescaled_fwhm_7.68_arcmin.fits")
+bolo_config.common_input_map = "/Users/banerji/CORE+/simulation/maps/r_001/sky_map_1024_0.fits"
+#map_folder = "/home/banerji/simulation/maps/bandpass_set_1"
+#bolo_config.input_beam_folder = "/project/projectdirs/core/sim/beams/planck_7.68_arcmin/square"
+#bolo_config.common_input_beam = os.path.join(bolo_config.input_beam_folder, "beam_217-5a_uv_rescaled_fwhm_7.68_arcmin.fits")
 bolo_config.offset_sigma = 0.0
 bolo_config.common_beam_angle = 0.0
 
@@ -47,10 +47,11 @@ bolo_config.bolos[bolo_name].one_over_f_seed = 1234
 #bolo_config.bolos[bolo_name].offset_x = 0.0 
 #bolo_config.bolos[bolo_name].offset_y = 0.0
 
-bolo_config.bolos[bolo_name].input_beam_file = os.path.join(bolo_config.input_beam_folder, "beam_217-5a_uv_rescaled_fwhm_7.68_arcmin.fits")
+#bolo_config.bolos[bolo_name].input_beam_file = os.path.join(bolo_config.input_beam_folder, "beam_217-5a_uv_rescaled_fwhm_7.68_arcmin.fits")
 
-bolo_config.bolos[bolo_name].beam_angle = 0.0                                  #degrees
+#bolo_config.bolos[bolo_name].beam_angle = 0.0                                  #degrees
 
+"""
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Bolo 0001b
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
@@ -190,4 +191,4 @@ bolo_config.bolos[bolo_name].one_over_f_seed = 4567
 bolo_config.bolos[bolo_name].input_beam_file = os.path.join(bolo_config.input_beam_folder, "beam_217-6b_uv_rescaled_fwhm_7.68_arcmin.fits")
 
 bolo_config.bolos[bolo_name].beam_angle = 0.0      #degrees
-
+"""

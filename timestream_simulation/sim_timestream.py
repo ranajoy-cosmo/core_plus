@@ -60,6 +60,36 @@ def run_mpi():
             hp.write_map(os.path.join(scan_dir, "hitmap_in.fits"), hitmap)
 
 
+def run_serial():
+    make_data_dirs()
+
+    bolo_segment_dict = get_local_bolo_segment_list(0, 1, config.bolo_list, config.segment_list)
+
+    tot_seg = 0
+    for keys in bolo_segment_dict.keys():
+        tot_seg += len(bolo_segment_dict[keys])
+
+    if "hitmap" in config.timestream_data_products:
+        hitmap = np.zeros(hp.nside2npix(config.nside_in))
+
+    for bolo_name in bolo_segment_dict.keys():
+        bolo = Bolo(bolo_name, config)
+        for segment in bolo_segment_dict[bolo_name]:
+            start_seg = time.time()
+            prompter.prompt("Doing Bolo : %s Segment : %d" % (bolo_name, segment+1))
+            if "hitmap" in config.timestream_data_products:
+                hitmap += bolo.simulate_timestream(segment)
+            else:
+                bolo.simulate_timestream(segment)
+            stop_seg = time.time()
+            prompter.prompt(" Time taken : " + str(stop_seg - start_seg) + ". Projected time : " + str((stop_seg - start_seg)*tot_seg))
+
+    prompter.prompt("Done simulating")
+
+    
+    scan_dir = os.path.join(config.general_data_dir, config.sim_tag, config.scan_tag)
+    hp.write_map(os.path.join(scan_dir, "hitmap_in.fits"), hitmap)
+
 
 def make_data_dirs():
     sim_dir = os.path.join(config.general_data_dir, config.sim_tag)
