@@ -22,8 +22,10 @@ for bolo_pair in config.bolo_list:
     bolo_a_dir = os.path.join(sim_dir, "scan", bolo_pair + "a") 
     bolo_b_dir = os.path.join(sim_dir, "scan", bolo_pair + "b") 
     bolo_re_diff_dir = os.path.join(sim_dir, "scan", bolo_pair + "_diff_re")
-    bolo_TEMPLATE_dir = os.path.join(sim_dir, "scan", bolo_pair + "_TEMPLATE")
-    bolo_re_TEMPLATE_dir = os.path.join(sim_dir, "scan", bolo_pair + "_TEMPLATE_QU_re")
+    bolo_TEMPLATE_TD_dir = os.path.join(sim_dir, "scan", bolo_pair + "_TEMPLATE_TD")
+    bolo_TEMPLATE_SYNC_dir = os.path.join(sim_dir, "scan", bolo_pair + "_TEMPLATE_SYNC")
+    bolo_re_TEMPLATE_TD_dir = os.path.join(sim_dir, "scan", bolo_pair + "_TEMPLATE_TD_re")
+    bolo_re_TEMPLATE_SYNC_dir = os.path.join(sim_dir, "scan", bolo_pair + "_TEMPLATE_SYNC_re")
 
     local_segment_list = rank*num_segments/size + np.arange(num_segments/size)
     #print "Rank :", rank, "Local segment list :", local_segment_list
@@ -38,26 +40,29 @@ for bolo_pair in config.bolo_list:
         signal_b = np.load(os.path.join(bolo_b_dir, segment_name, "signal.npy"))
         signal_diff = 0.5*(signal_a - signal_b)
         signal_re_diff = np.load(os.path.join(bolo_re_diff_dir, segment_name, "signal.npy"))
-        signal_TEMPLATE = np.load(os.path.join(bolo_TEMPLATE_dir, segment_name, "signal.npy"))
-        signal_re_TEMPLATE = np.load(os.path.join(bolo_re_TEMPLATE_dir, segment_name, "signal.npy"))
-        local_num += np.dot(signal_TEMPLATE, (signal_diff - signal_re_diff))
-        local_den += np.dot(signal_TEMPLATE, (signal_TEMPLATE - signal_re_TEMPLATE))
+        signal_TEMPLATE = np.empty((signal_a.size, 2))
+        signal_TEMPLATE[..., 0] = np.load(os.path.join(bolo_TEMPLATE_TD_dir, segment_name, "signal.npy"))
+        signal_TEMPLATE[..., 1] = np.load(os.path.join(bolo_TEMPLATE_SYNC_dir, segment_name, "signal.npy"))
+        signal_re_TEMPLATE = np.empty((signal_a.size, 2))
+        signal_re_TEMPLATE[..., 0] = np.load(os.path.join(bolo_re_TEMPLATE_TD_dir, segment_name, "signal.npy"))
+        signal_re_TEMPLATE[..., 1] = np.load(os.path.join(bolo_re_TEMPLATE_SYNC_dir, segment_name, "signal.npy"))
+
+        local_num += np.dot(signal_TEMPLATE.T, (signal_diff - signal_re_diff))
+        local_den += np.dot(signal_TEMPLATE.T, (signal_TEMPLATE - signal_re_TEMPLATE))
 
     comm.Barrier()
 
-    print "Rank :", rank, "Local estimate of y :", local_num/local_den
+    local_y = np.dot(np.linalg.inv(local_den), local_num)
+    print "Rank :", rank, "Local estimate of y :", local_y
 
-    local_num = np.array(local_num)
-    local_den = np.array(local_den)
-
-    num = np.zeros(1) 
-    den = np.zeros(1) 
+    num = np.zeros(local_num.shape) 
+    den = np.zeros(local_den.shape) 
 
     comm.Reduce(local_num, num, MPI.SUM, 0)
     comm.Reduce(local_den, den, MPI.SUM, 0)
 
     if rank == 0:
-        print "Estimated y :", num[0]/den[0]
-        print "Estimated delta alpha :", 4*num[0]/den[0]
-        np.save(os.path.join(config.general_data_dir, config.sim_tag, bolo_pair + "_estimated_y.npy"), num[0]/den[0])
+        y_global = np.dot(np.linalg.inv(den), num)
+        print "Estimated y :", y_global 
+        np.save(os.path.join(config.general_data_dir, config.sim_tag, bolo_pair + "_estimated_y.npy"), y_global)
         print "Writing at :", os.path.join(config.general_data_dir, config.sim_tag, bolo_pair + "_estimated_y.npy")

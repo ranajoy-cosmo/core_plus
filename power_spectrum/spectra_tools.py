@@ -68,6 +68,15 @@ def estimate_cl(sky_map, lmax, binary_mask=None, fwhm=0.0, pol=True):
     spectra = np.array(spectra)
     return spectra
 
+def deconvolve_spectra(spectra, fwhm, lmax, pol=True):
+    Bl = hp.gauss_beam(fwhm=fwhm, lmax=lmax, pol=pol)
+    if pol:
+        spectra /= Bl.T**2
+    else:
+        spectra /= Bl**2
+
+    return spectra
+
 
 def estimate_alm(sky_map, lmax, binary_mask=None, pol=False):
     sky_map_masked = mask_map(sky_map, binary_mask, pol=pol)
@@ -85,7 +94,7 @@ def wiener_filter_for_alm(alm, lmax=None, fwhm=0.0, f_sky=1.0, sky_prior=None):
         lmax = hp.Alm.getlmax(len(alm), None)
 
     if sky_prior is None:
-        spectra_th = np.load("/global/homes/b/banerji/simulation/spectra/r_001/lensedtot_cls.npy")[0,:lmax+1]
+        spectra_th = np.load("/global/homes/b/banerji/simulation/spectra/r_0001/lensedtot_cls.npy")[0,:lmax+1]
     else:
         spectra_th = estimate_cl(sky_prior, lmax, fwhm=fwhm, pol=False)
 

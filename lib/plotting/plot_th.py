@@ -29,39 +29,47 @@ def plot_theoretical(lmax, plot_log=True, plot_list=["TT", "EE", "BB"], lensed=T
         plt.annotate("TT", xy=(1.25, 31), size=12)
 
     if "EE" in plot_list:
-        plotter(ell, np.sqrt(ell*(ell+1)*spectra[1]/2/np.pi), color='blue', label="EE")
-        #plt.annotate("EE", xy=(1.25, 0.2), size=12)
+        #plotter(ell, np.sqrt(ell*(ell+1)*spectra[1]/2/np.pi), color='blue', label="EE")
+        plotter(ell, np.sqrt(ell*(ell+1)*spectra[1]/2/np.pi), color='k')
+        plt.annotate("EE", xy=(1.25, 0.2), size=12)
 
 
     if "BB" in plot_list:
         spectra = np.load(os.path.join(spectra_folder, "r_0001/unlensed_cls.npy"))[..., :lmax+1]
-        plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='green', label="BB : Primordial")
+        #plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='green', label="BB : Primordial")
+        plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='k')
 
         spectra = np.load(os.path.join(spectra_folder, "r_0001/lensedtot_cls.npy"))[..., :lmax+1]
-        plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), '.', color='red', markersize=2, label="BB : Lensing")
+        #plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), '.', color='red', markersize=2, label="BB : Lensing")
+        plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='k')
 
         spectra = np.load(os.path.join(spectra_folder, "r_001/unlensed_cls.npy"))[..., :lmax+1]
-        plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='green')
+        #plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='green')
+        plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='k')
 
         spectra = np.load(os.path.join(spectra_folder, "r_001/lensedtot_cls.npy"))[..., :lmax+1]
-        plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), '.', color='red', markersize=2)
+        #plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), '.', color='red', markersize=2)
+        plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='k')
 
         spectra = np.load(os.path.join(spectra_folder, "r_01/unlensed_cls.npy"))[..., :lmax+1]
-        plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='green')
+        #plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='green')
+        plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='k')
 
         spectra = np.load(os.path.join(spectra_folder, "r_01/lensedtot_cls.npy"))[..., :lmax+1]
-        plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), '.', color='red', markersize=2)
+        #plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), '.', color='red', markersize=2)
+        plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='k')
 
         spectra = np.load(os.path.join(spectra_folder, "r_0/lensedtot_cls.npy"))[..., :lmax+1]
-        plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='red')
+        #plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='red')
+        plotter(ell, np.sqrt(ell*(ell+1)*spectra[2]/2/np.pi), color='k')
 
-        #plt.annotate("BB", xy=(1.25, 0.008), size=12)
+        plt.annotate("BB", xy=(1.25, 0.003), size=12)
 
         plt.annotate("r = 0.1", xy=(1.25, 0.062), size=10)
 
         plt.annotate("r = 0.01", xy=(1.25, 0.019), size=10)
 
-        plt.annotate("r = 0.001", xy=(1.25, 0.0035), size=10)
+        plt.annotate("r = 0.001", xy=(1.25, 0.0065), size=10)
 
     plt.show()
 

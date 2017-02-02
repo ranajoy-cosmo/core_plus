@@ -17,6 +17,7 @@ import simulation.map_maker.covariance_matrix_utils as cov_ut
 
 def run_mpi():
     print "Rank :", rank, "started"
+    #Defining the dimensions of the arrays and matrices
     npix = hp.nside2npix(config.nside_out)
     dim, ind_elements = cov_ut.get_dim(config.pol_type)
 
@@ -24,10 +25,12 @@ def run_mpi():
     if rank == 0:
         make_data_dirs() 
 
+    #The matrices local to the process
     inv_cov_matrix_local = np.zeros((npix, ind_elements), dtype=np.float)
     b_matrix_local = np.zeros((npix, dim), dtype=np.float)
     hitmap_local = np.zeros(npix, dtype=np.float)
 
+    #Getting list of bolos and segments for the particular process
     bolo_segment_dict = get_local_bolo_segment_list(rank, size, config.bolo_list, config.segment_list)
 
     tot_seg = 0
@@ -38,40 +41,52 @@ def run_mpi():
     print "Rank :", rank, ", Bolos and Segments :", bolo_segment_dict
     comm.Barrier()
 
-    if config.subtract_template:
-        bolo_TEMPLATE = Bolo("bolo_TEMPLATE", config)
-        estimated_y = np.load(os.path.join(config.general_data_dir, config.sim_tag, "estimated_y.npy"))
-
+    #Iterating over the bolos
     for bolo_name in bolo_segment_dict.keys():
+        if config.subtract_template:
+            TEMPLATE_name_0 = config.template_dict[bolo_name][0]
+            TEMPLATE_name_1 = config.template_dict[bolo_name][1]
+            bolo_TEMPLATE_0 = Bolo(TEMPLATE_name_0, config)
+            bolo_TEMPLATE_1 = Bolo(TEMPLATE_name_1, config)
+            estimated_y = np.load(os.path.join(config.general_data_dir, config.sim_tag, bolo_name+"_estimated_y.npy"))
+        #If I am taking a differenced signal
         if config.take_diff_signal:
             bolo_a = Bolo(bolo_name + 'a', config)
             bolo_b = Bolo(bolo_name + 'b', config)
         else:
             bolo = Bolo(bolo_name, config)
+        #Iterating over the segments in the bolo
         for segment in bolo_segment_dict[bolo_name]:
             start_seg = time.time()
             prompter.prompt("Rank : %d doing Bolo : %s and segment : %d" % (rank, bolo_name, segment))
+            #Acquiring the signal
             if config.take_diff_signal:
                 signal, v, pol_ang = acquire_difference_signal(bolo_a, bolo_b, segment, config.noise_only_map)
             else:
                 signal, v, pol_ang = acquire_signal(bolo, segment, config.noise_only_map)
             if config.subtract_template:
-                signal_TEMPLATE = bolo_TEMPLATE.read_timestream(segment, read_list=["signal"])["signal"]
-                signal -= estimated_y*signal_TEMPLATE
+                signal_TEMPLATE_0 = bolo_TEMPLATE_0.read_timestream(segment, read_list=["signal"])["signal"]
+                signal_TEMPLATE_1 = bolo_TEMPLATE_1.read_timestream(segment, read_list=["signal"])["signal"]
+                signal -= estimated_y[0]*signal_TEMPLATE_0 + estimated_y[1]*signal_TEMPLATE_1
             hitpix = hp.vec2pix(config.nside_out, v[...,0], v[...,1], v[...,2])
             del v
+            #Generating the inverse covariance matrix
             cov_ut.get_inv_cov_matrix(hitpix, pol_ang, signal, inv_cov_matrix_local, b_matrix_local, hitmap_local, npix, config.pol_type)
             stop_seg = time.time()
             prompter.prompt("Rank : " + str(rank) + " Time taken : " + str(stop_seg - start_seg) + ". Projected time : " + str((stop_seg - start_seg)*tot_seg))
 
+    #Saving space
     if config.subtract_template:
-        del signal_TEMPLATE
+        del signal_TEMPLATE_0
+        del signal_TEMPLATE_1
     del signal
     del pol_ang
     del hitpix
         
     start_dist_inv = time.time()
 
+    #Distributing and gathering the segments of the matrices in the proper process
+    #The sky pixels are chunked and are handled by individual processes
     inv_cov_matrix_local_segment = distribute_matrix(inv_cov_matrix_local, "cov_matrix")
     del inv_cov_matrix_local
     b_matrix_local_segment = distribute_matrix(b_matrix_local, "b_matrix")
@@ -79,8 +94,10 @@ def run_mpi():
     hitmap_local_segment = distribute_matrix(hitmap_local, "hitmap")
     del hitmap_local
 
+    #Inverting the local segment of the inverse covariance matrix
     cov_matrix_local_segment = cov_ut.get_covariance_matrix(inv_cov_matrix_local_segment, hitmap_local_segment, config.pol_type)
 
+    #Estimating the local sky segment
     sky_map_local_segment = cov_ut.get_sky_map(cov_matrix_local_segment, b_matrix_local_segment, hitmap_local_segment, config.pol_type)
 
     stop_dist_inv = time.time()
@@ -113,7 +130,7 @@ def acquire_difference_signal(bolo_a, bolo_b, segment, noise_only=False):
 
     return signal, t_stream_a["v"], t_stream_a["pol_ang"]
         
-
+#Where all the distribution and gathering takes place
 def distribute_matrix(local_full_matrix, matrix_type):
     npix = hp.nside2npix(config.nside_out)
     dim, ind_elements = cov_ut.get_dim(config.pol_type)
@@ -196,6 +213,7 @@ def make_data_dirs():
         shutil.copy(current_config_file, config_dir)
     """
 
+#The different sky chunks are brought together to form the final maps
 def accumulate_segments(size):
     recon_dir = get_recon_dir()
     map_segment_dir, hitmap_segment_dir, cov_matrix_segment_dir, inv_cov_matrix_segment_dir = get_segment_dirs()
@@ -273,7 +291,7 @@ if __name__=="__main__":
     config_file = sys.argv[1]
     run_type = sys.argv[2]
 
-    config = importlib.import_module("simulation.map_maker.config_files." + config_file).config
+    config = importlib.import_module(config_file).config
 
     if run_type=='accumulate_segments':
         size = int(sys.argv[3])

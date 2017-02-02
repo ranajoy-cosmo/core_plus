@@ -6,9 +6,9 @@ from simulation.template_subtraction.config_files.default_config import config
 bolo_config = generic_class.Generic()
 bolo_config.bolos = {}
 
-map_folder = "/scratch1/scratchdirs/banerji/PSM_OUTPUT/bandpass_mismatch_maps/observations/CORE"
-scratch_dir = "/scratch1/scratchdirs/banerji/core_output"
-sim_folder = os.path.join(scratch_dir, config.sim_tag)
+scratch_dir = "/scratch1/scratchdirs/banerji"
+map_folder = os.path.join(scratch_dir, "PSM_OUTPUT/bandpass_mismatch_maps/observations/CORE")
+sim_folder = os.path.join(scratch_dir, "core_output", config.sim_tag)
 
 bolo_config.common_white_noise_sigma = 50           #uk*sqrt(s)
 
@@ -25,7 +25,7 @@ bolo_config.bolos[bolo_name].pol_phase_ini = 0.0                             #de
 bolo_config.bolos[bolo_name].offset_x = 0.0 
 bolo_config.bolos[bolo_name].offset_y = 0.0
 
-bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "145.63GHz", "group2_map_145.63GHz.fits")
+bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "143.677GHz", "group1_map_143.677GHz.fits")
 
 bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
 
@@ -42,7 +42,7 @@ bolo_config.bolos[bolo_name].pol_phase_ini = 90.0                            #de
 bolo_config.bolos[bolo_name].offset_x = 0.0 
 bolo_config.bolos[bolo_name].offset_y = 0.0
 
-bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "146.8GHz", "group2_map_146.8GHz.fits")
+bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "146.041GHz", "group1_map_146.041GHz.fits")
 
 bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
 
@@ -59,7 +59,7 @@ bolo_config.bolos[bolo_name].pol_phase_ini = 45.0                             #d
 bolo_config.bolos[bolo_name].offset_x = 0.0 
 bolo_config.bolos[bolo_name].offset_y = 0.0
 
-bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "143.8GHz", "group2_map_143.8GHz.fits")
+bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "146.061GHz", "group1_map_146.061GHz.fits")
 
 bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
 
@@ -76,48 +76,14 @@ bolo_config.bolos[bolo_name].pol_phase_ini = 135.0                            #d
 bolo_config.bolos[bolo_name].offset_x = 0.0 
 bolo_config.bolos[bolo_name].offset_y = 0.0
 
-bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "144.09GHz", "group2_map_144.09GHz.fits")
+bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "146.334GHz", "group1_map_146.334GHz.fits")
 
 bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Bolo 0003a
+# Bolo TEMPLATE 1
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-bolo_name = "bolo_0003a"
-bolo_config.bolos[bolo_name] = generic_class.Generic()
-
-bolo_config.bolos[bolo_name].fwhm_major = 0.0                                #arcmins
-bolo_config.bolos[bolo_name].fwhm_minor = 0.0                                #arcmins
-bolo_config.bolos[bolo_name].pol_phase_ini = 22.5                             #degrees
-
-bolo_config.bolos[bolo_name].offset_x = 0.0 
-bolo_config.bolos[bolo_name].offset_y = 0.0
-
-bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "146.48GHz", "group2_map_146.48GHz.fits")
-
-bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
-
-#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Bolo 0003b
-#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-bolo_name = "bolo_0003b"
-bolo_config.bolos[bolo_name] = generic_class.Generic()
-
-bolo_config.bolos[bolo_name].fwhm_major = 0.0                                #arcmins
-bolo_config.bolos[bolo_name].fwhm_minor = 0.0                                #arcmins
-bolo_config.bolos[bolo_name].pol_phase_ini = 112.5                            #degrees
-
-bolo_config.bolos[bolo_name].offset_x = 0.0 
-bolo_config.bolos[bolo_name].offset_y = 0.0
-
-bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "145.17GHz", "group2_map_145.17GHz.fits")
-
-bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
-
-#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Bolo TEMPLATE
-#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-bolo_name = "bolo_TEMPLATE"
+bolo_name = "bolo_0001_TEMPLATE"
 bolo_config.bolos[bolo_name] = generic_class.Generic()
 
 bolo_config.bolos[bolo_name].fwhm_major = 0.0                                #arcmins
@@ -127,10 +93,24 @@ bolo_config.bolos[bolo_name].pol_phase_ini = 0.0                             #de
 bolo_config.bolos[bolo_name].offset_x = 0.0 
 bolo_config.bolos[bolo_name].offset_y = 0.0
 
-#bolo_config.bolos[bolo_name].input_map = os.path.join("/scratch1/scratchdirs/banerji/core_maps/perfect_template_144.fits")
-bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "300GHz", "group2_map_300GHz.fits")
-#bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "COrE_350", "350GHz", "group2_map_350GHz.fits")
-#bolo_config.bolos[bolo_name].input_map = os.path.join("/scratch1/scratchdirs/banerji/core_maps/sky_average.fits")
+bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "350GHz", "group2_map_350GHz.fits")
+
+bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+# Bolo TEMPLATE 2
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+bolo_name = "bolo_0002_TEMPLATE"
+bolo_config.bolos[bolo_name] = generic_class.Generic()
+
+bolo_config.bolos[bolo_name].fwhm_major = 0.0                                #arcmins
+bolo_config.bolos[bolo_name].fwhm_minor = 0.0                                #arcmins
+bolo_config.bolos[bolo_name].pol_phase_ini = 45.0                             #degrees
+
+bolo_config.bolos[bolo_name].offset_x = 0.0 
+bolo_config.bolos[bolo_name].offset_y = 0.0
+
+bolo_config.bolos[bolo_name].input_map = os.path.join(map_folder, "350GHz", "group2_map_350GHz.fits")
 
 bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
 
@@ -147,14 +127,31 @@ bolo_config.bolos[bolo_name].pol_phase_ini = 0.0                             #de
 bolo_config.bolos[bolo_name].offset_x = 0.0 
 bolo_config.bolos[bolo_name].offset_y = 0.0
 
-bolo_config.bolos[bolo_name].input_map = os.path.join(sim_folder, "rec_diff_QU", "sky_map.fits")
+bolo_config.bolos[bolo_name].input_map = os.path.join(sim_folder, "rec_diff_QU_1", "sky_map.fits")
 
 bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Bolo TEMPLATE_QU_re
+# Bolo 0002_diff_re
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-bolo_name = "bolo_TEMPLATE_QU_re"
+bolo_name = "bolo_0002_diff_re"
+bolo_config.bolos[bolo_name] = generic_class.Generic()
+
+bolo_config.bolos[bolo_name].fwhm_major = 0.0                                #arcmins
+bolo_config.bolos[bolo_name].fwhm_minor = 0.0                                #arcmins
+bolo_config.bolos[bolo_name].pol_phase_ini = 45.0                             #degrees
+
+bolo_config.bolos[bolo_name].offset_x = 0.0 
+bolo_config.bolos[bolo_name].offset_y = 0.0
+
+bolo_config.bolos[bolo_name].input_map = os.path.join(sim_folder, "rec_diff_QU_2", "sky_map.fits")
+
+bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+# Bolo TEMPLATE_QU_re_1
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+bolo_name = "bolo_0001_TEMPLATE_QU_re"
 bolo_config.bolos[bolo_name] = generic_class.Generic()
 
 bolo_config.bolos[bolo_name].fwhm_major = 0.0                                #arcmins
@@ -164,6 +161,23 @@ bolo_config.bolos[bolo_name].pol_phase_ini = 0.0                             #de
 bolo_config.bolos[bolo_name].offset_x = 0.0 
 bolo_config.bolos[bolo_name].offset_y = 0.0
 
-bolo_config.bolos[bolo_name].input_map = os.path.join(sim_folder, "rec_TEMPLATE_QU", "sky_map.fits")
+bolo_config.bolos[bolo_name].input_map = os.path.join(sim_folder, "rec_TEMPLATE_QU_1", "sky_map.fits")
+
+bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+# Bolo TEMPLATE_QU_re_2
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+bolo_name = "bolo_0002_TEMPLATE_QU_re"
+bolo_config.bolos[bolo_name] = generic_class.Generic()
+
+bolo_config.bolos[bolo_name].fwhm_major = 0.0                                #arcmins
+bolo_config.bolos[bolo_name].fwhm_minor = 0.0                                #arcmins
+bolo_config.bolos[bolo_name].pol_phase_ini = 45.0                             #degrees
+
+bolo_config.bolos[bolo_name].offset_x = 0.0 
+bolo_config.bolos[bolo_name].offset_y = 0.0
+
+bolo_config.bolos[bolo_name].input_map = os.path.join(sim_folder, "rec_TEMPLATE_QU_2", "sky_map.fits")
 
 bolo_config.bolos[bolo_name].white_noise_sigma = bolo_config.common_white_noise_sigma

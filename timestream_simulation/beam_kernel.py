@@ -32,13 +32,11 @@ class Beam():
 
 
     def read_mark_beam_map(self):
-        beam_kernel = np.array(hp.mrdfits(self.config.input_beam_file))
-        mark_orig_dim = np.sqrt(beam_kernel.shape[1])                             #pixels
-        beam_kernel = beam_kernel.reshape((4, mark_orig_dim, mark_orig_dim))
-        mark_fwhm_major = 7.68                   #arc-mins
-        mark_fwhm_minor = 7.68                   #arc-mins
-        #mark_resolution = 0.39523370660946627            #arc-mins
-        mark_resolution = 0.6                   #arc-mins
+        beam_kernel = np.load(self.config.input_beam_file)
+        mark_orig_dim = 201                             #pixels
+        mark_fwhm_major = 7.58                   #arc-mins
+        mark_fwhm_minor = 7.58                   #arc-mins
+        mark_resolution = 0.30                   #arc-mins
 
         new_dim = int(mark_orig_dim * mark_resolution / self.config.scan_resolution)
         if new_dim%2 == 0:
@@ -83,7 +81,8 @@ class Beam():
 
         sigma_major = self.config.fwhm_major/factor
         sigma_minor = self.config.fwhm_minor/factor
-        theta = np.deg2rad(self.config.beam_angle + self.config.pol_phase_ini)
+        #theta = np.deg2rad(self.config.beam_angle + self.config.pol_phase_ini)
+        theta = np.deg2rad(self.config.beam_angle)
         x0, y0 = self.config.offset_x/60.0, self.config.offset_y/60.0
 
         #Building a circular Gaussian beam on the 2D mesh
@@ -98,13 +97,21 @@ class Beam():
         size = beam_kernel.shape[0]
         self.beam_kernel = np.zeros((4, size, size))
         self.beam_kernel[0] = beam_kernel
-        self.beam_kernel[1] = -1.0*beam_kernel
+        self.beam_kernel[1] = beam_kernel
 
 
     def get_beam_row(self, del_beta):
         row_num = np.where(self.del_beta==del_beta)[0][0]
 
         return self.beam_kernel[...,row_num]
+
+
+    def normalise(self):
+        dx = self.config.scan_resolution
+        dy = self.config.scan_resolution
+        integral = np.sum(self.beam_kernel[0])*dx*dy
+        for i in range(4): 
+            self.beam_kernel[i] /= integral
 
 
     def check_normalisation(self):
@@ -165,14 +172,17 @@ class Beam():
         fig.colorbar(im, ax=ax4)
         fig.suptitle("Rescaled Plack 217_5a, FWHM : 7.68', Resol : 0.96', Extent : 3.85*FWHM")
         plt.show()
-    """
+
+
     def plot_beam(self):
         fig, ax= plt.subplots()
         n = self.beam_kernel[0].shape[0]/2
         extent = np.arange(-n, n+1)*self.config.scan_resolution
-        im = new_imshow(ax, 10*self.beam_kernel[0], x=extent, y=extent, interpolation="nearest", cmap='gray')
+        im = new_imshow(ax, 10*self.beam_kernel[0], x=extent, y=extent, interpolation="nearest")
+        fig.colorbar(im)
+        #im = new_imshow(ax, 10*self.beam_kernel[1], x=extent, y=extent, interpolation="nearest", cmap='gray')
         plt.show()
-
+    """
 
     def write_beam(self, out_dir=None):
         if out_dir == None:
@@ -182,20 +192,77 @@ class Beam():
         np.save(os.path.join(out_dir, self.config.beam_file_name), self.beam_kernel)
 
 
+def plot_beam(bolo_1, bolo_2, bolo_3):
+    fig, ((ax11, ax12, ax13), (ax21, ax22, ax23), (ax31, ax32, ax33)) = plt.subplots(3, 3, sharex='col', sharey='row')
+    n = bolo_1.beam_kernel[0].shape[0]/2
+    extent = np.arange(-n, n+1)*bolo_1.config.scan_resolution
+
+    im = new_imshow(ax11, bolo_1.beam_kernel[0], x=extent, y=extent, interpolation="nearest")
+    ax11.set_title('Central')
+    #fig.colorbar(im, ax=ax11)
+    im = new_imshow(ax12, bolo_2.beam_kernel[0], x=extent, y=extent, interpolation="nearest")
+    ax12.set_title('Top')
+    #fig.colorbar(im, ax=ax12)
+    im = new_imshow(ax13, bolo_3.beam_kernel[0], x=extent, y=extent, interpolation="nearest")
+    ax13.set_title('Bottom')
+    fig.colorbar(im, ax=ax13)
+
+    im = new_imshow(ax21, bolo_1.beam_kernel[1], x=extent, y=extent, interpolation="nearest")
+    #ax21.set_title('T')
+    #fig.colorbar(im, ax=ax21)
+    im = new_imshow(ax22, bolo_2.beam_kernel[1], x=extent, y=extent, interpolation="nearest")
+    #ax22.set_title('Q')
+    #fig.colorbar(im, ax=ax22)
+    im = new_imshow(ax23, bolo_3.beam_kernel[1], x=extent, y=extent, interpolation="nearest")
+    #ax23.set_title('U')
+    fig.colorbar(im, ax=ax23)
+
+    im = new_imshow(ax31, 1000*bolo_1.beam_kernel[2], x=extent, y=extent, interpolation="nearest")
+    #ax31.set_title('T')
+    #fig.colorbar(im, ax=ax31)
+    im = new_imshow(ax32, 1000*bolo_2.beam_kernel[2], x=extent, y=extent, interpolation="nearest")
+    #ax32.set_title('Q')
+    #fig.colorbar(im, ax=ax32)
+    im = new_imshow(ax33, 1000*bolo_3.beam_kernel[2], x=extent, y=extent, interpolation="nearest")
+    #ax33.set_title('U')
+    fig.colorbar(im, ax=ax33)
+
+    fig.text(0.04, 0.78, 'T', ha='center', va='center')
+    fig.text(0.04, 0.5, 'Q', ha='center', va='center')
+    fig.text(0.05, 0.22, r'U$\times$1000', ha='center', va='center')
+    fig.text(0.075, 0.5, 'arcmins', ha='center', va='center', rotation='vertical')
+    fig.text(0.5, 0.05, 'arcmins', ha='center', va='center')
+
+    fig.suptitle("Simulated CORE beams using GRASP")
+    plt.rc('xtick', labelsize=8)
+    plt.rc('ytick', labelsize=8)
+    plt.show()
+
 if __name__=="__main__":
 
     config_file = sys.argv[1]
-    bolo_name = sys.argv[2]
+    #bolo_name = sys.argv[2]
     config = importlib.import_module("simulation.timestream_simulation.config_files." + config_file).config
-    config.scan_resolution = 1.5 #0.959620009804 
-    bolo_config = importlib.import_module("simulation.timestream_simulation.bolo_config_files." + config.bolo_config_file).bolo_config
+    config.scan_resolution = 0.3 
+    #bolo_config = importlib.import_module("simulation.timestream_simulation.bolo_config_files." + config.bolo_config_file).bolo_config
+    from simulation.timestream_simulation.bolo_config_files.four_bolos_optimal import bolo_config
 
-    bolo_beam = Beam(config, bolo_config.bolos[bolo_name])
+    bolo_beam_1 = Beam(config, bolo_config.bolos[config.bolo_list[0]])
+    bolo_beam_2 = Beam(config, bolo_config.bolos[config.bolo_list[1]])
+    bolo_beam_3 = Beam(config, bolo_config.bolos[config.bolo_list[2]])
 
     #if config.check_normalisation:
     #    bolo_beam.check_normalisation()
     #if config.display_beam_settings:
     #    bolo_beam.display_beam_settings()
-    bolo_beam.plot_beam()
+    #bolo_beam.plot_beam()
+    bolo_beam_1.normalise()
+    #bolo_beam_1.check_normalisation()
+    bolo_beam_2.normalise()
+    #bolo_beam_2.check_normalisation()
+    bolo_beam_3.normalise()
+    #bolo_beam_3.check_normalisation()
+
+    plot_beam(bolo_beam_1, bolo_beam_2, bolo_beam_3)
     #if config.write_beam:
     #    bolo_beam.write_beam()

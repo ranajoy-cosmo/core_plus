@@ -24,6 +24,7 @@ config.subtract_template = True
 #If simulate_ts is true, this is used for simulation as well as map_making, otherwise these are the data segments that are read.
 
 config.bolo_config_file = BOLO_CONFIG_FOLDER + "bolo_config" 
-config.bolo_list = ['bolo_0001']
+config.bolo_list = ['bolo_0001', 'bolo_0002']
+config.template_dict = {'bolo_0001' : 'bolo_0001_TEMPLATE', 'bolo_0002' : 'bolo_0002_TEMPLATE'}
 
 config.segment_list = range(120)

@@ -11,11 +11,11 @@ BOLO_CONFIG_FOLDER = "simulation.template_subtraction.bolo_config_files."
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Sim Action 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-config.sim_tag = "bandpass_correction_CORE_M5_300"
+config.sim_tag = "bandpass_4_bolo_set_3"
 
 config.add_noise = False
 
-config.do_pencil_beam = False
+config.do_pencil_beam = True
 
 config.gal_coords = True 
 

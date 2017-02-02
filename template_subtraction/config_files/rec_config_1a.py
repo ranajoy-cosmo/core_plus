@@ -12,8 +12,7 @@ config.scan_tag = "scan"
 #Default -> "TQU"
 # A _ means that the input map has a component which will not be read"
 config.pol_type = "TQU"
-#config.map_making_tag = "rec_1a"
-config.map_making_tag = "rec_a"
+config.map_making_tag = "rec_1a"
 
 config.take_diff_signal = False
 config.subtract_template = False

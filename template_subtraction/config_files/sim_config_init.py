@@ -23,6 +23,6 @@ config.noise_type = "white_noise"
 # Data selection
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-config.bolo_list = ['bolo_0001a', 'bolo_0001b']#, 'bolo_0003a', 'bolo_0003b']
+config.bolo_list = ['bolo_0001a', 'bolo_0001b', 'bolo_0002a', 'bolo_0002b']
 config.t_segment = 72*60*60.0                      #seconds
 config.segment_list = range(120)

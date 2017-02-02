@@ -132,7 +132,7 @@ if __name__=="__main__":
     config_file = sys.argv[1]
     run_type = sys.argv[2]
 
-    config = importlib.import_module("simulation.timestream_simulation.config_files." + config_file).config
+    config = importlib.import_module(config_file).config
 
     if run_type=='run_check':
         run_check()

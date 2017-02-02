@@ -11,6 +11,14 @@ from simulation.lib.utilities.generic_class import Generic
 import simulation.lib.utilities.prompter as prompter
 import simulation.lib.quaternion.quaternion as quaternion
 
+"""
+This module contains the Bolo class. The Bolo class is a generator of instances of individual bolometers with their independent properties given in the config file. The member functions of the class generate timestream signals for the particular bolometer configuration and 
+"""
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+#  
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+
 class Bolo:
 
     def __init__(self, bolo_name, config):
@@ -23,18 +31,20 @@ class Bolo:
             self.calculate_params()
             self.beam = Beam(self.config, bolo_config)
             self.noise_class = Noise(self.config)
+            #self.display_params()
+            #self.beam.display_beam_settings()
+            #sys.exit()
             if not config.sim_pol_type == "noise_only":
                 self.get_sky_map()
             self.get_initial_axes()
             self.get_nsamples()
         self.set_bolo_dirs()
 
-#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
-# Simulating the time-ordered data for a given bolo with any beam
-#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
-#    def get_timestream(self, segment, read_list=["signal", "v", "pol_ang"]):
-#        if config.simulate
+
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+# Reading the timestream data for the bolo that was already simulated. 
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
     def read_timestream(self, segment, noise_only=False, read_list=["signal", "v", "pol_ang"]):
         segment_dir = self.get_segment_dir(segment)
@@ -51,24 +61,29 @@ class Bolo:
 
         return t_stream 
 
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+# Simulating the time-ordered data for a given bolo with any beam
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
     def simulate_timestream(self, segment, return_field=["signal", "v", "pol_ang"]):
         if self.name == "bolo_0001a" and segment == 0:
             self.display_params()
-            self.beam.display_beam_settings()
+            #self.beam.display_beam_settings()
             if self.config.write_beam:
                 self.beam.write_beam(self.bolo_dir)
 
+        #Generating the quaternion
         rot_qt = self.generate_quaternion(segment)
 
         t_stream = {"signal" : None, "v" : None, "pol_ang" : None, "noise" : None}
 
         prompter.prompt("0.0")
-        #Simulating the scan along the centre of the FOV
+        #Simulating the pointings
         v_init = self.get_initial_vec(0.0)
         v_central = self.get_v_obv(v_init, rot_qt)
         t_stream['v'] = v_central
 
+        #Generating the polarisation angle of the detector on the sky
         pol_ang = self.get_pol_ang(rot_qt, v_central) 
         t_stream['pol_ang'] = pol_ang
         if self.config.sim_pol_type == "T":
@@ -87,9 +102,13 @@ class Bolo:
             del pol_ang
 
         beam_kernel_row = self.beam.get_beam_row(0.0)                       #The input argument is the beam offset from the centre
+            del pol_ang
+
+        beam_kernel_row = self.beam.get_beam_row(0.0)                       #The input argument is the beam offset from the centre
         hit_pix = hp.vec2pix(self.config.nside_in, v_central[...,0], v_central[...,1], v_central[...,2])
         signal = self.generate_signal(hit_pix, beam_kernel_row, cos2, sin2)
 
+        #Iterating over the beam map and integrating
         for del_beta in self.beam.del_beta:
             if del_beta == 0.0:
                 continue
@@ -112,6 +131,7 @@ class Bolo:
         if "timestream_data" in self.config.timestream_data_products:
             self.write_timestream_data(signal, "signal", segment)
 
+        #Signal is piped straight to the map-maker
         if self.config.pipe_with_map_maker:
             if self.config.do_pencil_beam:
                 t_stream["signal"] = signal
@@ -131,6 +151,7 @@ class Bolo:
             return hitmap 
     
 
+    #Generating timestream signal, no noise. Option of Intensity only, Polarisation only or all components
     def generate_signal(self, hit_pix, beam_kernel_row, cos2, sin2):
         if self.config.sim_pol_type == "noise_only":
             signal = np.zeros(self.nsamples - 2*self.pad) 
@@ -164,14 +185,18 @@ class Bolo:
         self.nsamples = int(self.config.t_segment*self.config.sampling_rate)*self.config.oversampling_rate + 2*self.pad
 
 
+    #Calculating additional scan parameters
     def calculate_params(self):
 
+        #Cross scan resolution
         self.config.theta_cross = 360.0*60.0*np.sin(np.radians(self.config.alpha))*self.config.t_spin/self.config.t_prec
+        #Co scan resolution
         self.config.theta_co = 360*60*np.sin(np.radians(self.config.beta))/self.config.sampling_rate/self.config.t_spin
 
         self.config.scan_resolution = self.config.theta_co/self.config.oversampling_rate
 
 
+    #Setting the initial axes
     def get_initial_axes(self):
         alpha = np.deg2rad(self.config.alpha)                                   #radians
         beta = np.deg2rad(self.config.beta)                                     #radians
@@ -181,6 +206,7 @@ class Bolo:
         self.axis_rev = np.array([0.0, 0.0, 1.0])
 
 
+    #Setting the initial positioning of pointing vectors
     def get_initial_vec(self, del_beta):
         alpha = np.deg2rad(self.config.alpha)                                   #radians
         beta = np.deg2rad(self.config.beta)                                     #radians
@@ -191,7 +217,7 @@ class Bolo:
             del_x = 0.0
             del_y = 0.0
         del_beta_rad = np.deg2rad(del_beta/60.0)                                #radians
-        total_opening = alpha + beta + del_beta_rad
+        total_opening = alpha + beta + del_beta_rad + np.radians(self.config.focal_plane_del_beta/60.0)
 
         u_view = np.array([np.cos(total_opening), 0.0, np.sin(total_opening)])
         
@@ -222,6 +248,7 @@ class Bolo:
         return r_total
 
 
+    #Simulating the pointing
     def get_v_obv(self, v_init, rot_qt):
         v = quaternion.transform(rot_qt, v_init)
 
@@ -337,9 +364,6 @@ class Bolo:
         display_string = ""
         display_string += "Alpha : %f degrees\n" % (self.config.alpha)
         display_string += "Beta : %f degrees\n" % (self.config.beta)
-        t_flight = self.config.t_segment*len(self.config.segment_list)
-        display_string += "T flight : %f hours / %f days\n" % (t_flight/60.0/60.0, t_flight/60.0/60.0/24.0)
-        display_string += "T segment : %f hours / %f days\n" % (self.config.t_segment/60.0/60.0, self.config.t_segment/60.0/60.0/24)
         display_string += "T precession : %f hours\n" % (self.config.t_prec/60.0/60.0)
         display_string += "T spin : %f seconds\n" % (self.config.t_spin)
         display_string += "Scan sampling rate : %f Hz\n" % (self.config.sampling_rate)
