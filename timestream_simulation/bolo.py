@@ -101,9 +101,9 @@ class Bolo:
         if not self.config.pipe_with_map_maker:
             del pol_ang
 
-        beam_kernel_row = self.beam.get_beam_row(0.0)                       #The input argument is the beam offset from the centre
-            del pol_ang
-
+#        beam_kernel_row = self.beam.get_beam_row(0.0)                       #The input argument is the beam offset from the centre
+#            del pol_ang
+#
         beam_kernel_row = self.beam.get_beam_row(0.0)                       #The input argument is the beam offset from the centre
         hit_pix = hp.vec2pix(self.config.nside_in, v_central[...,0], v_central[...,1], v_central[...,2])
         signal = self.generate_signal(hit_pix, beam_kernel_row, cos2, sin2)

@@ -12,6 +12,8 @@ def mask_map(sky_map, binary_mask=None, pol=True, ret_mask=False, fill_zeros=Fal
     if binary_mask is None:
         binary_mask = np.logical_not(np.isnan(sky_map[0] if pol else sky_map))
 
+    #The fill zero is done only to have the proper normalisation for sky fraction
+
     if fill_zeros:
         if pol:
             sky_map[0][np.isnan(sky_map[0])] = 0.0
