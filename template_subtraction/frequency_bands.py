@@ -47,11 +47,12 @@ def generate_frequency_bands(freq_centre, band_width, edge_variation, num_bands)
     return freq_centre_list, freq_width_list
 
 def print_frequency_bands(central_freq_list, band_width_list):
-    central_freq_rounded = central_freq_list.round(2)
-    band_width_rounded = band_width_list.round(2)
-    print "Common elements :", len(central_freq_rounded) - len(set(central_freq_rounded))
-    print central_freq_rounded
-    print band_width_rounded
+    band_def = zip(central_freq_list, band_width_list)
+    band_def_rounded = [(round(x[0], 2), round(x[1], 2)) for x in band_def]
+    print "# of common elements :", len(band_def) - len(band_def_rounded)
+    np.save("central_freq", central_freq_list.round(2))
+    np.save("band_width", band_width_list.round(2))
+        
 
 
 if __name__=="__main__":

@@ -39,8 +39,10 @@ if global_system.host is "apccl":
 if global_system.host in ["edison", "cori"]:
     global_paths.base_dir = os.path.join(home_dir, base_dir_name)
     global_paths.scratch_dir = os.environ["SCRATCH"]
-    global_paths.output_dir = os.path.join(global_paths.scratch_dir, 'core_output')
+    global_paths.general_output_dir = os.path.join(global_paths.scratch_dir, 'core_output')
     global_paths.long_term_output_dir = os.path.join(global_paths.scratch_dir, 'core_long_term_output')
     global_paths.maps_dir = os.path.join(global_paths.scratch_dir, 'core_maps')
 
 global_paths.spectra_dir = os.path.join(global_paths.base_dir, 'spectra')
+global_paths.simulation_code_dir = os.path.join(global_paths.base_dir, 'timestream_simulation')
+global_paths.map_making_code_dir = os.path.join(global_paths.base_dir, 'map_maker')
