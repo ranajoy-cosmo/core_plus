@@ -8,7 +8,7 @@ config.simulate_ts = True
 
 config.sim_tag = "test_new_code"
 config.scan_tag = "test_scan"
-config.map_making_tag = "test_with_noise_2048"
+config.map_making_tag = "test_rec"
 
 #pol_type can be "TQU" OR "QU" OR "T"
 config.pol_type = "TQU"   
@@ -22,7 +22,7 @@ config.notes = "Testing"
 # Resolution
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 #config.nside_out : nside of the output map
-config.nside_out = 2048
+config.nside_out = 1024
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Read & Write
@@ -38,8 +38,8 @@ config.__dict__.update(global_paths.__dict__)
 
 config.bolo_list = ['bolo_0001a', 'bolo_0001b', 'bolo_0002a', 'bolo_0002b']
 
-config.t_segment = 1.014583*24*60*60.0                      #seconds
-config.segment_list = range(360)
+config.t_segment = 1.66667*1.01458*24*60*60.0                      #seconds
+config.segment_list = range(4*216)
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Sim Action (Only if simulate_ts is True)
@@ -47,7 +47,7 @@ config.segment_list = range(360)
 
 #Options for input_pol_type = ["TQU", "T_only", "noise_only"]
 #Default -> "TQU"
-config.sim_pol_type = "noise_only"
+config.sim_pol_type = "TQU"
 
 #sim_type can be "signal" OR "gradient"
 config.sim_type = "signal"                                                                                                           
@@ -57,8 +57,6 @@ config.sim_type = "signal"
 #"gradient_coXgradient_cross"
 #Combinations of the gradients
 #config.gradient_type = ["gradient_co", "gradient_cross", "gradient_coXgradient_co", "gradient_crossXgradient_cross", "gradient_co_gradi    ent_cross"]
-
-config.add_noise = False
 
 #beam_type can be "pencil" OR "full_simulated" OR "from_file" 
 config.beam_type = "pencil"
@@ -73,7 +71,9 @@ config.bolo_config_file = "simulation.timestream_simulation.bolo_config_files.fo
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 
 config.t_year = 365.25*24*60*60.0                    #seconds
+
 #* CORE Baseline #*#*#*#*#*
+config.scan_strategy_name = "CORE baseline"
 config.t_prec = 4*24*60*60.0                     #seconds
 config.t_spin = 120.0                             #seconds
 config.sampling_rate = 85                                  #Hz
@@ -93,7 +93,7 @@ config.beta = 65.0                                #degrees
 
 config.oversampling_rate = 1
 
-config.nside_in = 2048
+config.nside_in = 1024
 
 #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
 # Noise (Only if simulate_ts is True)

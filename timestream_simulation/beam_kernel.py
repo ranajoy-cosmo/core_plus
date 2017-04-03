@@ -73,7 +73,7 @@ class Beam():
 
         start = new_dim/2 - num_pix/2
         stop = new_dim/2 + num_pix/2 + 1
-        self.beam_kernel = self.beam_kernel[..., start:stop, start:stop]
+        self.beam_kernel = self.beam_kernel[:, start:stop, start:stop]
         #print "kernel shape :", self.beam_kernel.shape
         self.del_beta = self.config.scan_resolution * np.arange(-num_pix/2 + 1, num_pix/2 + 1)
 
@@ -105,7 +105,12 @@ class Beam():
     def get_beam_row(self, del_beta):
         row_num = np.where(self.del_beta==del_beta)[0][0]
 
-        return self.beam_kernel[...,row_num]
+        return self.beam_kernel[:,row_num]
+
+    def block_beam_row(self, del_beta):
+        row_num = np.where(self.del_beta==del_beta)[0][0]
+
+        self.beam_kernel[:,row_num] = np.zeros(self.del_beta.size)
 
 
     def normalise(self):
@@ -135,9 +140,26 @@ class Beam():
         n = int(size/dd/2)
         x = np.arange(-n, n+1)*dd
         y = -1*np.arange(-n, n+1)*dd
-        self.del_beta = x
+        self.del_beta = y
         return np.meshgrid(x,y)
 
+    def shift_beam_kernel(self, direction, units=1, fill_value=0):
+        if direction == "top":
+            self.old_beam_kernel = np.copy(self.beam_kernel) 
+            self.beam_kernel = np.full(self.beam_kernel.shape, fill_value)
+            beam_dim = self.del_beta.size
+            for i in range(4):
+                self.beam_kernel[i, :beam_dim-units] = self.old_beam_kernel[i, units:] 
+
+        if direction == "bottom":
+            self.old_beam_kernel = np.copy(self.beam_kernel) 
+            self.beam_kernel = np.full(self.beam_kernel.shape, fill_value)
+            beam_dim = self.del_beta.size
+            for i in range(4):
+                self.beam_kernel[i, units:] = self.old_beam_kernel[i, :beam_dim-units] 
+
+    def restore_beam_kernel(self):
+        self.beam_kernel = np.copy(self.old_beam_kernel)
 
     def display_beam_settings(self):
         factor = 2*np.sqrt(2*np.log(2))

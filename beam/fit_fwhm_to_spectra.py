@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import numpy as np
 import healpy as hp
 from lmfit import minimize, Parameters, fit_report

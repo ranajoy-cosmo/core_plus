@@ -36,14 +36,22 @@ def run_simulation():
 
     comm.Barrier()
 
+    count = 0
+    time_taken = 0
+
     for bolo_name in bolo_segment_dict.keys():
         bolo = Bolo(bolo_name, config)
         for segment in bolo_segment_dict[bolo_name]:
+            count += 1
             start_seg = time.time()
             prompt("Doing Bolo : {} Segment : {} Rank : {}\n".format(bolo_name, segment+1, rank), sys.stdout)
-            bolo.simulate_timestream(segment, return_field=[])
+            if config.sim_type == "signal":
+                bolo.simulate_timestream_signal(segment)
+            else:
+                bolo.simulate_timestream_template(segment)
             stop_seg = time.time()
-            prompt("Rank : {} Time taken : {} Projected time : {}\n".format(rank, stop_seg - start_seg, (stop_seg - start_seg)*tot_seg), sys.stdout)
+            time_taken += stop_seg - start_seg
+            prompt("Rank : {}, Time taken : {}. Total time take : {}, Projected time : {}, Finished {} of {}\n".format(rank, stop_seg - start_seg, time_taken, time_taken*tot_seg/count, count, tot_seg))
 
     prompt("Rank : {} Done simulating\n".format(rank), sys.stdout)
 
@@ -70,7 +78,10 @@ def make_data_dirs():
         except OSError:
             pass
     this_config_dir = os.path.join(config_dir, time_stamp)
-    os.makedirs(this_config_dir)
+    try:
+        os.makedirs(this_config_dir)
+    except OSError:
+        pass
     with open(os.path.join(this_config_dir, "config_file.pkl"), "w") as outfile:
         pickle.dump(config, outfile)
     bolo_config = importlib.import_module(config.bolo_config_file).bolo_config
@@ -84,19 +95,13 @@ def make_data_dirs():
         except OSError:
             pass
     this_code_dir = os.path.join(code_dir, time_stamp)
-    os.makedirs(this_code_dir)
+    try:
+        os.makedirs(this_code_dir)
+    except OSError:
+        pass
     shutil.copyfile(os.path.join(config.base_dir, "timestream_simulation", "sim_timestream.py"), os.path.join(this_code_dir, "sim_timestream.py"))
     shutil.copyfile(os.path.join(config.base_dir, "timestream_simulation", "bolo.py"), os.path.join(this_code_dir, "bolo.py"))
     shutil.copyfile(os.path.join(config.base_dir, "timestream_simulation", "beam_kernel.py"), os.path.join(this_code_dir, "beam_kernel.py"))
-
-    out_file_dir = os.path.join(sim_dir, "output_files")
-    if not os.path.exists(out_file_dir):
-        try:
-            os.makedirs(out_file_dir)
-        except OSError:
-            pass
-    this_out_file_dir = os.path.join(out_file_dir, time_stamp)
-    os.makedirs(this_out_file_dir)
 
 
 def start_message():
@@ -111,10 +116,10 @@ def start_message():
     display_string += "SEGMENT LIST : {}\n".format(config.segment_list)
     display_string += "# OF SEGMENTS : {}\n".format(len(config.segment_list))
     display_string += "SIMULATION TYPE : {}\n".format(config.sim_type)
-    if config.sim_type == "signal":
-        display_string += "BEAM TYPE : {}\n".format(config.beam_type)
-    else:
-        display_string += "GRADIENT TYPES : {}\n".format(config.gradient_type)
+    display_string += "BEAM TYPE : {}\n".format(config.beam_type)
+    if config.sim_type == "template":
+        if config.template_type == "tm_gradient":
+            display_string += "GRADIENT TYPES : {}\n".format(config.tm_gradient_type)
     display_string += "WRITE FIELD : {}\n".format(config.timestream_data_products)
     display_string += "NOTES : {}\n".format(config.notes)
     display_string += "#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\n\n"
@@ -171,6 +176,6 @@ if __name__=="__main__":
         make_data_dirs()
         start_message()
     
-    run_check(verbose=False)
+    run_check()
 
     run_simulation()

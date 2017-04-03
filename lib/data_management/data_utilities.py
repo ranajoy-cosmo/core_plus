@@ -15,7 +15,8 @@ def get_local_bolo_segment_list(rank, num_processes, bolo_list, segment_list):
     for bolo_name in bolo_list:
         bolo_list_deg.extend([bolo_name]*num_segments_per_bolo)
 
-    segment_list_deg = list(np.arange(num_total_segments) % num_segments_per_bolo)
+#    segment_list_deg = list(np.arange(num_total_segments) % num_segments_per_bolo)
+    segment_list_deg = segment_list*num_bolos
 
     local_bolo_list = bolo_list_deg[rank*num_segments_per_process : (rank + 1)*num_segments_per_process]
     local_segment_list = segment_list_deg[rank*num_segments_per_process : (rank + 1)*num_segments_per_process]

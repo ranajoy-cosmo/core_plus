@@ -47,9 +47,6 @@ def run_mpi():
     #Iterating over the bolos
     for bolo_name in bolo_segment_dict.keys():
         if config.subtract_template:
-            TEMPLATE_list = []
-            for TEMPLATE_name in config.template_dict[bolo_name]:
-                TEMPLATE_list.append(Bolo(TEMPLATE_name, config))
             estimated_y = np.load(os.path.join(config.general_output_dir, config.sim_tag, bolo_name+"_estimated_y.npy"))
         #If I am taking a differenced signal
         if config.take_diff_signal:
@@ -69,11 +66,12 @@ def run_mpi():
                 else:
                     signal, hitpix, pol_ang = acquire_signal(bolo, segment, config.noise_only_map)
                 if config.subtract_template:
-                    for i in len(TEMPLATE_list):  
-                        TEMPLATE_signal = TEMPLATE_list.read_timestream(segment, return_field=["signal"])["signal"]
+                    for i in range(len(config.TEMPLATE_list)):  
+                        TEMPLATE_name = config.TEMPLATE_list[i]
+                        TEMPLATE_signal = bolo_a.read_timestream(segment, return_field=[TEMPLATE_name])[TEMPLATE_name]
                         signal -= estimated_y[i] * TEMPLATE_signal
-            if config.sim_type == "gradient":
-                signal, hitpix, pol_ang = acquire_signal_gradient(bolo, segment, config.noise_only_map)
+            if config.sim_type == "template":
+                signal, hitpix, pol_ang = acquire_signal_template(bolo, segment)
             #Generating the inverse covariance matrix
             cov_ut.get_inv_cov_matrix(hitpix, pol_ang, signal, inv_cov_matrix_local, b_matrix_local, hitmap_local, npix, config.pol_type)
             stop_seg = time.time()
@@ -116,33 +114,36 @@ def run_mpi():
 
 def acquire_signal(bolo, segment, noise_only=False):
     if config.simulate_ts:
-        t_stream = bolo.simulate_timestream(segment, return_field=["signal", "pointing_vec", "pol_ang"])
+        t_stream = bolo.simulate_timestream_signal(segment, return_field=["signal", "pointing_vec", "pol_ang"])
     else:
         t_stream = bolo.read_timestream(segment, return_field=["signal", "pointing_vec", "pol_ang"], noise_only=noise_only)
 
     hitpix = hp.vec2pix(config.nside_out, t_stream["pointing_vec"][...,0], t_stream["pointing_vec"][...,1], t_stream["pointing_vec"][...,2])
     return t_stream["signal"], hitpix, t_stream["pol_ang"]
 
-def acquire_signal_gradient(bolo, segment):
-    if config.simulate_ts:
-        t_stream = bolo.simulate_timestream(segment, return_field=[config.gradient_type, "pointing_vec", "pol_ang"])
-    else:
-        t_stream = bolo.read_timestream(segment, return_field=[config.gradient_type, "pointing_vec", "pol_ang"], noise_only=noise_only)
+def acquire_signal_template(bolo, segment, tm_type=None):
+    if config.template_type == "tm_bandpass":
+        signal_type = config.tm_bandpass_type[0]
+        t_stream = bolo.read_timestream(segment, return_field=[signal_type, "pointing_vec", "pol_ang"])
+    if config.template_type == "tm_gradient":
+        signal_type = config.tm_gradient_type[0]
+        t_stream = bolo.read_timestream(segment, return_field=[signal_type, "pointing_vec", "pol_ang"])
 
     hitpix = hp.vec2pix(config.nside_out, t_stream["pointing_vec"][...,0], t_stream["pointing_vec"][...,1], t_stream["pointing_vec"][...,2])
-    return t_stream[config.gradient_type], hitpix, t_stream["pol_ang"]
+    return t_stream[signal_type], hitpix, t_stream["pol_ang"]
+
 
 def acquire_difference_signal(bolo_a, bolo_b, segment, noise_only=False):
     if config.simulate_ts:
-        t_stream_a = bolo_a.simulate_timestream(segment, return_field=["signal", "pointing_vec", "pol_ang"])
-        t_stream_b = bolo_b.simulate_timestream(segment, return_field=["signal"])
+        t_stream_a = bolo_a.simulate_timestream_signal(segment, return_field=["signal", "pointing_vec", "pol_ang"])
+        t_stream_b = bolo_b.simulate_timestream_signal(segment, return_field=["signal"])
     else:
         t_stream_a = bolo_a.read_timestream(segment, return_field=["signal", "pointing_vec", "pol_ang"], noise_only=noise_only)
         t_stream_b = bolo_b.read_timestream(segment, return_field=["signal"], noise_only=noise_only)
 
     signal = 0.5*(t_stream_a["signal"] - t_stream_b["signal"])
 
-    hitpix = hp.vec2pix(config.nside_out, t_stream["pointing_vec"][...,0], t_stream["pointing_vec"][...,1], t_stream["pointing_vec"][...,2])
+    hitpix = hp.vec2pix(config.nside_out, t_stream_a["pointing_vec"][...,0], t_stream_a["pointing_vec"][...,1], t_stream_a["pointing_vec"][...,2])
     return signal, hitpix, t_stream_a["pol_ang"]
         
 #Where all the distribution and gathering takes place
@@ -264,16 +265,22 @@ def accumulate_segments(size):
     del cov_matrix_segment
     shutil.rmtree(os.path.join(dir_names.recon_dir, dir_names.cov_matrix_segment_dir))
     acc_stop_time = time.time()
-    prompt("Time taken to accumulate segments : {}s".format(acc_stop_time - acc_start_time))
+    prompt("Time taken to accumulate segments : {}s\n".format(acc_stop_time - acc_start_time))
 
 
 def make_data_dirs():
     dir_names = get_dir_names()
     if not os.path.exists(dir_names.sim_dir):
-        os.makedirs(dir_names.sim_dir)
+        try:
+            os.makedirs(dir_names.sim_dir)
+        except OSError:
+            pass
 
     if not os.path.exists(dir_names.scan_dir):
-        os.makedirs(dir_names.scan_dir)
+        try:
+            os.makedirs(dir_names.scan_dir)
+        except OSError:
+            pass
 
     if not os.path.exists(dir_names.recon_dir):
         os.makedirs(dir_names.recon_dir)
@@ -288,9 +295,15 @@ def make_data_dirs():
 
     config_dir = os.path.join(dir_names.sim_dir, "config_files")
     if not os.path.exists(config_dir):
-        os.makedirs(config_dir)
+        try:
+            os.makedirs(config_dir)
+        except OSError:
+            pass
     this_config_dir = os.path.join(config_dir, time_stamp)
-    os.makedirs(this_config_dir)
+    try:
+        os.makedirs(this_config_dir)
+    except OSError:
+        pass
     with open(os.path.join(this_config_dir, "config_file.pkl"), "w") as outfile:
         pkl.dump(config, outfile)
     bolo_config = importlib.import_module(config.bolo_config_file).bolo_config
@@ -299,18 +312,18 @@ def make_data_dirs():
 
     code_dir = os.path.join(dir_names.sim_dir, "code_files")
     if not os.path.exists(code_dir):
-        os.makedirs(code_dir)
+        try:
+            os.makedirs(code_dir)
+        except OSError:
+            pass
     this_code_dir = os.path.join(code_dir, time_stamp)
-    os.makedirs(this_code_dir)
+    try:
+        os.makedirs(this_code_dir)
+    except OSError:
+        pass
     shutil.copyfile(os.path.join(config.base_dir, "map_maker", "map_maker.py"), os.path.join(this_code_dir, "map_maker.py"))
     shutil.copyfile(os.path.join(config.base_dir, "timestream_simulation", "bolo.py"), os.path.join(this_code_dir, "bolo.py"))
     shutil.copyfile(os.path.join(config.base_dir, "timestream_simulation", "beam_kernel.py"), os.path.join(this_code_dir, "beam_kernel.py"))
-
-    out_file_dir = os.path.join(dir_names.sim_dir, "output_files")
-    if not os.path.exists(out_file_dir):
-        os.makedirs(out_file_dir)
-    this_out_file_dir = os.path.join(out_file_dir, time_stamp)
-    os.makedirs(this_out_file_dir)
 
 
 def start_message():
@@ -332,10 +345,12 @@ def start_message():
     display_string += "Segment length : {}s, {}h\n".format(config.t_segment, config.t_segment/60.0/60.0)
     display_string += "SIMULATION TYPE : {}\n".format(config.sim_type)
     if config.sim_type == "signal":
-        display_string += "BEAM TYPE : {}\n".format(config.beam_type)
+        if config.simulate_ts:
+            display_string += "BEAM TYPE : {}\n".format(config.beam_type)
+            display_string += "WRITE FIELD : {}\n".format(config.timestream_data_products)
     else:
-        display_string += "GRADIENT TYPES : {}\n".format(config.gradient_type)
-    display_string += "WRITE FIELD : {}\n".format(config.timestream_data_products)
+        if config.template_type == "tm_gradient":
+            display_string += "GRADIENT TYPES : {}\n".format(config.tm_gradient_type)
     display_string += "NOTES : {}\n".format(config.notes)
     display_string += "#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\n\n"
     prompt(display_string, sys.stdout)
@@ -390,8 +405,8 @@ if __name__=="__main__":
         run_check()
         run_mpi()
         comm.Barrier()
-#        if rank==0:
-#            accumulate_segments(size)
+        if rank==0:
+            accumulate_segments(size)
 
     if run_type == 'run_serial':
         make_data_dirs()
