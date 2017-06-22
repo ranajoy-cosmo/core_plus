@@ -8,7 +8,7 @@ import sys
 import os
 import importlib
 from simulation.lib.plotting.my_imshow import new_imshow
-from simulation.lib.utilities.generic_class import Generic
+from simulation.lib.utilities.prompter import prompt
 from simulation.lib.utilities.generic_class import Generic
 
 class Beam():
@@ -20,15 +20,17 @@ class Beam():
 
 
     def get_beam(self):
-        if self.config.simulate_beam:
-            if self.config.do_pencil_beam:
-                self.beam_kernel = np.array([[1.0]])
-                self.del_beta = np.array([0.0])
-            else:
-                mesh = self.get_mesh()
-                self.gaussian_2d(mesh)
-        else:
+        if self.config.beam_type == "pencil":
+            self.beam_kernel = np.array([[1.0]])
+            self.del_beta = np.array([0.0])
+        elif self.config.beam_type == "full_simulated":
+            mesh = self.get_mesh()
+            self.gaussian_2d(mesh)
+        elif self.config.beam_type == "from_file":
             self.read_mark_beam_map()
+        else:
+            print "Beam type not recognised."
+            sys.exit()
 
 
     def read_mark_beam_map(self):
@@ -71,7 +73,7 @@ class Beam():
 
         start = new_dim/2 - num_pix/2
         stop = new_dim/2 + num_pix/2 + 1
-        self.beam_kernel = self.beam_kernel[..., start:stop, start:stop]
+        self.beam_kernel = self.beam_kernel[:, start:stop, start:stop]
         #print "kernel shape :", self.beam_kernel.shape
         self.del_beta = self.config.scan_resolution * np.arange(-num_pix/2 + 1, num_pix/2 + 1)
 
@@ -103,7 +105,12 @@ class Beam():
     def get_beam_row(self, del_beta):
         row_num = np.where(self.del_beta==del_beta)[0][0]
 
-        return self.beam_kernel[...,row_num]
+        return self.beam_kernel[:,row_num]
+
+    def block_beam_row(self, del_beta):
+        row_num = np.where(self.del_beta==del_beta)[0][0]
+
+        self.beam_kernel[:,row_num] = np.zeros(self.del_beta.size)
 
 
     def normalise(self):
@@ -133,25 +140,44 @@ class Beam():
         n = int(size/dd/2)
         x = np.arange(-n, n+1)*dd
         y = -1*np.arange(-n, n+1)*dd
-        self.del_beta = x
+        self.del_beta = y
         return np.meshgrid(x,y)
 
+    def shift_beam_kernel(self, direction, units=1, fill_value=0):
+        if direction == "top":
+            self.old_beam_kernel = np.copy(self.beam_kernel) 
+            self.beam_kernel = np.full(self.beam_kernel.shape, fill_value)
+            beam_dim = self.del_beta.size
+            for i in range(4):
+                self.beam_kernel[i, :beam_dim-units] = self.old_beam_kernel[i, units:] 
+
+        if direction == "bottom":
+            self.old_beam_kernel = np.copy(self.beam_kernel) 
+            self.beam_kernel = np.full(self.beam_kernel.shape, fill_value)
+            beam_dim = self.del_beta.size
+            for i in range(4):
+                self.beam_kernel[i, units:] = self.old_beam_kernel[i, :beam_dim-units] 
+
+    def restore_beam_kernel(self):
+        self.beam_kernel = np.copy(self.old_beam_kernel)
 
     def display_beam_settings(self):
         factor = 2*np.sqrt(2*np.log(2))
         fwhm_major = self.config.fwhm_major
         fwhm_minor = self.config.fwhm_minor
         ellipticity = 100*2*(fwhm_major - fwhm_minor)/(fwhm_major + fwhm_minor)
-        print "Major axis(FWHM) :", fwhm_major, "arcmins" 
-        print "Minor axis(FWHM) :", fwhm_minor, "arcmins"
-        print "Ellipticity :", ellipticity, "%"
-        print "Center :", self.config.offset_x, self.config.offset_y
-        print "Tilt :", self.config.beam_angle, "degrees"
-        print "Beam pixel size :", self.config.scan_resolution, "arcmins" 
-        print "Kernel width in FWHM of beam:", self.config.beam_cutoff
-        print "# of pixels per FWHM (minor-axis) of beam :", fwhm_minor/self.config.scan_resolution
-        sys.stdout.flush()
-
+        display_string = "\n#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\n"
+        display_string += "#* BEAM PARAMETERS : {}\n".format(self.config.name) 
+        display_string += "#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\n"
+        display_string += "Major axis(FWHM) : {} arcmins\n".format(fwhm_major) 
+        display_string += "Minor axis(FWHM) : {} arcmins\n".format(fwhm_minor)
+        display_string += "Ellipticity : {} %\n".format(ellipticity)
+        display_string += "Center : ({},{})\n".format(self.config.offset_x, self.config.offset_y)
+        display_string += "Tilt : {} degrees\n".format(self.config.beam_angle)
+        display_string += "Kernel width in FWHM of beam : {}\n".format(self.config.beam_cutoff)
+        display_string += "# of pixels per FWHM (minor-axis) of beam : {}\n".format(fwhm_minor/self.config.scan_resolution)
+        display_string += "#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\n\n"
+        prompt(display_string, sys.stdout)
 
     """
     def plot_beam(self):

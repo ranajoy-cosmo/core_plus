@@ -2,6 +2,7 @@ import numpy as np
 import healpy as hp
 import os
 import sys
+from memory_profiler import profile
 
 
 def get_dim(pol_type):
@@ -63,7 +64,7 @@ def make_block_matrix_T(flat_matrix):
 
     return block_matrix
 
-
+#@profile
 def get_inv_cov_matrix(hitpix, pol, ts, inv_cov_matrix, b_matrix, hitmap, npix, pol_type):
     func_dict = {'TQU' : get_inv_cov_matrix_TQU, 'QU' : get_inv_cov_matrix_QU, 'T' : get_inv_cov_matrix_T}
     func_dict[pol_type](hitpix, pol, ts, inv_cov_matrix, b_matrix, hitmap, npix)

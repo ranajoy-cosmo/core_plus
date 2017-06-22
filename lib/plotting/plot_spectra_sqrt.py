@@ -69,11 +69,11 @@ def plot_theoretical(lmax, plot_log=True, plot_list=["TT", "EE", "BB"], lensed=T
     plt.show()
 
 
-def make_decorations(ylim=[1e-4, 100], xlim=[1,3000], leg_loc=None):
+def make_decorations(ylim=[1e-4,100], xlim=[1,3000], leg_loc=None, unit="uK^2"):
     plt.ylim(ylim)
     plt.xlim(xlim)
-    plt.xlabel('$l$')
-    plt.ylabel('$\sqrt{l(l+1)C_l/2\pi}$ $[\mu K]$')
+    plt.xlabel('$l$', fontsize=12)
+    plt.ylabel('$\sqrt{l(l+1)C_l/2\pi}$ $[\mu K]$', fontsize=12)
     if leg_loc == None:
         leg_loc = "upper left"
     plt.legend(loc=leg_loc , prop={'size':12})
@@ -111,6 +111,15 @@ def plot_error_margins(cl_mean, cl_std, lmax=None, color=None):
         plt.fill_between(ell, np.sqrt(ell*(ell+1)*(cl_mean[2:lmax+1] - cl_std[2:lmax+1])/2/np.pi), np.sqrt(ell*(ell+1)*(cl_mean[2:lmax+1] + cl_std[2:lmax+1])/2/np.pi), facecolor=color, alpha=0.3, linewidth=0)
     else:
         plt.fill_between(ell, np.sqrt(ell*(ell+1)*(cl_mean[2:lmax+1] - cl_std[2:lmax+1])/2/np.pi), np.sqrt(ell*(ell+1)*(cl_mean[2:lmax+1] + cl_std[2:lmax+1])/2/np.pi), alpha=0.3, linewidth=0)
+
+
+def plot_error_bars(cl, sigma_cl, lmax=None, color='r', alpha=0.5):
+    if lmax==None:
+        lmax = cl.size - 1
+    ell = np.arange(lmax+1)
+    upper = np.sqrt(ell*(ell+1)*(cl + sigma_cl)[:lmax+1]/2/np.pi)
+    lower = np.sqrt(ell*(ell+1)*(cl - sigma_cl)[:lmax+1]/2/np.pi)
+    plt.fill_between(ell, upper, lower, facecolor=color, alpha=alpha, lw=0)
 
 
 def plot_binned_spectra(cl, ell, label=None, plot_log=True):

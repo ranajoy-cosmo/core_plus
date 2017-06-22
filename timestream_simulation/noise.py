@@ -41,10 +41,11 @@ class Noise():
         #So, to get the SD of each sample point we must use white_noise_sigma*sqrt(sampling_rate) as the scale for the Gaussina RNG
         n_samples = self.config.t_segment * self.config.sampling_rate
 
-        if self.config.noise_type=="white_noise":
+        if self.config.noise_type=="white":
             noise = np.random.normal(loc=0.0, scale=self.config.white_noise_sigma*np.sqrt(self.config.sampling_rate), size=n_samples)
 
-        if self.config.noise_type=="full":
+        #Needs updating. Action item
+        if self.config.noise_type=="one_over_f":
             if do_mc:
                 np.random.seed()
             else:

@@ -6,6 +6,14 @@ from simulation.global_config import global_paths
 """
 This module calculates and converts the noise parameters for a CMB experiment and also generates the noise power spectra given such parameters.
 Calculations are done assuming the observer is at the centre of a 2-Sphere with the last scattering surface being the surface of the sphere and at radius unity away from the observer.
+Features include :
+    1) Calculate the solid angle of a pixel of a Healpix map from the nside
+    2) Time spent by the detector per pixel of the Healpix map for the given nside and time span
+    3) Time spent by the detector per arcminute square of the sky for the given time span
+    4) Time spent by the detector per unit solid angle of the sky for the given time span
+    5) Detector sensitivity to noise rms in each pixel of the Healpix map for the given nside, time span and number of detectors
+    6) Detector sensitivity to noise rms in uK.arcmin for the given time span and number of detectors
+    7) Detector sensitivity to noise rms in uK.steradian for the given time span and number of detectors
 """
 OMEGA_SKY = 4*np.pi                         #steradian
 OMEGA_ARCMIN_SQ = np.radians(1.0/60.0)**2   #steradian
@@ -18,47 +26,47 @@ N_DET_145 = 144                                     #for 145GHz
 spectra_folder = os.path.join(global_paths.base_dir, "spectra")
 spectra_file = os.path.join(spectra_folder, "r_0001/lensedtot_cls.npy")              #Fiducial spectra
 
-
 def pixel_solid_angle(nside, arcmin=False):
     """
     Gives the solid angle subtended by a pixel on a Healpix map with a given nside.
     Default units ; steradian
     if arcmin is True, units = arcmin^2
     """
-    pix_res = hp.nside2resol(nside, arcmin=True)
-    if arcmin:
-        pix_solid_angle = pix_res**2
-    else:
-        pix_solid_angle = OMEGA_ARCMIN_SQ*pix_res**2
+    pix_solid_angle = hp.nside2resol(nside, arcmin)**2
+#    pix_res = hp.nside2resol(nside, arcmin=True)
+#    if arcmin:
+#        pix_solid_angle = pix_res**2
+#    else:
+#        pix_solid_angle = OMEGA_ARCMIN_SQ*pix_res**2
     return pix_solid_angle
 
 
-def time_per_pixel(nside, t_mission=T_MISSION):
+def time_per_pixel(nside, t_mission=T_MISSION, n_det=1):
     """
     Time spent by a detector per pixel during a period t_mission and assuming an uniform scan.
     Default units : seconds
     """
     omega_pix = pixel_solid_angle(nside)
-    t_pix = t_mission*omega_pix/OMEGA_SKY
+    t_pix = t_mission * n_det * omega_pix / OMEGA_SKY
     return t_pix
 
 
-def time_per_arcmin_sq(t_mission=T_MISSION):
+def time_per_arcmin_sq(t_mission=T_MISSION, n_det=1):
     """
     Time spent by a detector per arcmin square of the sky during a period t_mission and assuming an uniform scan.
     Default units : seconds
     """
-    t_arcmin_sq = t_mission*OMEGA_ARCMIN_SQ/OMEGA_SKY
+    t_arcmin_sq = t_mission * n_det * OMEGA_ARCMIN_SQ / OMEGA_SKY
     return t_arcmin_sq
 
 
-def time_per_solid_angle(t_mission=T_MISSION):
+def time_per_solid_angle(t_mission=T_MISSION, n_det=1):
     """
     Time spent by a detector per unit solid angle of the sky during a period t_mission and assuming an uniform scan.
     Unit solid angle = 1 steradian
     Default units : seconds
     """
-    t_unit_solid_angle = t_mission/OMEGA_SKY
+    t_unit_solid_angle = t_mission * n_det * 1.0 / OMEGA_SKY
     return t_unit_solid_angle
 
 

@@ -3,52 +3,47 @@
 import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
+import simulation.power_spectrum.spectra_tools as st
+import simulation.power_spectrum.noise_power_spectra as nps
+import simulation.lib.plotting.plot_th as pt
 import sys
 import os
 
-sim_dir = sys.argv[1]
-map_folder_list = os.listdir(sim_dir)
-#map_folder_list = ['all_bolos_one_precession']
+sim_dir = "/global/homes/b/banerji/simulation/output/focal_plane_noise" 
+map_folder_list = []
+det_number_list = []
+scan_time_list = []
+
+general_plot_dir = "/global/homes/b/banerji/simulation/mission_paper_plots"
 
 sky_map_title = ['I', 'Q', 'U']
 cov_map_title = ['II', 'IQ', 'IU', 'QQ', 'QU', 'UU']
 
 current_dir = "/global/homes/b/banerji/simulation/map_maker"
 
+det_sens = 50.0
+scan_rate = 85.0
+nside = 1024
+year = 365.25*24*60*60.0
+precession = 4*24*60*60.0
+
+noise_rms = noise_sens*np.sqrt(scan_rate)
+pix_area = hp.nside2resol(nside, arcmin=True)**2
+
 for map_folder in map_folder_list:
 
-    general_noise_map_folder = os.path.join(current_dir, "fp_noise_maps")
-    general_cov_map_folder = os.path.join(current_dir, "fp_cov_maps")
-    noise_map_folder = os.path.join(general_noise_map_folder, map_folder)
-    cov_map_folder = os.path.join(general_cov_map_folder, map_folder)
+    map_dir = os.path.join(sim_dir, map_folder)
+    plot_dir = os.path.join(general_plot_dir, map_folder)
+    
+    if os.path.exists(plot_dir):
+        shutil.rmtree(plot_dir)
+    os.makedirs(plot_dir)
 
+    noise_map = hp.read_map(os.path.join(map_dir, "sky_map.fits"), field=(0,1,2))
+    cov_map = hp.read_map(os.path.join(map_dir, "covariance_maps.fits"), field=(0,1,2,3,4,5))
+    hitmap = hp.read_map(os.path.join(map_dir, "hitmap.fits"))
 
-    if not os.path.exists(general_noise_map_folder):
-        os.makedirs(general_noise_map_folder)
-    if not os.path.exists(noise_map_folder):
-        os.makedirs(noise_map_folder)
-    if not os.path.exists(general_cov_map_folder):
-        os.makedirs(general_cov_map_folder)
-    if not os.path.exists(cov_map_folder):
-        os.makedirs(cov_map_folder)
+    mask = hitmap > 3
 
-#    print map_folder
-#    print noise_map_folder
-#    print cov_map_folder
-#    print os.path.join(sim_dir, map_folder, "sky_map.fits")
-    hitmap = hp.read_map(os.path.join(sim_dir, map_folder, "hitmap.fits"))
-    noise_map = hp.read_map(os.path.join(sim_dir, map_folder, "sky_map.fits"), field=(0,1,2))
-    cov_matrix_maps = hp.read_map(os.path.join(sim_dir, map_folder, "covariance_maps.fits"), field=(0,1,2,3,4,5))
-
-    for i in range(3):
-        plt.figure()
-        noise_map[i][hitmap==0] = np.nan
-        hp.mollview(noise_map[i], title=sky_map_title[i], unit='$\mu K$')
-        plt.savefig(os.path.join(noise_map_folder, sky_map_title[i]))
-
-    for i in range(6):
-        plt.figure()
-        cov_matrix_maps[i][hitmap==0] = np.nan
-        #cov_matrix_maps[i][cov_matrix_maps[i]==1] = np.nan
-        hp.mollview(cov_matrix_maps[i], title=cov_map_title[i])
-        plt.savefig(os.path.join(cov_map_folder, cov_map_title[i]))
+    spectra_obs = st.estimate_cl(noise_map, lmax=2000, binary_mask=hitmap>3, fwhm=np.radians(7.7/60.0))
+    spectra_th = nps.sensitivity_to_noise_mean_Cl(det_sens, np.radians(7.7/60.0), 2000, t_mission=scan_time_dict[map_folder], n_det=det_number_dict[map_folder])
