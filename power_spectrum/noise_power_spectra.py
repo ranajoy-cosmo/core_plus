@@ -188,12 +188,13 @@ def cosmic_variance_Cl(lmax, f_sky=1.0, spectra_fid=None):
     This gives us the variance on the fiducial CMB power spectra due to cosmic variance alone.
     """
     if spectra_fid == None:
-        spectra_fid = spectra_file
-    Cl = np.load(spectra_fid)[..., :lmax+1]
+        spectra_fid = np.load(spectra_file)[..., :lmax+1]
+
     ell = np.arange(lmax + 1)
     variance = np.empty((3, lmax+1))
+
     for i in range(3):
-        variance[i] = (2.0/(2.0*ell + 1)/f_sky)*Cl[i]**2
+        variance[i] = (2.0/(2.0*ell + 1)/f_sky)*spectra_fid[i]**2
         variance[i][:2] = 0.0
     return variance
 
