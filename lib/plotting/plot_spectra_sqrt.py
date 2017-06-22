@@ -74,7 +74,7 @@ def plot_theoretical(lmax, plot_log=True, plot_list=["TT", "EE", "BB"], lensed=T
     plt.show()
 
 
-def make_decorations(ylim=[1e-4, 100], xlim=[1,3000], leg_loc=None):
+def make_decorations(ylim=[1e-4,100], xlim=[1,3000], leg_loc=None, unit="uK^2"):
     plt.ylim(ylim)
     plt.xlim(xlim)
     plt.xlabel('$l$', fontsize=12)
