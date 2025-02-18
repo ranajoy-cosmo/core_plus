@@ -13,6 +13,6 @@
 
 For resources on the technique see
 
-* [PhD Thesis: Ranajoy Banerji](https://tel.archives-ouvertes.fr/tel-02019119/file/thesis_main_english.pdf)
+* [PhD Thesis: Ranajoy Banerji](https://theses.hal.science/tel-02019119v1/file/thesis_main_english.pdf)
 * [Exploring cosmic origins with CORE: Mitigation of systematic effects](https://iopscience.iop.org/article/10.1088/1475-7516/2018/04/022)
 * [Bandpass mismatch error for satellite CMB experiments II: correcting for the spurious signal](https://iopscience.iop.org/article/10.1088/1475-7516/2019/07/043)
